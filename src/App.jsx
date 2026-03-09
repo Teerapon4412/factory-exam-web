@@ -113,6 +113,10 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
+  const [authUser, setAuthUser] = useState(null);
+  const [loginName, setLoginName] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   useEffect(() => {
     try {
@@ -588,6 +592,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
