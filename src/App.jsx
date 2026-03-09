@@ -114,8 +114,20 @@ export default function App() {
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
 
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(bank)); }, [bank]);
-  useEffect(() => { localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory)); }, [resultHistory]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
+    } catch {
+      // ignore storage write failures (private mode / policy restrictions)
+    }
+  }, [bank]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory));
+    } catch {
+      // ignore storage write failures (private mode / policy restrictions)
+    }
+  }, [resultHistory]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
@@ -289,7 +301,14 @@ export default function App() {
 
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
   const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
-  const saveLocal = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(bank)); alert("บันทึกคลังข้อสอบ Model/Part ไว้ในเครื่องเรียบร้อยแล้ว"); };
+  const saveLocal = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
+      alert("บันทึกคลังข้อสอบ Model/Part ไว้ในเครื่องเรียบร้อยแล้ว");
+    } catch {
+      alert("ไม่สามารถบันทึกลงเครื่องได้ (Storage ถูกจำกัด)");
+    }
+  };
 
   const exportCSV = () => {
     if (!submitted) return alert("กรุณาส่งคำตอบก่อนจึงจะบันทึกผลสอบได้");
@@ -569,6 +588,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 
