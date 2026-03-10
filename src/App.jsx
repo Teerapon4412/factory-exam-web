@@ -5,7 +5,6 @@ import "./App.css";
 
 const STORAGE_KEY = "factory_exam_builder_v2";
 const RESULTS_KEY = "factory_exam_results_v1";
-const ADMIN_ACCESS_CODE = "ADMIN1234";
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 const S = {
@@ -85,17 +84,7 @@ function normalize(raw) {
 }
 
 const loadBank = () => { try { const s = localStorage.getItem(STORAGE_KEY); return s ? normalize(JSON.parse(s)) : starterBank(); } catch { return starterBank(); } };
-const loadResults = () => {
-  try {
-    const s = localStorage.getItem(RESULTS_KEY);
-    if (!s) return [];
-    const parsed = JSON.parse(s);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item) => item && typeof item === "object");
-  } catch {
-    return [];
-  }
-};
+const loadResults = () => { try { const s = localStorage.getItem(RESULTS_KEY); return s ? JSON.parse(s) : []; } catch { return []; } };
 
 export default function App() {
   const [bank, setBank] = useState(loadBank);
@@ -113,25 +102,9 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
-  const [authUser, setAuthUser] = useState(null);
-  const [loginName, setLoginName] = useState("");
-  const [loginCode, setLoginCode] = useState("");
-  const [loginError, setLoginError] = useState("");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
-    } catch {
-      // ignore storage write failures (private mode / policy restrictions)
-    }
-  }, [bank]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory));
-    } catch {
-      // ignore storage write failures (private mode / policy restrictions)
-    }
-  }, [resultHistory]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(bank)); }, [bank]);
+  useEffect(() => { localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory)); }, [resultHistory]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
@@ -232,35 +205,6 @@ export default function App() {
       .sort((a, b) => b.attempts - a.attempts);
   }, [filteredHistory]);
 
-  const isAdmin = authUser?.role === "admin";
-
-  const handleLogin = () => {
-    const trimmedName = loginName.trim();
-    const trimmedCode = loginCode.trim();
-    if (!trimmedName || !trimmedCode) {
-      setLoginError("กรุณากรอกชื่อและรหัสให้ครบ");
-      return;
-    }
-    const role = trimmedCode === ADMIN_ACCESS_CODE ? "admin" : "student";
-    setAuthUser({ name: trimmedName, code: trimmedCode, role });
-    setCandidateName(trimmedName);
-    setCandidateCode(trimmedCode);
-    setLoginError("");
-    setAnswers({});
-    setSubmitted(false);
-    setSubmitError("");
-  };
-
-  const handleLogout = () => {
-    setAuthUser(null);
-    setLoginName("");
-    setLoginCode("");
-    setLoginError("");
-    setAnswers({});
-    setSubmitted(false);
-    setSubmitError("");
-  };
-
   const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => m.id === modelId ? { ...m, [f]: v } : m) }));
   const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => p.id === partId ? { ...p, [f]: v } : p) }) }));
   const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => p.id !== partId ? p : { ...p, questions: p.questions.map((q) => q.id === id ? { ...q, ...patch } : q) }) }) }));
@@ -305,14 +249,7 @@ export default function App() {
 
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
   const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
-  const saveLocal = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
-      alert("บันทึกคลังข้อสอบ Model/Part ไว้ในเครื่องเรียบร้อยแล้ว");
-    } catch {
-      alert("ไม่สามารถบันทึกลงเครื่องได้ (Storage ถูกจำกัด)");
-    }
-  };
+  const saveLocal = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(bank)); alert("บันทึกคลังข้อสอบ Model/Part ไว้ในเครื่องเรียบร้อยแล้ว"); };
 
   const exportCSV = () => {
     if (!submitted) return alert("กรุณาส่งคำตอบก่อนจึงจะบันทึกผลสอบได้");
@@ -338,42 +275,20 @@ export default function App() {
     downloadCsv(`dashboard_history_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "pass_score", "correct", "question_count", "status"], rows);
   };
 
-  if (!authUser) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#f8fafc", color: "#0f172a", display: "grid", placeItems: "center", padding: 16 }}>
-        <div style={{ width: "100%", maxWidth: 420 }}>
-          <Card>
-            <CardHeader><h3 style={{ margin: 0, fontSize: 20 }}>เข้าสู่ระบบก่อนใช้งาน</h3></CardHeader>
-            <CardContent>
-              <div style={{ display: "grid", gap: 10 }}>
-                <Label>ชื่อผู้ใช้งาน</Label>
-                <Input value={loginName} onChange={(e) => setLoginName(e.target.value)} placeholder="ชื่อพนักงาน" />
-                <Label>รหัสเข้าใช้งาน</Label>
-                <Input type="password" value={loginCode} onChange={(e) => setLoginCode(e.target.value)} placeholder="กรอกรหัส" onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }} />
-                {loginError ? <div className="alert-error">{loginError}</div> : null}
-                <Button onClick={handleLogin}>เข้าสู่ระบบ</Button>
-                <div style={{ fontSize: 12, color: "#64748b" }}>หมายเหตุ: รหัส Admin เท่านั้นที่สามารถเพิ่มหรือแก้ไขข้อสอบได้</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", color: "#0f172a", padding: 16 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ display: "grid", gap: 12, marginBottom: 16 }}>
           <Card><CardContent><div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}><div><div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}><Badge>Exam Builder UI</Badge><Badge outline>Model / Part</Badge></div><h1 style={{ margin: 0 }}>{bank.title}</h1><p>แยกข้อสอบเป็น Model และใน 1 Model มีได้ 5-6 Part</p></div><div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(140px,1fr))", gap: 8 }}><div style={{ background: "#e2e8f0", borderRadius: 12, padding: 12 }}><div>จำนวน Model</div><strong>{bank.models.length}</strong></div><div style={{ background: "#e2e8f0", borderRadius: 12, padding: 12 }}><div>Part ใน Model</div><strong>{model.parts.length}</strong></div></div></div></CardContent></Card>
-          <Card><CardContent><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{isAdmin ? <><Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button><Button variant="outline" onClick={saveLocal}><Save size={16} /> บันทึกไว้ในเครื่อง</Button><Button variant="outline" onClick={exportJSON}><FileJson size={16} /> Export JSON</Button></> : <Badge outline>สิทธิ์ผู้สอบ: ทำข้อสอบได้อย่างเดียว</Badge>}<Button variant="outline" onClick={handleLogout}>ออกจากระบบ</Button></div></CardContent></Card>
+          <Card><CardContent><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button><Button variant="outline" onClick={saveLocal}><Save size={16} /> บันทึกไว้ในเครื่อง</Button><Button variant="outline" onClick={exportJSON}><FileJson size={16} /> Export JSON</Button></div></CardContent></Card>
         </motion.div>
 
-        <Tabs defaultValue={isAdmin ? "builder" : "preview"}>
+        <Tabs defaultValue="builder">
           <TabsList>
-            {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
+            <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger>
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
-            {isAdmin ? <TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger> : null}
-            {isAdmin ? <TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger> : null}
+            <TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger>
+            <TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger>
           </TabsList>
 
           <TabsContent value="builder">
@@ -592,21 +507,6 @@ export default function App() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
