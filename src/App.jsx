@@ -316,6 +316,19 @@ export default function App() {
   useEffect(() => { localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory)); }, [resultHistory]);
 
   useEffect(() => {
+    if (!session) {
+      setCandidateName("");
+      setCandidateCode("");
+      return;
+    }
+
+    if (session.role === "ADMIN") return;
+
+    setCandidateName(session.displayName || session.username || "");
+    setCandidateCode(session.employeeCode || "");
+  }, [session]);
+
+  useEffect(() => {
     let ignore = false;
 
     const fetchState = async () => {
@@ -523,14 +536,15 @@ export default function App() {
   const login = (e) => {
     e.preventDefault();
     const username = loginForm.username.trim();
-    const password = loginForm.password;
+    const password = loginForm.password.trim();
 
     if (!username) return setLoginError("กรุณากรอกชื่อผู้ใช้");
+    if (!password) return setLoginError("กรุณากรอกรหัสผ่าน");
 
     const isAdminLogin = username === ADMIN_CREDENTIAL.username && password === ADMIN_CREDENTIAL.password;
     const nextSession = isAdminLogin
-      ? { username: ADMIN_CREDENTIAL.username, role: ADMIN_CREDENTIAL.role, displayName: ADMIN_CREDENTIAL.displayName }
-      : { username, role: "USER", displayName: username };
+      ? { username: ADMIN_CREDENTIAL.username, role: ADMIN_CREDENTIAL.role, displayName: ADMIN_CREDENTIAL.displayName, employeeCode: ADMIN_CREDENTIAL.username }
+      : { username, role: "USER", displayName: username, employeeCode: password };
 
     localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
     setSession(nextSession);
@@ -621,8 +635,8 @@ export default function App() {
               <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>Username</Label><Input value={loginForm.username} onChange={(e) => setLoginForm((prev) => ({ ...prev, username: e.target.value }))} placeholder="เช่น admin หรือ user" /></div>
-                  <div><Label>Password</Label><Input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} placeholder="กรอกรหัสผ่าน" /></div>
+                  <div><Label>Username</Label><Input value={loginForm.username} onChange={(e) => setLoginForm((prev) => ({ ...prev, username: e.target.value }))} placeholder="ชื่อพนักงาน หรือ ADMIN1234" /></div>
+                  <div><Label>Password</Label><Input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} placeholder="รหัสพนักงาน หรือรหัสผ่าน admin" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
                   <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
@@ -722,6 +736,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 
