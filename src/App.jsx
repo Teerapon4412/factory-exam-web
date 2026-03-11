@@ -626,7 +626,7 @@ export default function App() {
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
                   <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
-                <div className="login-help"><strong>วิธีเข้าใช้งาน</strong><div>ADMIN: ADMIN1234 / ADMIN1234</div><div>USER: กรอก Username อะไรก็ได้ และ Password อะไรก็ได้</div></div>
+                
               </CardContent>
             </Card>
           </motion.div>
@@ -722,6 +722,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
