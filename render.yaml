@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: factory-exam-web
+    runtime: node
+    plan: starter
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    startCommand: npm run server
+    healthCheckPath: /api/health
+    disk:
+      name: factory_exam_data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: DATA_DIR
+        value: /opt/render/project/src/data
+      - key: PORT
+        value: 4000

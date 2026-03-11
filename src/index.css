@@ -1,0 +1,56 @@
+﻿:root {
+  font-family: "Trebuchet MS", "Sarabun", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #11212d;
+  background:
+    radial-gradient(circle at top, #fff4e8 0, transparent 34%),
+    linear-gradient(180deg, #eef5f7 0%, #dfe9ee 100%);
+  --ink: #11212d;
+  --ink-soft: #25404d;
+  --muted: #5e7280;
+  --panel: rgba(252, 250, 247, 0.72);
+  --line: rgba(17, 33, 45, 0.1);
+  --accent: #d35400;
+  --accent-strong: #ff8a3d;
+  --shadow-soft: 0 24px 60px rgba(17, 33, 45, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
