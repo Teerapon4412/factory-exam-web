@@ -201,7 +201,7 @@ const emptyModel = (i = 1, starter = false) => ({
   id: uid(),
   modelCode: `RG${String(i).padStart(2, "0")}`,
   modelName: `Model ${i}`,
-  parts: Array.from({ length: 5 }, (_, idx) => emptyPart(idx + 1, starter && idx === 0)),
+  parts: Array.from({ length: 10 }, (_, idx) => emptyPart(idx + 1, starter && idx === 0)),
 });
 
 const starterBank = () => ({ title: "Factory Online Exam", models: [emptyModel(1, true)] });
@@ -472,7 +472,7 @@ export default function App() {
   };
 
   const addPart = () => {
-    if (model.parts.length >= 6) return alert("1 Model เพิ่มได้สูงสุด 6 Part");
+    if (model.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(model.parts.length + 1, false);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
     setPartId(n.id);
@@ -685,8 +685,8 @@ export default function App() {
                       <Label>Model Name</Label><Input value={model.modelName} onChange={(e) => patchModel("modelName", e.target.value)} />
                       <Label>Part</Label>
                       <select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
-                      <div className="button-row"><Button disabled={model.parts.length >= 6} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
-                      <div className="mini-note">Model นี้มี {model.parts.length} Part (สูงสุด 6)</div>
+                      <div className="button-row"><Button disabled={model.parts.length >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
+                      <div className="mini-note">Model นี้มี {model.parts.length} Part (สูงสุด 20)</div>
                       <Label>Part Code</Label><Input value={part.partCode} onChange={(e) => patchPart("partCode", e.target.value)} />
                       <Label>Part Name</Label><Input value={part.partName} onChange={(e) => patchPart("partName", e.target.value)} />
                       <Label>คำอธิบาย</Label><Input value={part.subtitle} onChange={(e) => patchPart("subtitle", e.target.value)} />
@@ -722,6 +722,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
