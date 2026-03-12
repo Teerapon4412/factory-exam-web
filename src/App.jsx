@@ -4,6 +4,7 @@ import {
   BarChart3,
   BookOpen,
   ClipboardCheck,
+  FileSpreadsheet,
   Eye,
   FileJson,
   ImagePlus,
@@ -279,6 +280,24 @@ const sanitizeBank = (rawBank) => {
   };
 };
 
+const scoreLevels = [1, 2, 3, 4, 5];
+const defaultEvaluationItems = [
+  { item: "ปฏิบัติตาม WI และมาตรฐานงาน", method: "สังเกต", weight: 20 },
+  { item: "คุณภาพงานและความถูกต้อง", method: "ตรวจงาน", weight: 25 },
+  { item: "ความร่วมมือกับทีม", method: "ประเมิน", weight: 20 },
+  { item: "การตอบสนองเมื่อพบ NG", method: "สัมภาษณ์", weight: 15 },
+  { item: "ความพร้อมของพื้นที่และ 5ส", method: "ตรวจพื้นที่", weight: 20 },
+];
+
+const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
+  id: uid(),
+  no: index + 1,
+  item: row.item,
+  method: row.method,
+  weight: row.weight,
+  score: 0,
+}));
+
 const downloadCsv = (filename, headers, rows) => {
   const lines = [headers.map(csvCell).join(","), ...rows.map((row) => row.map(csvCell).join(","))];
   const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
@@ -426,6 +445,13 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
+  const [evaluationForm, setEvaluationForm] = useState(() => ({
+    sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+    employeeCode: "",
+    employeeName: "",
+    evaluator: "",
+    rows: createEvaluationRows(),
+  }));
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -616,6 +642,15 @@ export default function App() {
     const avgPct = attempts ? Math.round(filteredHistory.reduce((sum, r) => sum + (r.fullScore ? (r.score / r.fullScore) * 100 : 0), 0) / attempts) : 0;
     return { attempts, passed, passRate: attempts ? Math.round((passed / attempts) * 100) : 0, avgPct };
   }, [filteredHistory]);
+
+  const evaluationTotal = useMemo(
+    () => evaluationForm.rows.reduce((sum, row) => sum + (Number(row.score || 0) * Number(row.weight || 0)), 0),
+    [evaluationForm.rows],
+  );
+  const evaluationMax = useMemo(
+    () => evaluationForm.rows.reduce((sum, row) => sum + (5 * Number(row.weight || 0)), 0),
+    [evaluationForm.rows],
+  );
 
   const byModelPart = useMemo(() => {
     const map = new Map();
@@ -958,6 +993,54 @@ export default function App() {
     downloadCsv(`dashboard_history_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "pass_score", "correct", "question_count", "status"], rows);
   };
 
+  const patchEvaluationMeta = (field, value) => {
+    setEvaluationForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const patchEvaluationRow = (id, patch) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      rows: prev.rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    }));
+  };
+
+  const resetEvaluation = () => {
+    setEvaluationForm({
+      sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+      employeeCode: session?.role === "ADMIN" ? "" : (session?.employeeCode || ""),
+      employeeName: session?.role === "ADMIN" ? "" : (session?.displayName || ""),
+      evaluator: session?.role === "ADMIN" ? (session?.displayName || "") : "",
+      rows: createEvaluationRows(),
+    });
+  };
+
+  const exportEvaluationCsv = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = evaluationForm.rows.map((row) => [
+      row.no,
+      row.item,
+      row.method,
+      row.score,
+      row.weight,
+      Number(row.score || 0) * Number(row.weight || 0),
+    ]);
+    rows.push(["", "TOTAL", "", "", "", evaluationTotal]);
+    downloadCsv(
+      `evaluation_form_${evaluationForm.employeeCode || "employee"}_${now}.csv`,
+      ["no", "item", "method", "score_a", "weight_b", "score_axb"],
+      rows,
+    );
+  };
+
+  useEffect(() => {
+    if (!session || session.role === "ADMIN") return;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeCode: prev.employeeCode || session.employeeCode || "",
+      employeeName: prev.employeeName || session.displayName || "",
+    }));
+  }, [session]);
+
   if (!session) {
     return (
       <div className="app-shell login-shell">
@@ -1024,7 +1107,7 @@ export default function App() {
           <TabsList>
             {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
-            {isAdmin ? <><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
+            {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
 
           {isAdmin ? (
@@ -1070,6 +1153,130 @@ export default function App() {
               <div className="preview-column"><Card className="exam-overview"><CardContent><div className="hero-badges"><Badge>{model.modelCode}</Badge><Badge outline>{part.partCode}</Badge></div><h2>{bank.title}</h2><div className="overview-line">{model.modelName} | {part.partName}</div><p>{part.subtitle}</p></CardContent></Card>{previewQs.map((q, i) => <Card key={q.id} className="exam-question-card"><CardContent><div className="question-meta"><span>ข้อ {i + 1}</span><strong>{q.score} คะแนน</strong></div><h3>{q.questionText}</h3>{q.imageUrl ? <img src={q.imageUrl} alt={`question-${i + 1}`} className="question-image" /> : null}<div className="answer-grid">{["A", "B", "C", "D"].map((key) => { const selected = answers[q.id] === key; const correct = q.correctAnswer === key; let className = "answer-choice"; if (selected) className += " is-selected"; if (submitted && correct) className += " is-correct"; if (submitted && selected && !correct) className += " is-wrong"; return <button key={key} onClick={() => !submitted && setAnswers((p) => ({ ...p, [q.id]: key }))} className={className}><strong>{key}.</strong> {q.choices[key]}</button>; })}</div></CardContent></Card>)}{submitted && part.showResultImmediately ? <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Card className={`result-banner ${result.status === "PASS" ? "is-pass" : "is-fail"}`}><CardContent className="result-banner-content"><div><div className="result-label"><Trophy size={18} /> ผลการสอบ</div><h2>{result.score} / {scoreFull}</h2><p>ตอบถูก {result.correct} จาก {part.questions.length} ข้อ</p></div><div className="result-status"><span>สถานะ</span><strong>{result.status}</strong></div></CardContent></Card></motion.div> : null}</div>
             </div>
           </TabsContent>
+
+          {isAdmin ? (
+            <TabsContent value="evaluation">
+              <div className="evaluation-layout">
+                <Card>
+                  <CardHeader>
+                    <div className="section-heading">
+                      <FileSpreadsheet size={18} />
+                      <div>
+                        <h3>แบบประเมินการปฏิบัติงาน</h3>
+                        <p>หน้าใหม่สำหรับกรอกคะแนนแบบตารางตามฟอร์มประเมินงานจากหน้างาน</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="form-stack">
+                      <Label>หัวข้อส่วนประเมิน</Label>
+                      <Input value={evaluationForm.sectionTitle} onChange={(e) => patchEvaluationMeta("sectionTitle", e.target.value)} />
+                      <div className="three-col">
+                        <div>
+                          <Label>รหัสพนักงาน</Label>
+                          <Input value={evaluationForm.employeeCode} onChange={(e) => patchEvaluationMeta("employeeCode", e.target.value)} />
+                        </div>
+                        <div>
+                          <Label>ชื่อพนักงาน</Label>
+                          <Input value={evaluationForm.employeeName} onChange={(e) => patchEvaluationMeta("employeeName", e.target.value)} />
+                        </div>
+                        <div>
+                          <Label>ผู้ประเมิน</Label>
+                          <Input value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="button-row">
+                        <Button variant="outline" onClick={resetEvaluation}>รีเซ็ตฟอร์ม</Button>
+                        <Button variant="outline" onClick={exportEvaluationCsv}>Export CSV</Button>
+                        <Button variant="outline" onClick={() => window.print()}>พิมพ์ฟอร์ม</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="evaluation-sheet-card">
+                  <CardContent className="evaluation-sheet-wrap">
+                    <div className="evaluation-sheet">
+                      <div className="evaluation-sheet-title">{evaluationForm.sectionTitle}</div>
+                      <div className="evaluation-sheet-meta">
+                        <span>รหัสพนักงาน: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
+                        <span>ชื่อพนักงาน: <strong>{evaluationForm.employeeName || "-"}</strong></span>
+                        <span>ผู้ประเมิน: <strong>{evaluationForm.evaluator || "-"}</strong></span>
+                      </div>
+                      <table className="evaluation-table">
+                        <thead>
+                          <tr>
+                            <th rowSpan="2" className="col-no">ที่<br />No</th>
+                            <th rowSpan="2" className="col-item">หัวข้อ<br />Item</th>
+                            <th colSpan={scoreLevels.length}>ระดับการให้คะแนน<br />Score Level</th>
+                            <th rowSpan="2" className="col-method">วิธีการ</th>
+                            <th rowSpan="2" className="col-score">คะแนน<br />Score (A)</th>
+                            <th rowSpan="2" className="col-weight">น้ำหนัก<br />Weight (B)</th>
+                            <th rowSpan="2" className="col-total">คะแนนที่ได้<br />(A) x (B)</th>
+                          </tr>
+                          <tr>
+                            {scoreLevels.map((level) => <th key={level} className="col-level">{level}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {evaluationForm.rows.map((row) => (
+                            <tr key={row.id}>
+                              <td>{row.no}</td>
+                              <td>
+                                <Textarea
+                                  rows={2}
+                                  value={row.item}
+                                  onChange={(e) => patchEvaluationRow(row.id, { item: e.target.value })}
+                                  className="evaluation-textarea"
+                                />
+                              </td>
+                              {scoreLevels.map((level) => (
+                                <td key={level} className="evaluation-radio-cell">
+                                  <input
+                                    type="radio"
+                                    name={`score-${row.id}`}
+                                    checked={Number(row.score) === level}
+                                    onChange={() => patchEvaluationRow(row.id, { score: level })}
+                                  />
+                                </td>
+                              ))}
+                              <td>
+                                <Input
+                                  value={row.method}
+                                  onChange={(e) => patchEvaluationRow(row.id, { method: e.target.value })}
+                                  className="evaluation-inline-input"
+                                />
+                              </td>
+                              <td className="evaluation-number-cell">{row.score || "-"}</td>
+                              <td>
+                                <Input
+                                  type="number"
+                                  value={row.weight}
+                                  onChange={(e) => patchEvaluationRow(row.id, { weight: Number(e.target.value) })}
+                                  className="evaluation-inline-input"
+                                />
+                              </td>
+                              <td className="evaluation-number-cell">{Number(row.score || 0) * Number(row.weight || 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colSpan={scoreLevels.length + 4}>รวมคะแนน</td>
+                            <td>{evaluationTotal}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan={scoreLevels.length + 4}>คะแนนเต็มสูงสุด</td>
+                            <td>{evaluationMax}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          ) : null}
 
           {isAdmin ? (
             <TabsContent value="employees">
