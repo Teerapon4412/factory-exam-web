@@ -25,3 +25,5 @@ dist-ssr
 
 data/*.sqlite
 data/*.sqlite-*
+_repo_extract/
+repo.zip
