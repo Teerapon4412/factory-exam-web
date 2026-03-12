@@ -26,9 +26,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const emptyEmployeeForm = {
-  username: "",
   employeeCode: "",
-  password: "",
   fullName: "",
   department: "",
   position: "",
@@ -341,7 +339,7 @@ const normalizeSession = (payload) => {
 export default function App() {
   const initialBank = useMemo(loadBank, []);
   const [session, setSession] = useState(loadSession);
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [loginForm, setLoginForm] = useState({ employeeCode: "" });
   const [loginError, setLoginError] = useState("");
   const [bank, setBank] = useState(initialBank);
   const [modelId, setModelId] = useState(initialBank.models[0]?.id || null);
@@ -610,9 +608,7 @@ export default function App() {
   const startEditEmployee = (employee) => {
     setEditingEmployeeId(employee.id);
     setEmployeeForm({
-      username: employee.username || "",
       employeeCode: employee.employeeCode || "",
-      password: "",
       fullName: employee.fullName || "",
       department: employee.department || "",
       position: employee.position || "",
@@ -624,9 +620,7 @@ export default function App() {
 
   const saveEmployee = async () => {
     const payload = {
-      username: employeeForm.username.trim(),
       employeeCode: employeeForm.employeeCode.trim(),
-      password: employeeForm.password,
       fullName: employeeForm.fullName.trim(),
       department: employeeForm.department.trim(),
       position: employeeForm.position.trim(),
@@ -634,7 +628,7 @@ export default function App() {
       isActive: Boolean(employeeForm.isActive),
     };
 
-    if (!payload.username || !payload.employeeCode || !payload.fullName || (!editingEmployeeId && !payload.password.trim())) {
+    if (!payload.employeeCode || !payload.fullName) {
       setEmployeeError("กรุณากรอกข้อมูลพนักงานให้ครบ");
       return;
     }
@@ -757,18 +751,16 @@ export default function App() {
 
   const login = async (e) => {
     e.preventDefault();
-    const username = loginForm.username.trim();
-    const password = loginForm.password.trim();
+    const employeeCode = loginForm.employeeCode.trim();
 
-    if (!username) return setLoginError("กรุณากรอกชื่อผู้ใช้");
-    if (!password) return setLoginError("กรุณากรอกรหัสผ่าน");
+    if (!employeeCode) return setLoginError("กรุณากรอกรหัสพนักงาน");
 
     try {
       setLoginError("");
       const res = await fetch(`${API_BASE}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ employeeCode }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "เข้าสู่ระบบไม่สำเร็จ");
@@ -782,7 +774,7 @@ export default function App() {
         // Ignore storage restrictions in locked-down browsers.
       }
       setSession(nextSession);
-      setLoginForm({ username: "", password: "" });
+      setLoginForm({ employeeCode: "" });
       setDataReady(false);
       setSyncStatus("loading");
     } catch (error) {
@@ -809,7 +801,7 @@ export default function App() {
     }
     setSession(null);
     setLoginError("");
-    setLoginForm({ username: "", password: "" });
+    setLoginForm({ employeeCode: "" });
     setDataReady(false);
     setEmployees([]);
     resetEmployeeForm();
@@ -898,7 +890,7 @@ export default function App() {
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="login-showcase">
             <div className="hero-badges"><Badge>Secure Access</Badge><Badge outline>Admin / User</Badge></div>
             <h1>เข้าสู่ระบบเพื่อใช้งานข้อสอบออนไลน์</h1>
-            <p>ผู้ดูแลระบบสามารถสร้างและแก้ไขคลังข้อสอบได้ ส่วนผู้ใช้งานทั่วไปจะเห็นเฉพาะหน้าทำข้อสอบเท่านั้น</p>
+            <p>กรอกรหัสพนักงานเพียงอย่างเดียว ระบบจะจับคู่ชื่อและสิทธิ์การใช้งานจากฐานข้อมูลพนักงานให้อัตโนมัติ</p>
             <div className="login-feature-list">
               <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN จัดการข้อสอบ, Dashboard และ Import/Export ได้</span></div>
               <div className="login-feature-item"><Eye size={18} /><span>USER เข้าทำข้อสอบและดูผลสอบได้อย่างเดียว</span></div>
@@ -906,11 +898,10 @@ export default function App() {
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="login-card">
-              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกรหัสพนักงานเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>Username</Label><Input value={loginForm.username} onChange={(e) => setLoginForm((prev) => ({ ...prev, username: e.target.value }))} placeholder="ชื่อพนักงาน หรือ ADMIN1234" /></div>
-                  <div><Label>Password</Label><Input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} placeholder="รหัสพนักงาน หรือรหัสผ่าน admin" /></div>
+                  <div><Label>รหัสพนักงาน</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เช่น 199032 หรือ ADMIN1234" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
                   <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
@@ -1019,16 +1010,18 @@ export default function App() {
                     <div className="form-stack">
                       <div className="two-col">
                         <div>
-                          <Label>Username</Label>
-                          <Input value={employeeForm.username} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, username: e.target.value }))} />
-                        </div>
-                        <div>
                           <Label>รหัสพนักงาน</Label>
                           <Input value={employeeForm.employeeCode} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, employeeCode: e.target.value }))} />
                         </div>
+                        <div>
+                          <Label>สิทธิ์</Label>
+                          <select value={employeeForm.role} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, role: e.target.value }))} style={S.input}>
+                            <option value="USER">USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                          </select>
+                        </div>
                       </div>
-                      <Label>{editingEmployeeId ? "รหัสผ่านใหม่ (เว้นว่างได้ถ้าไม่เปลี่ยน)" : "รหัสผ่าน"}</Label>
-                      <Input type="password" value={employeeForm.password} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, password: e.target.value }))} />
+                      <div className="mini-note">ระบบจะใช้รหัสพนักงานเป็นรหัสล็อกอินโดยอัตโนมัติ</div>
                       <Label>ชื่อ-นามสกุล</Label>
                       <Input value={employeeForm.fullName} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, fullName: e.target.value }))} />
                       <div className="two-col">
@@ -1041,21 +1034,12 @@ export default function App() {
                           <Input value={employeeForm.position} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, position: e.target.value }))} />
                         </div>
                       </div>
-                      <div className="two-col">
-                        <div>
-                          <Label>สิทธิ์</Label>
-                          <select value={employeeForm.role} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, role: e.target.value }))} style={S.input}>
-                            <option value="USER">USER</option>
-                            <option value="ADMIN">ADMIN</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label>สถานะ</Label>
-                          <select value={employeeForm.isActive ? "ACTIVE" : "INACTIVE"} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, isActive: e.target.value === "ACTIVE" }))} style={S.input}>
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
-                          </select>
-                        </div>
+                      <div>
+                        <Label>สถานะ</Label>
+                        <select value={employeeForm.isActive ? "ACTIVE" : "INACTIVE"} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, isActive: e.target.value === "ACTIVE" }))} style={S.input}>
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="INACTIVE">INACTIVE</option>
+                        </select>
                       </div>
                       {employeeError ? <div className="alert-error">{employeeError}</div> : null}
                       <div className="button-row">
@@ -1084,7 +1068,6 @@ export default function App() {
                           <thead>
                             <tr>
                               <th>ชื่อ</th>
-                              <th>Username</th>
                               <th>รหัสพนักงาน</th>
                               <th>แผนก/ตำแหน่ง</th>
                               <th>สิทธิ์</th>
@@ -1096,7 +1079,6 @@ export default function App() {
                             {employees.map((employee) => (
                               <tr key={employee.id}>
                                 <td>{employee.fullName}</td>
-                                <td>{employee.username}</td>
                                 <td>{employee.employeeCode}</td>
                                 <td>{employee.department || "-"} / {employee.position || "-"}</td>
                                 <td>{employee.role}</td>

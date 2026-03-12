@@ -3,7 +3,7 @@ import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  authenticateEmployee,
+  authenticateEmployeeByCode,
   appendResult,
   createEmployee,
   createSession,
@@ -66,14 +66,13 @@ app.get("/api/health", (_req, res) => {
 
 app.post("/api/login", async (req, res, next) => {
   try {
-    const username = String(req.body?.username || "").trim();
-    const password = String(req.body?.password || "").trim();
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
+    const employeeCode = String(req.body?.employeeCode || "").trim();
+    if (!employeeCode) {
+      return res.status(400).json({ error: "Employee code is required" });
     }
 
-    const employee = await authenticateEmployee(username, password);
-    if (!employee) return res.status(401).json({ error: "Invalid username or password" });
+    const employee = await authenticateEmployeeByCode(employeeCode);
+    if (!employee) return res.status(401).json({ error: "Invalid employee code" });
 
     const sessionMeta = await createSession(employee.id);
     res.json({

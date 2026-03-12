@@ -207,11 +207,12 @@ export async function listEmployees() {
 export async function createEmployee(input) {
   const db = await getDb();
   const timestamp = nowIso();
+  const employeeCode = String(input.employeeCode || "").trim();
   const employee = {
     id: crypto.randomUUID(),
-    username: String(input.username || "").trim(),
-    employeeCode: String(input.employeeCode || "").trim(),
-    password: String(input.password || "").trim(),
+    username: employeeCode,
+    employeeCode,
+    password: String(input.password || employeeCode).trim(),
     fullName: String(input.fullName || "").trim(),
     department: String(input.department || "").trim(),
     position: String(input.position || "").trim(),
@@ -260,15 +261,16 @@ export async function updateEmployee(id, input) {
   const current = db.prepare("SELECT * FROM employees WHERE id = ?").get(id);
   if (!current) throw new Error("NOT_FOUND");
 
+  const nextEmployeeCode = String(input.employeeCode ?? current.employee_code).trim();
   const next = {
-    username: String(input.username ?? current.username).trim(),
-    employeeCode: String(input.employeeCode ?? current.employee_code).trim(),
+    username: nextEmployeeCode,
+    employeeCode: nextEmployeeCode,
     fullName: String(input.fullName ?? current.full_name).trim(),
     department: String(input.department ?? current.department).trim(),
     position: String(input.position ?? current.position).trim(),
     role: input.role === "ADMIN" ? "ADMIN" : input.role === "USER" ? "USER" : current.role,
     isActive: typeof input.isActive === "boolean" ? (input.isActive ? 1 : 0) : current.is_active,
-    passwordHash: input.password ? hashPassword(String(input.password)) : current.password_hash,
+    passwordHash: current.password_hash,
   };
 
   if (!next.username || !next.employeeCode || !next.fullName) {
@@ -317,11 +319,10 @@ export async function deleteEmployee(id) {
   db.prepare("DELETE FROM employees WHERE id = ?").run(id);
 }
 
-export async function authenticateEmployee(username, password) {
+export async function authenticateEmployeeByCode(employeeCode) {
   const db = await getDb();
-  const user = db.prepare("SELECT * FROM employees WHERE username = ?").get(String(username || "").trim());
+  const user = db.prepare("SELECT * FROM employees WHERE employee_code = ?").get(String(employeeCode || "").trim());
   if (!user || !user.is_active) return null;
-  if (!verifyPassword(String(password || ""), user.password_hash)) return null;
   return employeePublicFields(user);
 }
 
