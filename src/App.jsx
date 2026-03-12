@@ -651,6 +651,10 @@ export default function App() {
     () => evaluationForm.rows.reduce((sum, row) => sum + (5 * Number(row.weight || 0)), 0),
     [evaluationForm.rows],
   );
+  const activeEmployees = useMemo(
+    () => employees.filter((employee) => employee.isActive),
+    [employees],
+  );
 
   const byModelPart = useMemo(() => {
     const map = new Map();
@@ -997,6 +1001,24 @@ export default function App() {
     setEvaluationForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const selectEvaluationEmployeeByCode = (employeeCode) => {
+    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === employeeCode);
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeCode: selectedEmployee?.employeeCode || "",
+      employeeName: selectedEmployee?.fullName || "",
+    }));
+  };
+
+  const selectEvaluationEmployeeByName = (fullName) => {
+    const selectedEmployee = activeEmployees.find((employee) => employee.fullName === fullName);
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeCode: selectedEmployee?.employeeCode || "",
+      employeeName: selectedEmployee?.fullName || "",
+    }));
+  };
+
   const patchEvaluationRow = (id, patch) => {
     setEvaluationForm((prev) => ({
       ...prev,
@@ -1174,11 +1196,25 @@ export default function App() {
                       <div className="three-col">
                         <div>
                           <Label>รหัสพนักงาน</Label>
-                          <Input value={evaluationForm.employeeCode} onChange={(e) => patchEvaluationMeta("employeeCode", e.target.value)} />
+                          <select value={evaluationForm.employeeCode} onChange={(e) => selectEvaluationEmployeeByCode(e.target.value)} style={S.input}>
+                            <option value="">เลือกรหัสพนักงาน</option>
+                            {activeEmployees.map((employee) => (
+                              <option key={employee.id} value={employee.employeeCode}>
+                                {employee.employeeCode}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <Label>ชื่อพนักงาน</Label>
-                          <Input value={evaluationForm.employeeName} onChange={(e) => patchEvaluationMeta("employeeName", e.target.value)} />
+                          <select value={evaluationForm.employeeName} onChange={(e) => selectEvaluationEmployeeByName(e.target.value)} style={S.input}>
+                            <option value="">เลือกชื่อพนักงาน</option>
+                            {activeEmployees.map((employee) => (
+                              <option key={employee.id} value={employee.fullName}>
+                                {employee.fullName}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <Label>ผู้ประเมิน</Label>
