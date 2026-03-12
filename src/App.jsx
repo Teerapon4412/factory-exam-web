@@ -318,6 +318,26 @@ const authHeaders = (session, extra = {}) => ({
   ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
 });
 
+const normalizeSession = (payload) => {
+  if (!payload) return null;
+  const employee = payload.employee || payload;
+  if (!payload.token || !employee) return null;
+  return {
+    token: payload.token,
+    createdAt: payload.createdAt || "",
+    expiresAt: payload.expiresAt || "",
+    id: employee.id,
+    username: employee.username,
+    employeeCode: employee.employeeCode,
+    fullName: employee.fullName || employee.displayName || employee.username || "",
+    displayName: employee.fullName || employee.displayName || employee.username || "",
+    department: employee.department || "",
+    position: employee.position || "",
+    role: employee.role,
+    isActive: employee.isActive !== false,
+  };
+};
+
 export default function App() {
   const initialBank = useMemo(loadBank, []);
   const [session, setSession] = useState(loadSession);
@@ -392,7 +412,8 @@ export default function App() {
           headers: authHeaders(session),
         });
         if (!authRes.ok) throw new Error(`HTTP ${authRes.status}`);
-        const nextSession = await authRes.json();
+        const nextSession = normalizeSession(await authRes.json());
+        if (!nextSession) throw new Error("Invalid session payload");
         if (ignore) return;
         try {
           localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
@@ -417,7 +438,7 @@ export default function App() {
       try {
         setSyncStatus("loading");
         const stateRes = await fetch(`${API_BASE}/state`, {
-          headers: authHeaders(session),
+          headers: authHeaders(nextSession),
         });
         if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status}`);
         const data = await stateRes.json();
@@ -752,13 +773,8 @@ export default function App() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "เข้าสู่ระบบไม่สำเร็จ");
 
-      const nextSession = {
-        token: data.token,
-        createdAt: data.createdAt,
-        expiresAt: data.expiresAt,
-        ...data.employee,
-        displayName: data.employee?.fullName || data.employee?.username || "",
-      };
+      const nextSession = normalizeSession(data);
+      if (!nextSession) throw new Error("เข้าสู่ระบบไม่สำเร็จ");
 
       try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
