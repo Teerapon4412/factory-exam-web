@@ -310,6 +310,7 @@ select:focus {
 }
 
 .two-col,
+.three-col,
 .dashboard-stats,
 .choice-grid,
 .io-grid {
@@ -321,11 +322,23 @@ select:focus {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.three-col {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(14, 26, 36, 0.04);
+}
+
+.evaluation-summary-strip {
+  display: grid;
+  gap: 10px;
   padding: 14px 16px;
   border-radius: 18px;
   background: rgba(14, 26, 36, 0.04);
@@ -439,6 +452,23 @@ select:focus {
   background: rgba(255, 255, 255, 0.76);
 }
 
+.exam-submit-card {
+  background: linear-gradient(135deg, rgba(20, 56, 74, 0.92), rgba(33, 101, 125, 0.96));
+  color: #fff;
+}
+
+.exam-submit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.exam-submit-actions p {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .answer-grid {
   display: grid;
   gap: 10px;
@@ -542,6 +572,116 @@ select:focus {
   font-weight: 800;
 }
 
+.evaluation-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.evaluation-sheet-card {
+  overflow: hidden;
+}
+
+.evaluation-sheet-wrap {
+  overflow: auto;
+}
+
+.evaluation-sheet {
+  min-width: 1180px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.evaluation-sheet-title {
+  padding: 16px 18px;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: #d9d9d9;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.2);
+}
+
+.evaluation-sheet-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 18px;
+  background: #f3f4f6;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.evaluation-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.evaluation-table th,
+.evaluation-table td {
+  border: 1px solid rgba(15, 23, 42, 0.22);
+  padding: 10px 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.evaluation-table thead th {
+  background: #d9d9d9;
+  color: #111827;
+  font-weight: 800;
+}
+
+.evaluation-table .col-no {
+  width: 64px;
+}
+
+.evaluation-table .col-item {
+  width: 280px;
+}
+
+.evaluation-table .col-level {
+  width: 58px;
+}
+
+.evaluation-table .col-method {
+  width: 110px;
+}
+
+.evaluation-table .col-score,
+.evaluation-table .col-weight,
+.evaluation-table .col-total {
+  width: 120px;
+}
+
+.evaluation-table tfoot td {
+  background: rgba(14, 26, 36, 0.05);
+  font-weight: 800;
+}
+
+.evaluation-textarea,
+.evaluation-inline-input {
+  background: transparent !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  box-shadow: none !important;
+}
+
+.evaluation-textarea {
+  min-height: 72px;
+}
+
+.evaluation-inline-input {
+  min-width: 0;
+}
+
+.evaluation-radio-cell input {
+  width: 18px;
+  height: 18px;
+}
+
+.evaluation-number-cell {
+  font-weight: 700;
+}
+
 .empty-state {
   padding: 20px;
   border-radius: 18px;
@@ -585,6 +725,11 @@ select:focus {
     padding-inline: 12px;
   }
 
+  .exam-submit-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .hero-panel {
     padding: 22px;
   }
@@ -593,6 +738,7 @@ select:focus {
   .dashboard-stats,
   .dashboard-filters,
   .tabs-list,
+  .three-col,
   .two-col,
   .choice-grid,
   .io-grid {
@@ -692,3 +838,4 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
+

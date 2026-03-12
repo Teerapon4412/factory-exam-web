@@ -4,6 +4,7 @@ import {
   BarChart3,
   BookOpen,
   ClipboardCheck,
+  FileSpreadsheet,
   Eye,
   FileJson,
   ImagePlus,
@@ -15,17 +16,25 @@ import {
   ShieldCheck,
   Trash2,
   Trophy,
+  Users,
 } from "lucide-react";
 import "./App.css";
 
 const STORAGE_KEY = "factory_exam_builder_v2";
 const RESULTS_KEY = "factory_exam_results_v1";
 const SESSION_KEY = "factory_exam_session_v1";
+const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
-const ADMIN_CREDENTIAL = { username: "ADMIN1234", password: "ADMIN1234", role: "ADMIN", displayName: "Administrator" };
-
 const uid = () => Math.random().toString(36).slice(2, 10);
+const emptyEmployeeForm = {
+  employeeCode: "",
+  fullName: "",
+  department: "",
+  position: "",
+  role: "USER",
+  isActive: true,
+};
 
 const S = {
   card: {
@@ -209,6 +218,98 @@ const reorder = (qs) => qs.map((q, i) => ({ ...q, questionNo: i + 1 }));
 const full = (qs) => qs.reduce((s, q) => s + Number(q.score || 0), 0);
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
+const hasQuestionContent = (q) => {
+  const text = String(q?.questionText || "").trim();
+  const imageUrl = String(q?.imageUrl || "").trim();
+  const choices = Object.values(q?.choices || {}).map((v) => String(v || "").trim());
+  return Boolean(text || imageUrl || choices.some(Boolean));
+};
+
+const sanitizeBank = (rawBank) => {
+  const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : starterBank();
+  const models = normalizedBank.models
+    .map((model, modelIndex) => {
+      const parts = (model.parts || [])
+        .map((part, partIndex) => {
+          const questions = reorder(
+            (part.questions || [])
+              .filter(hasQuestionContent)
+              .map((q, qIndex) => ({
+                ...emptyQ(qIndex + 1),
+                ...q,
+                id: q.id || uid(),
+                choices: {
+                  A: q.choices?.A || "",
+                  B: q.choices?.B || "",
+                  C: q.choices?.C || "",
+                  D: q.choices?.D || "",
+                },
+              })),
+          );
+
+          if (!questions.length) return null;
+
+          return {
+            ...emptyPart(partIndex + 1),
+            ...part,
+            id: part.id || uid(),
+            partCode: part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`,
+            partName: part.partName || `Part ${partIndex + 1}`,
+            subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
+            passScore: Number(part.passScore ?? 35),
+            randomizeQuestions: Boolean(part.randomizeQuestions),
+            showResultImmediately: part.showResultImmediately !== false,
+            questions,
+          };
+        })
+        .filter(Boolean);
+
+      if (!parts.length) return null;
+
+      return {
+        id: model.id || uid(),
+        modelCode: model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`,
+        modelName: model.modelName || `Model ${modelIndex + 1}`,
+        parts,
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    title: normalizedBank.title || "Factory Online Exam",
+    models: models.length ? models : starterBank().models,
+  };
+};
+
+const scoreLevels = [1, 2, 3, 4, 5];
+const defaultEvaluationItems = [
+  { item: "ปฏิบัติตาม WI และมาตรฐานงาน", method: "สังเกต", weight: 20 },
+  { item: "คุณภาพงานและความถูกต้อง", method: "ตรวจงาน", weight: 25 },
+  { item: "ความร่วมมือกับทีม", method: "ประเมิน", weight: 20 },
+  { item: "การตอบสนองเมื่อพบ NG", method: "สัมภาษณ์", weight: 15 },
+  { item: "ความพร้อมของพื้นที่และ 5ส", method: "ตรวจพื้นที่", weight: 20 },
+];
+
+const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
+  id: uid(),
+  no: index + 1,
+  item: row.item,
+  method: row.method,
+  weight: row.weight,
+  score: 0,
+}));
+
+const createEvaluationDraft = () => ({
+  sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+  modelId: "",
+  partId: "",
+  employeeId: "",
+  employeeCode: "",
+  employeeName: "",
+  evaluator: "",
+  rows: createEvaluationRows(),
+});
+
 const downloadCsv = (filename, headers, rows) => {
   const lines = [headers.map(csvCell).join(","), ...rows.map((row) => row.map(csvCell).join(","))];
   const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
@@ -222,7 +323,7 @@ const downloadCsv = (filename, headers, rows) => {
 
 function normalize(raw) {
   if (Array.isArray(raw?.models) && raw.models.length) {
-    return {
+    return sanitizeBank({
       title: raw.title || "Factory Online Exam",
       models: raw.models.map((m, mi) => ({
         id: m.id || uid(),
@@ -246,7 +347,7 @@ function normalize(raw) {
           ),
         })),
       })),
-    };
+    });
   }
 
   if (Array.isArray(raw?.questions)) {
@@ -268,29 +369,71 @@ function normalize(raw) {
         choices: { A: q.choices?.A || "", B: q.choices?.B || "", C: q.choices?.C || "", D: q.choices?.D || "" },
       }))),
     }];
-    return b;
+    return sanitizeBank(b);
   }
 
   return starterBank();
 }
 
-const loadBank = () => starterBank();
+const loadBank = () => {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    return s ? normalize(JSON.parse(s)) : starterBank();
+  } catch {
+    return starterBank();
+  }
+};
 
-const loadResults = () => [];
+const loadResults = () => {
+  try {
+    const s = localStorage.getItem(RESULTS_KEY);
+    const parsed = s ? JSON.parse(s) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 
 const loadSession = () => {
   try {
     const s = localStorage.getItem(SESSION_KEY);
-    return s ? JSON.parse(s) : null;
+    if (!s) return null;
+    const parsed = JSON.parse(s);
+    return parsed?.token ? parsed : null;
   } catch {
     return null;
   }
 };
 
+const authHeaders = (session, extra = {}) => ({
+  ...extra,
+  ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
+});
+
+const normalizeSession = (payload) => {
+  if (!payload) return null;
+  const employee = payload.employee || payload;
+  if (!payload.token || !employee) return null;
+  return {
+    token: payload.token,
+    createdAt: payload.createdAt || "",
+    expiresAt: payload.expiresAt || "",
+    id: employee.id,
+    username: employee.username,
+    employeeCode: employee.employeeCode,
+    fullName: employee.fullName || employee.displayName || employee.username || "",
+    displayName: employee.fullName || employee.displayName || employee.username || "",
+    department: employee.department || "",
+    position: employee.position || "",
+    role: employee.role,
+    isActive: employee.isActive !== false,
+  };
+};
+
 export default function App() {
   const initialBank = useMemo(loadBank, []);
   const [session, setSession] = useState(loadSession);
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [loginForm, setLoginForm] = useState({ employeeCode: "" });
   const [loginError, setLoginError] = useState("");
   const [bank, setBank] = useState(initialBank);
   const [modelId, setModelId] = useState(initialBank.models[0]?.id || null);
@@ -305,15 +448,67 @@ export default function App() {
   const [resultHistory, setResultHistory] = useState(loadResults);
   const [dataReady, setDataReady] = useState(false);
   const [syncStatus, setSyncStatus] = useState("loading");
+  const [employees, setEmployees] = useState([]);
+  const [employeeForm, setEmployeeForm] = useState(emptyEmployeeForm);
+  const [editingEmployeeId, setEditingEmployeeId] = useState(null);
+  const [employeeError, setEmployeeError] = useState("");
+  const [employeeStatus, setEmployeeStatus] = useState("idle");
   const [dashboardModelFilter, setDashboardModelFilter] = useState("ALL");
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
+  const [evaluationForm, setEvaluationForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
+      if (!saved) return createEvaluationDraft();
+      const parsed = JSON.parse(saved);
+      return {
+        ...createEvaluationDraft(),
+        ...parsed,
+        rows: Array.isArray(parsed?.rows) && parsed.rows.length
+          ? parsed.rows.map((row, index) => ({
+              id: row.id || uid(),
+              no: index + 1,
+              item: row.item || "",
+              method: row.method || "",
+              weight: Number(row.weight || 0),
+              score: Number(row.score || 0),
+            }))
+          : createEvaluationRows(),
+      };
+    } catch {
+      return createEvaluationDraft();
+    }
+  });
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
+  const [evaluationStatus, setEvaluationStatus] = useState("idle");
+  const [evaluationError, setEvaluationError] = useState("");
 
   const isAdmin = session?.role === "ADMIN";
 
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(bank)); }, [bank]);
-  useEffect(() => { localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory)); }, [resultHistory]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [bank]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [resultHistory]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EVALUATION_DRAFT_KEY, JSON.stringify(evaluationForm));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [evaluationForm]);
 
   useEffect(() => {
     if (!session) {
@@ -331,11 +526,48 @@ export default function App() {
   useEffect(() => {
     let ignore = false;
 
-    const fetchState = async () => {
+    const hydrateSession = async () => {
+      if (!session?.token) {
+        setDataReady(false);
+        setSyncStatus("idle");
+        return;
+      }
+
       try {
-        const res = await fetch(`${API_BASE}/state`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const authRes = await fetch(`${API_BASE}/session`, {
+          headers: authHeaders(session),
+        });
+        if (!authRes.ok) throw new Error(`HTTP ${authRes.status}`);
+        const nextSession = normalizeSession(await authRes.json());
+        if (!nextSession) throw new Error("Invalid session payload");
+        if (ignore) return;
+        try {
+          localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+        } catch {
+          // Ignore storage restrictions in locked-down browsers.
+        }
+        setSession(nextSession);
+      } catch (error) {
+        console.error(error);
+        if (ignore) return;
+        try {
+          localStorage.removeItem(SESSION_KEY);
+        } catch {
+          // Ignore storage restrictions in locked-down browsers.
+        }
+        setSession(null);
+        setSyncStatus("offline");
+        setDataReady(true);
+        return;
+      }
+
+      try {
+        setSyncStatus("loading");
+        const stateRes = await fetch(`${API_BASE}/state`, {
+          headers: authHeaders(nextSession),
+        });
+        if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status}`);
+        const data = await stateRes.json();
         if (ignore) return;
 
         const nextBank = normalize(data.bank ?? starterBank());
@@ -354,19 +586,19 @@ export default function App() {
       }
     };
 
-    fetchState();
+    hydrateSession();
     return () => { ignore = true; };
-  }, []);
+  }, [session?.token]);
 
   useEffect(() => {
-    if (!dataReady) return;
+    if (!dataReady || !session?.token || !isAdmin) return;
 
     const timer = setTimeout(async () => {
       try {
         setSyncStatus("saving");
         const res = await fetch(`${API_BASE}/state`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders(session, { "Content-Type": "application/json" }),
           body: JSON.stringify({ bank, results: resultHistory }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -378,7 +610,7 @@ export default function App() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [bank, resultHistory, dataReady]);
+  }, [bank, resultHistory, dataReady, isAdmin, session]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
@@ -450,6 +682,35 @@ export default function App() {
     return { attempts, passed, passRate: attempts ? Math.round((passed / attempts) * 100) : 0, avgPct };
   }, [filteredHistory]);
 
+  const evaluationTotal = useMemo(
+    () => evaluationForm.rows.reduce((sum, row) => sum + (Number(row.score || 0) * Number(row.weight || 0)), 0),
+    [evaluationForm.rows],
+  );
+  const evaluationMax = useMemo(
+    () => evaluationForm.rows.reduce((sum, row) => sum + (5 * Number(row.weight || 0)), 0),
+    [evaluationForm.rows],
+  );
+  const activeEmployees = useMemo(
+    () => employees.filter((employee) => employee.isActive),
+    [employees],
+  );
+  const evaluationModel = useMemo(
+    () => bank.models.find((entry) => entry.id === evaluationForm.modelId) || null,
+    [bank.models, evaluationForm.modelId],
+  );
+  const evaluationPartOptions = useMemo(
+    () => evaluationModel?.parts || [],
+    [evaluationModel],
+  );
+  const evaluationPart = useMemo(
+    () => evaluationPartOptions.find((entry) => entry.id === evaluationForm.partId) || null,
+    [evaluationPartOptions, evaluationForm.partId],
+  );
+  const latestEvaluationExamResult = useMemo(() => {
+    if (!evaluationForm.employeeCode || !evaluationForm.partId) return null;
+    return resultHistory.find((entry) => entry.candidateCode === evaluationForm.employeeCode && entry.partId === evaluationForm.partId) || null;
+  }, [resultHistory, evaluationForm.employeeCode, evaluationForm.partId]);
+
   const byModelPart = useMemo(() => {
     const map = new Map();
     filteredHistory.forEach((r) => {
@@ -462,6 +723,150 @@ export default function App() {
     });
     return Array.from(map.values()).map((row) => ({ ...row, passRate: row.attempts ? Math.round((row.passed / row.attempts) * 100) : 0, avgPct: row.attempts ? Math.round(row.scorePctSum / row.attempts) : 0 })).sort((a, b) => b.attempts - a.attempts);
   }, [filteredHistory]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchEmployees = async () => {
+      if (!session?.token || !isAdmin) {
+        setEmployees([]);
+        return;
+      }
+
+      try {
+        setEmployeeStatus("loading");
+        const res = await fetch(`${API_BASE}/employees`, {
+          headers: authHeaders(session),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (ignore) return;
+        setEmployees(Array.isArray(data) ? data : []);
+        setEmployeeStatus("ready");
+      } catch (error) {
+        console.error(error);
+        if (!ignore) {
+          setEmployeeStatus("error");
+          setEmployeeError("โหลดรายชื่อพนักงานไม่สำเร็จ");
+        }
+      }
+    };
+
+    fetchEmployees();
+    return () => { ignore = true; };
+  }, [isAdmin, session]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchEvaluations = async () => {
+      if (!session?.token || !isAdmin) {
+        setEvaluationHistory([]);
+        return;
+      }
+
+      try {
+        setEvaluationStatus("loading");
+        const res = await fetch(`${API_BASE}/evaluations`, {
+          headers: authHeaders(session),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (ignore) return;
+        setEvaluationHistory(Array.isArray(data) ? data : []);
+        setEvaluationStatus("ready");
+      } catch (error) {
+        console.error(error);
+        if (!ignore) {
+          setEvaluationStatus("error");
+          setEvaluationError("โหลดประวัติผลประเมินไม่สำเร็จ");
+        }
+      }
+    };
+
+    fetchEvaluations();
+    return () => { ignore = true; };
+  }, [isAdmin, session]);
+
+  const resetEmployeeForm = () => {
+    setEmployeeForm(emptyEmployeeForm);
+    setEditingEmployeeId(null);
+    setEmployeeError("");
+  };
+
+  const startEditEmployee = (employee) => {
+    setEditingEmployeeId(employee.id);
+    setEmployeeForm({
+      employeeCode: employee.employeeCode || "",
+      fullName: employee.fullName || "",
+      department: employee.department || "",
+      position: employee.position || "",
+      role: employee.role || "USER",
+      isActive: employee.isActive !== false,
+    });
+    setEmployeeError("");
+  };
+
+  const saveEmployee = async () => {
+    const payload = {
+      employeeCode: employeeForm.employeeCode.trim(),
+      fullName: employeeForm.fullName.trim(),
+      department: employeeForm.department.trim(),
+      position: employeeForm.position.trim(),
+      role: employeeForm.role,
+      isActive: Boolean(employeeForm.isActive),
+    };
+
+    if (!payload.employeeCode || !payload.fullName) {
+      setEmployeeError("กรุณากรอกข้อมูลพนักงานให้ครบ");
+      return;
+    }
+
+    try {
+      setEmployeeStatus("saving");
+      setEmployeeError("");
+      const res = await fetch(`${API_BASE}/employees${editingEmployeeId ? `/${editingEmployeeId}` : ""}`, {
+        method: editingEmployeeId ? "PUT" : "POST",
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+      if (editingEmployeeId) {
+        setEmployees((prev) => prev.map((item) => (item.id === editingEmployeeId ? data : item)));
+      } else {
+        setEmployees((prev) => [data, ...prev]);
+      }
+      resetEmployeeForm();
+      setEmployeeStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setEmployeeStatus("error");
+      setEmployeeError(error.message || "บันทึกข้อมูลพนักงานไม่สำเร็จ");
+    }
+  };
+
+  const removeEmployee = async (employee) => {
+    if (!window.confirm(`ต้องการลบพนักงาน ${employee.fullName} ใช่หรือไม่`)) return;
+
+    try {
+      setEmployeeStatus("saving");
+      const res = await fetch(`${API_BASE}/employees/${employee.id}`, {
+        method: "DELETE",
+        headers: authHeaders(session),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setEmployees((prev) => prev.filter((item) => item.id !== employee.id));
+      if (editingEmployeeId === employee.id) resetEmployeeForm();
+      setEmployeeStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setEmployeeStatus("error");
+      setEmployeeError(error.message || "ลบข้อมูลพนักงานไม่สำเร็จ");
+    }
+  };
 
   const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, [f]: v } : m)) }));
   const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, [f]: v } : p)) })) }));
@@ -533,54 +938,119 @@ export default function App() {
     r.readAsDataURL(file);
   };
 
-  const login = (e) => {
+  const login = async (e) => {
     e.preventDefault();
-    const username = loginForm.username.trim();
-    const password = loginForm.password.trim();
+    const employeeCode = loginForm.employeeCode.trim();
 
-    if (!username) return setLoginError("กรุณากรอกชื่อผู้ใช้");
-    if (!password) return setLoginError("กรุณากรอกรหัสผ่าน");
+    if (!employeeCode) return setLoginError("กรุณากรอกรหัสพนักงาน");
 
-    const isAdminLogin = username === ADMIN_CREDENTIAL.username && password === ADMIN_CREDENTIAL.password;
-    const nextSession = isAdminLogin
-      ? { username: ADMIN_CREDENTIAL.username, role: ADMIN_CREDENTIAL.role, displayName: ADMIN_CREDENTIAL.displayName, employeeCode: ADMIN_CREDENTIAL.username }
-      : { username, role: "USER", displayName: username, employeeCode: password };
+    try {
+      setLoginError("");
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employeeCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "เข้าสู่ระบบไม่สำเร็จ");
 
-    localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-    setSession(nextSession);
-    setLoginError("");
-    setLoginForm({ username: "", password: "" });
+      const nextSession = normalizeSession(data);
+      if (!nextSession) throw new Error("เข้าสู่ระบบไม่สำเร็จ");
+
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+      } catch {
+        // Ignore storage restrictions in locked-down browsers.
+      }
+      setSession(nextSession);
+      setLoginForm({ employeeCode: "" });
+      setDataReady(false);
+      setSyncStatus("loading");
+    } catch (error) {
+      console.error(error);
+      setLoginError(error.message || "เข้าสู่ระบบไม่สำเร็จ");
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem(SESSION_KEY);
+  const logout = async () => {
+    try {
+      if (session?.token) {
+        await fetch(`${API_BASE}/logout`, {
+          method: "POST",
+          headers: authHeaders(session),
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
     setSession(null);
     setLoginError("");
-    setLoginForm({ username: "", password: "" });
+    setLoginForm({ employeeCode: "" });
+    setDataReady(false);
+    setEmployees([]);
+    resetEmployeeForm();
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (submitted) return;
     if (answered < part.questions.length) return setSubmitError(`กรุณาตอบให้ครบก่อนส่ง (${answered}/${part.questions.length})`);
     setSubmitError("");
     setSubmitted(true);
     const entry = { id: uid(), submittedAt: new Date().toISOString(), candidateName: candidateName || "-", candidateCode: candidateCode || "-", modelId: model.id, modelCode: model.modelCode, modelName: model.modelName, partId: part.id, partCode: part.partCode, partName: part.partName, score: result.score, fullScore: scoreFull, passScore: part.passScore, correct: result.correct, questionCount: part.questions.length, status: result.status };
     setResultHistory((prev) => [entry, ...prev].slice(0, 1000));
+
+    try {
+      const res = await fetch(`${API_BASE}/results`, {
+        method: "POST",
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
+        body: JSON.stringify(entry),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error((data && data.error) || `HTTP ${res.status}`);
+      if (Array.isArray(data)) setResultHistory(data);
+    } catch (error) {
+      console.error(error);
+      setSyncStatus("offline");
+    }
   };
 
   const reset = () => { setAnswers({}); setSubmitted(false); setSubmitError(""); };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
   const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
+  const importJSONFile = async (file) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const n = normalize(JSON.parse(text));
+      setBank(n);
+      setModelId(n.models[0].id);
+      setPartId(n.models[0].parts[0].id);
+      setQId(n.models[0].parts[0].questions[0]?.id || null);
+      setImportText(JSON.stringify(n, null, 2));
+      reset();
+    } catch (e) {
+      alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
+    }
+  };
   const saveLocal = async () => {
     try {
       setSyncStatus("saving");
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
         body: JSON.stringify({ bank, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
+      } catch {
+        // Ignore storage restrictions in locked-down browsers.
+      }
       alert("บันทึกคลังข้อสอบลงฐานข้อมูลเรียบร้อยแล้ว");
       setSyncStatus("synced");
     } catch (error) {
@@ -614,6 +1084,157 @@ export default function App() {
     downloadCsv(`dashboard_history_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "pass_score", "correct", "question_count", "status"], rows);
   };
 
+  const patchEvaluationMeta = (field, value) => {
+    setEvaluationForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const selectEvaluationEmployeeByCode = (employeeCode) => {
+    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === employeeCode);
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeId: selectedEmployee?.id || "",
+      employeeCode: selectedEmployee?.employeeCode || "",
+      employeeName: selectedEmployee?.fullName || "",
+    }));
+  };
+
+  const selectEvaluationEmployeeByName = (fullName) => {
+    const selectedEmployee = activeEmployees.find((employee) => employee.fullName === fullName);
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeId: selectedEmployee?.id || "",
+      employeeCode: selectedEmployee?.employeeCode || "",
+      employeeName: selectedEmployee?.fullName || "",
+    }));
+  };
+
+  const selectEvaluationModel = (modelIdValue) => {
+    const selectedModel = bank.models.find((entry) => entry.id === modelIdValue) || null;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      modelId: modelIdValue,
+      partId: selectedModel?.parts?.[0]?.id || "",
+    }));
+  };
+
+  const selectEvaluationPart = (partIdValue) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      partId: partIdValue,
+    }));
+  };
+
+  const patchEvaluationRow = (id, patch) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      rows: prev.rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    }));
+  };
+
+  const resetEvaluation = () => {
+    setEvaluationForm({
+      ...createEvaluationDraft(),
+      modelId: bank.models[0]?.id || "",
+      partId: bank.models[0]?.parts?.[0]?.id || "",
+      employeeCode: session?.role === "ADMIN" ? "" : (session?.employeeCode || ""),
+      employeeName: session?.role === "ADMIN" ? "" : (session?.displayName || ""),
+      employeeId: session?.role === "ADMIN" ? "" : (session?.id || ""),
+      evaluator: session?.role === "ADMIN" ? (session?.displayName || "") : "",
+    });
+    setEvaluationError("");
+  };
+
+  const exportEvaluationCsv = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = evaluationForm.rows.map((row) => [
+      row.no,
+      row.item,
+      row.method,
+      row.score,
+      row.weight,
+      Number(row.score || 0) * Number(row.weight || 0),
+    ]);
+    rows.push(["", "TOTAL", "", "", "", evaluationTotal]);
+    downloadCsv(
+      `evaluation_form_${evaluationForm.employeeCode || "employee"}_${now}.csv`,
+      ["no", "item", "method", "score_a", "weight_b", "score_axb"],
+      rows,
+    );
+  };
+
+  useEffect(() => {
+    if (!session || session.role === "ADMIN") return;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeId: prev.employeeId || session.id || "",
+      employeeCode: prev.employeeCode || session.employeeCode || "",
+      employeeName: prev.employeeName || session.displayName || "",
+    }));
+  }, [session]);
+
+  useEffect(() => {
+    if (!bank.models.length) return;
+    setEvaluationForm((prev) => {
+      const nextModelId = prev.modelId || bank.models[0]?.id || "";
+      const selectedModel = bank.models.find((entry) => entry.id === nextModelId) || bank.models[0];
+      const nextPartId = selectedModel?.parts.find((entry) => entry.id === prev.partId)?.id || selectedModel?.parts?.[0]?.id || "";
+      if (nextModelId === prev.modelId && nextPartId === prev.partId) return prev;
+      return {
+        ...prev,
+        modelId: nextModelId,
+        partId: nextPartId,
+      };
+    });
+  }, [bank.models]);
+
+  useEffect(() => {
+    if (!activeEmployees.length || !evaluationForm.employeeCode || evaluationForm.employeeId) return;
+    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === evaluationForm.employeeCode);
+    if (!selectedEmployee) return;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeId: selectedEmployee.id,
+      employeeName: prev.employeeName || selectedEmployee.fullName,
+    }));
+  }, [activeEmployees, evaluationForm.employeeCode, evaluationForm.employeeId]);
+
+  const saveEvaluation = async () => {
+    if (!evaluationForm.employeeId) return setEvaluationError("กรุณาเลือกพนักงาน");
+    if (!evaluationModel || !evaluationPart) return setEvaluationError("กรุณาเลือก Model / Part");
+
+    try {
+      setEvaluationStatus("saving");
+      setEvaluationError("");
+      const payload = {
+        employeeId: evaluationForm.employeeId,
+        sectionTitle: evaluationForm.sectionTitle,
+        evaluator: evaluationForm.evaluator,
+        modelId: evaluationModel.id,
+        modelCode: evaluationModel.modelCode,
+        modelName: evaluationModel.modelName,
+        partId: evaluationPart.id,
+        partCode: evaluationPart.partCode,
+        partName: evaluationPart.partName,
+        totalScore: evaluationTotal,
+        maxScore: evaluationMax,
+        rows: evaluationForm.rows,
+      };
+      const res = await fetch(`${API_BASE}/evaluations`, {
+        method: "POST",
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setEvaluationHistory((prev) => [data, ...prev]);
+      setEvaluationStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setEvaluationStatus("error");
+      setEvaluationError(error.message || "บันทึกผลประเมินไม่สำเร็จ");
+    }
+  };
+
   if (!session) {
     return (
       <div className="app-shell login-shell">
@@ -624,7 +1245,7 @@ export default function App() {
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="login-showcase">
             <div className="hero-badges"><Badge>Secure Access</Badge><Badge outline>Admin / User</Badge></div>
             <h1>เข้าสู่ระบบเพื่อใช้งานข้อสอบออนไลน์</h1>
-            <p>ผู้ดูแลระบบสามารถสร้างและแก้ไขคลังข้อสอบได้ ส่วนผู้ใช้งานทั่วไปจะเห็นเฉพาะหน้าทำข้อสอบเท่านั้น</p>
+            <p>กรอกรหัสพนักงานเพียงอย่างเดียว ระบบจะจับคู่ชื่อและสิทธิ์การใช้งานจากฐานข้อมูลพนักงานให้อัตโนมัติ</p>
             <div className="login-feature-list">
               <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN จัดการข้อสอบ, Dashboard และ Import/Export ได้</span></div>
               <div className="login-feature-item"><Eye size={18} /><span>USER เข้าทำข้อสอบและดูผลสอบได้อย่างเดียว</span></div>
@@ -632,11 +1253,10 @@ export default function App() {
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="login-card">
-              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกชื่อผู้ใช้และรหัสผ่านเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกรหัสพนักงานเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>Username</Label><Input value={loginForm.username} onChange={(e) => setLoginForm((prev) => ({ ...prev, username: e.target.value }))} placeholder="ชื่อพนักงาน หรือ ADMIN1234" /></div>
-                  <div><Label>Password</Label><Input type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} placeholder="รหัสพนักงาน หรือรหัสผ่าน admin" /></div>
+                  <div><Label>รหัสพนักงาน</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เช่น 199032 หรือ ADMIN1234" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
                   <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
@@ -681,7 +1301,7 @@ export default function App() {
           <TabsList>
             {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
-            {isAdmin ? <><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
+            {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
 
           {isAdmin ? (
@@ -723,24 +1343,340 @@ export default function App() {
 
           <TabsContent value="preview">
             <div className="split-grid">
-              <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>ข้อมูลผู้เข้าสอบ</h3><p>จำลองหน้าทำข้อสอบและติดตามความคืบหน้าแบบเรียลไทม์</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>ชื่อพนักงาน</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>รหัสพนักงาน</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>ความคืบหน้า</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div><Button onClick={submit}>ส่งคำตอบ</Button>{submitError ? <div className="alert-error">{submitError}</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>บันทึกผลสอบเป็น CSV</Button><Button variant="outline" onClick={reset}>เริ่มทำใหม่</Button></div></CardContent></Card>
-              <div className="preview-column"><Card className="exam-overview"><CardContent><div className="hero-badges"><Badge>{model.modelCode}</Badge><Badge outline>{part.partCode}</Badge></div><h2>{bank.title}</h2><div className="overview-line">{model.modelName} | {part.partName}</div><p>{part.subtitle}</p></CardContent></Card>{previewQs.map((q, i) => <Card key={q.id} className="exam-question-card"><CardContent><div className="question-meta"><span>ข้อ {i + 1}</span><strong>{q.score} คะแนน</strong></div><h3>{q.questionText}</h3>{q.imageUrl ? <img src={q.imageUrl} alt={`question-${i + 1}`} className="question-image" /> : null}<div className="answer-grid">{["A", "B", "C", "D"].map((key) => { const selected = answers[q.id] === key; const correct = q.correctAnswer === key; let className = "answer-choice"; if (selected) className += " is-selected"; if (submitted && correct) className += " is-correct"; if (submitted && selected && !correct) className += " is-wrong"; return <button key={key} onClick={() => !submitted && setAnswers((p) => ({ ...p, [q.id]: key }))} className={className}><strong>{key}.</strong> {q.choices[key]}</button>; })}</div></CardContent></Card>)}{submitted && part.showResultImmediately ? <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Card className={`result-banner ${result.status === "PASS" ? "is-pass" : "is-fail"}`}><CardContent className="result-banner-content"><div><div className="result-label"><Trophy size={18} /> ผลการสอบ</div><h2>{result.score} / {scoreFull}</h2><p>ตอบถูก {result.correct} จาก {part.questions.length} ข้อ</p></div><div className="result-status"><span>สถานะ</span><strong>{result.status}</strong></div></CardContent></Card></motion.div> : null}</div>
+              <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>ข้อมูลผู้เข้าสอบ</h3><p>จำลองหน้าทำข้อสอบและติดตามความคืบหน้าแบบเรียลไทม์</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>ชื่อพนักงาน</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>รหัสพนักงาน</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>ความคืบหน้า</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div>{submitError ? <div className="alert-error">{submitError}</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>บันทึกผลสอบเป็น CSV</Button><Button variant="outline" onClick={reset}>เริ่มทำใหม่</Button></div></CardContent></Card>
+              <div className="preview-column"><Card className="exam-overview"><CardContent><div className="hero-badges"><Badge>{model.modelCode}</Badge><Badge outline>{part.partCode}</Badge></div><h2>{bank.title}</h2><div className="overview-line">{model.modelName} | {part.partName}</div><p>{part.subtitle}</p></CardContent></Card>{previewQs.map((q, i) => <Card key={q.id} className="exam-question-card"><CardContent><div className="question-meta"><span>ข้อ {i + 1}</span><strong>{q.score} คะแนน</strong></div><h3>{q.questionText}</h3>{q.imageUrl ? <img src={q.imageUrl} alt={`question-${i + 1}`} className="question-image" /> : null}<div className="answer-grid">{["A", "B", "C", "D"].map((key) => { const selected = answers[q.id] === key; const correct = q.correctAnswer === key; let className = "answer-choice"; if (selected) className += " is-selected"; if (submitted && correct) className += " is-correct"; if (submitted && selected && !correct) className += " is-wrong"; return <button key={key} onClick={() => !submitted && setAnswers((p) => ({ ...p, [q.id]: key }))} className={className}><strong>{key}.</strong> {q.choices[key]}</button>; })}</div></CardContent></Card>)}<Card className="exam-submit-card"><CardContent className="exam-submit-actions"><div><div className="result-label">พร้อมส่งคำตอบ</div><p>ตรวจคำตอบให้ครบทุกข้อแล้วกดส่งจากด้านล่างนี้</p></div><Button onClick={submit}>ส่งคำตอบ</Button></CardContent></Card>{submitted && part.showResultImmediately ? <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Card className={`result-banner ${result.status === "PASS" ? "is-pass" : "is-fail"}`}><CardContent className="result-banner-content"><div><div className="result-label"><Trophy size={18} /> ผลการสอบ</div><h2>{result.score} / {scoreFull}</h2><p>ตอบถูก {result.correct} จาก {part.questions.length} ข้อ</p></div><div className="result-status"><span>สถานะ</span><strong>{result.status}</strong></div></CardContent></Card></motion.div> : null}</div>
             </div>
           </TabsContent>
 
+          {isAdmin ? (
+            <TabsContent value="evaluation">
+              <div className="evaluation-layout">
+                <Card>
+                  <CardHeader>
+                    <div className="section-heading">
+                      <FileSpreadsheet size={18} />
+                      <div>
+                        <h3>แบบประเมินการปฏิบัติงาน</h3>
+                        <p>หน้าใหม่สำหรับกรอกคะแนนแบบตารางตามฟอร์มประเมินงานจากหน้างาน</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="form-stack">
+                      <Label>หัวข้อส่วนประเมิน</Label>
+                      <Input value={evaluationForm.sectionTitle} onChange={(e) => patchEvaluationMeta("sectionTitle", e.target.value)} />
+                      <div className="three-col">
+                        <div>
+                          <Label>Model</Label>
+                          <select value={evaluationForm.modelId} onChange={(e) => selectEvaluationModel(e.target.value)} style={S.input}>
+                            <option value="">เลือก Model</option>
+                            {bank.models.map((entry) => (
+                              <option key={entry.id} value={entry.id}>
+                                {entry.modelCode} - {entry.modelName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Part</Label>
+                          <select value={evaluationForm.partId} onChange={(e) => selectEvaluationPart(e.target.value)} style={S.input}>
+                            <option value="">เลือก Part</option>
+                            {evaluationPartOptions.map((entry) => (
+                              <option key={entry.id} value={entry.id}>
+                                {entry.partCode} - {entry.partName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>รหัสพนักงาน</Label>
+                          <select value={evaluationForm.employeeCode} onChange={(e) => selectEvaluationEmployeeByCode(e.target.value)} style={S.input}>
+                            <option value="">เลือกรหัสพนักงาน</option>
+                            {activeEmployees.map((employee) => (
+                              <option key={employee.id} value={employee.employeeCode}>
+                                {employee.employeeCode}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>ชื่อพนักงาน</Label>
+                          <select value={evaluationForm.employeeName} onChange={(e) => selectEvaluationEmployeeByName(e.target.value)} style={S.input}>
+                            <option value="">เลือกชื่อพนักงาน</option>
+                            {activeEmployees.map((employee) => (
+                              <option key={employee.id} value={employee.fullName}>
+                                {employee.fullName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>ผู้ประเมิน</Label>
+                          <Input value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="evaluation-summary-strip">
+                        <div className="mini-note">Part ที่เลือก: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
+                        <div className="mini-note">คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "ยังไม่มีผลสอบของ Part นี้"}</strong></div>
+                      </div>
+                      {evaluationError ? <div className="alert-error">{evaluationError}</div> : null}
+                      <div className="button-row">
+                        <Button onClick={saveEvaluation}>บันทึกผลประเมิน</Button>
+                        <Button variant="outline" onClick={resetEvaluation}>รีเซ็ตฟอร์ม</Button>
+                        <Button variant="outline" onClick={exportEvaluationCsv}>Export CSV</Button>
+                        <Button variant="outline" onClick={() => window.print()}>พิมพ์ฟอร์ม</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="evaluation-sheet-card">
+                  <CardContent className="evaluation-sheet-wrap">
+                    <div className="evaluation-sheet">
+                      <div className="evaluation-sheet-title">{evaluationForm.sectionTitle}</div>
+                      <div className="evaluation-sheet-meta">
+                        <span>รหัสพนักงาน: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
+                        <span>ชื่อพนักงาน: <strong>{evaluationForm.employeeName || "-"}</strong></span>
+                        <span>Model/Part: <strong>{evaluationModel && evaluationPart ? `${evaluationModel.modelCode} / ${evaluationPart.partCode}` : "-"}</strong></span>
+                        <span>ผู้ประเมิน: <strong>{evaluationForm.evaluator || "-"}</strong></span>
+                        <span>คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
+                      </div>
+                      <table className="evaluation-table">
+                        <thead>
+                          <tr>
+                            <th rowSpan="2" className="col-no">ที่<br />No</th>
+                            <th rowSpan="2" className="col-item">หัวข้อ<br />Item</th>
+                            <th colSpan={scoreLevels.length}>ระดับการให้คะแนน<br />Score Level</th>
+                            <th rowSpan="2" className="col-method">วิธีการ</th>
+                            <th rowSpan="2" className="col-score">คะแนน<br />Score (A)</th>
+                            <th rowSpan="2" className="col-weight">น้ำหนัก<br />Weight (B)</th>
+                            <th rowSpan="2" className="col-total">คะแนนที่ได้<br />(A) x (B)</th>
+                          </tr>
+                          <tr>
+                            {scoreLevels.map((level) => <th key={level} className="col-level">{level}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {evaluationForm.rows.map((row) => (
+                            <tr key={row.id}>
+                              <td>{row.no}</td>
+                              <td>
+                                <Textarea
+                                  rows={2}
+                                  value={row.item}
+                                  onChange={(e) => patchEvaluationRow(row.id, { item: e.target.value })}
+                                  className="evaluation-textarea"
+                                />
+                              </td>
+                              {scoreLevels.map((level) => (
+                                <td key={level} className="evaluation-radio-cell">
+                                  <input
+                                    type="radio"
+                                    name={`score-${row.id}`}
+                                    checked={Number(row.score) === level}
+                                    onChange={() => patchEvaluationRow(row.id, { score: level })}
+                                  />
+                                </td>
+                              ))}
+                              <td>
+                                <Input
+                                  value={row.method}
+                                  onChange={(e) => patchEvaluationRow(row.id, { method: e.target.value })}
+                                  className="evaluation-inline-input"
+                                />
+                              </td>
+                              <td className="evaluation-number-cell">{row.score || "-"}</td>
+                              <td>
+                                <Input
+                                  type="number"
+                                  value={row.weight}
+                                  onChange={(e) => patchEvaluationRow(row.id, { weight: Number(e.target.value) })}
+                                  className="evaluation-inline-input"
+                                />
+                              </td>
+                              <td className="evaluation-number-cell">{Number(row.score || 0) * Number(row.weight || 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colSpan={scoreLevels.length + 4}>รวมคะแนน</td>
+                            <td>{evaluationTotal}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan={scoreLevels.length + 4}>คะแนนเต็มสูงสุด</td>
+                            <td>{evaluationMax}</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="table-header-row">
+                      <div>
+                        <h3>ประวัติผลประเมินย้อนหลัง</h3>
+                        <p>ผูกกับพนักงานและ Part เดียวกับผลสอบ เพื่อย้อนดูได้ภายหลัง</p>
+                      </div>
+                      <div className="mini-note">
+                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `ทั้งหมด ${evaluationHistory.length} รายการ`}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {evaluationHistory.length === 0 ? (
+                      <div className="empty-state">ยังไม่มีผลประเมินในระบบ</div>
+                    ) : (
+                      <div className="dashboard-table-wrap">
+                        <table className="dashboard-table">
+                          <thead>
+                            <tr>
+                              <th>เวลา</th>
+                              <th>พนักงาน</th>
+                              <th>Model / Part</th>
+                              <th>คะแนนประเมิน</th>
+                              <th>คะแนนสอบล่าสุด</th>
+                              <th>ผู้ประเมิน</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {evaluationHistory.map((entry) => (
+                              <tr key={entry.id}>
+                                <td>{new Date(entry.createdAt).toLocaleString()}</td>
+                                <td>{entry.employeeName} ({entry.employeeCode})</td>
+                                <td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td>
+                                <td>{entry.totalScore}/{entry.maxScore}</td>
+                                <td>{entry.examFullScore ? `${entry.examScore}/${entry.examFullScore} (${entry.examStatus || "-"})` : "-"}</td>
+                                <td>{entry.evaluator || "-"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          ) : null}
+
+          {isAdmin ? (
+            <TabsContent value="employees">
+              <div className="split-grid">
+                <Card>
+                  <CardHeader>
+                    <div className="section-heading">
+                      <Users size={18} />
+                      <div>
+                        <h3>จัดการข้อมูลพนักงาน</h3>
+                        <p>สร้างบัญชีผู้ใช้งาน กำหนดสิทธิ์ และตั้งค่าการเข้าใช้งานจากฐานข้อมูลกลาง</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="form-stack">
+                      <div className="two-col">
+                        <div>
+                          <Label>รหัสพนักงาน</Label>
+                          <Input value={employeeForm.employeeCode} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, employeeCode: e.target.value }))} />
+                        </div>
+                        <div>
+                          <Label>สิทธิ์</Label>
+                          <select value={employeeForm.role} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, role: e.target.value }))} style={S.input}>
+                            <option value="USER">USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="mini-note">ระบบจะใช้รหัสพนักงานเป็นรหัสล็อกอินโดยอัตโนมัติ</div>
+                      <Label>ชื่อ-นามสกุล</Label>
+                      <Input value={employeeForm.fullName} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, fullName: e.target.value }))} />
+                      <div className="two-col">
+                        <div>
+                          <Label>แผนก</Label>
+                          <Input value={employeeForm.department} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, department: e.target.value }))} />
+                        </div>
+                        <div>
+                          <Label>ตำแหน่ง</Label>
+                          <Input value={employeeForm.position} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, position: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>สถานะ</Label>
+                        <select value={employeeForm.isActive ? "ACTIVE" : "INACTIVE"} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, isActive: e.target.value === "ACTIVE" }))} style={S.input}>
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                      </div>
+                      {employeeError ? <div className="alert-error">{employeeError}</div> : null}
+                      <div className="button-row">
+                        <Button onClick={saveEmployee}>{editingEmployeeId ? "บันทึกการแก้ไข" : "เพิ่มพนักงาน"}</Button>
+                        <Button variant="outline" onClick={resetEmployeeForm}>ล้างฟอร์ม</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="table-header-row">
+                      <div>
+                        <h3>รายชื่อพนักงาน</h3>
+                        <p>จำนวนทั้งหมด {employees.length} คน {employeeStatus === "loading" ? "(กำลังโหลด...)" : ""}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {employees.length === 0 ? (
+                      <div className="empty-state">ยังไม่มีรายชื่อพนักงานในระบบ</div>
+                    ) : (
+                      <div className="dashboard-table-wrap">
+                        <table className="dashboard-table">
+                          <thead>
+                            <tr>
+                              <th>ชื่อ</th>
+                              <th>รหัสพนักงาน</th>
+                              <th>แผนก/ตำแหน่ง</th>
+                              <th>สิทธิ์</th>
+                              <th>สถานะ</th>
+                              <th>จัดการ</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {employees.map((employee) => (
+                              <tr key={employee.id}>
+                                <td>{employee.fullName}</td>
+                                <td>{employee.employeeCode}</td>
+                                <td>{employee.department || "-"} / {employee.position || "-"}</td>
+                                <td>{employee.role}</td>
+                                <td>{employee.isActive ? "ACTIVE" : "INACTIVE"}</td>
+                                <td>
+                                  <div className="button-row">
+                                    <Button variant="outline" onClick={() => startEditEmployee(employee)}>แก้ไข</Button>
+                                    <Button variant="destructive" onClick={() => removeEmployee(employee)} disabled={employee.username === "ADMIN1234"}>ลบ</Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          ) : null}
+
           {isAdmin ? <TabsContent value="dashboard"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Model</Label><select value={dashboardModelFilter} onChange={(e) => { setDashboardModelFilter(e.target.value); setDashboardPartFilter("ALL"); }} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardModelOptions.map((m) => <option key={m.modelCode} value={m.modelCode}>{m.modelCode} - {m.modelName}</option>)}</select></div><div><Label>Part</Label><select value={dashboardPartFilter} onChange={(e) => setDashboardPartFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardPartOptions.map((p) => <option key={p.key} value={p.key}>{p.modelCode}/{p.partCode} - {p.partName}</option>)}</select></div><div><Label>สถานะ</Label><select value={dashboardStatusFilter} onChange={(e) => setDashboardStatusFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>ค้นหา</Label><Input value={dashboardSearch} onChange={(e) => setDashboardSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part" /></div></div></CardContent></Card><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">จำนวนครั้งสอบทั้งหมด</div><div className="metric-value">{dashboardSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">จำนวนที่ผ่าน</div><div className="metric-value">{dashboardSummary.passed}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">คะแนนเฉลี่ยรวม</div><div className="metric-value">{dashboardSummary.avgPct}%</div></CardContent></Card></div><Card><CardHeader><div className="table-header-row"><div><h3>สรุปราย Model / Part</h3><p>ดูจำนวนครั้ง อัตราผ่าน และคะแนนเฉลี่ยแยกตามสายการสอบ</p></div><div className="button-row"><Button variant="outline" onClick={exportDashboardSummaryCsv}>Export Summary CSV</Button><Button variant="outline" onClick={exportDashboardHistoryCsv}>Export History CSV</Button><Button variant="outline" onClick={() => { if (window.confirm("ต้องการล้างผลสอบทั้งหมดหรือไม่")) setResultHistory([]); }}>ล้างข้อมูล Dashboard</Button></div></div></CardHeader><CardContent>{byModelPart.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Model</th><th>Part</th><th>จำนวนครั้ง</th><th>ผ่าน</th><th>อัตราผ่าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>{byModelPart.map((row, idx) => <tr key={`${row.modelCode}-${row.partCode}-${idx}`}><td>{row.modelCode} - {row.modelName}</td><td>{row.partCode} - {row.partName}</td><td>{row.attempts}</td><td>{row.passed}</td><td>{row.passRate}%</td><td>{row.avgPct}%</td></tr>)}</tbody></table></div>}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>ผลสอบล่าสุด</h3><p>แสดงข้อมูลล่าสุด 20 รายการตามตัวกรองปัจจุบัน</p></div></div></CardHeader><CardContent>{filteredHistory.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>เวลา</th><th>พนักงาน</th><th>Model/Part</th><th>คะแนน</th><th>สถานะ</th></tr></thead><tbody>{filteredHistory.slice(0, 20).map((r) => <tr key={r.id}><td>{new Date(r.submittedAt).toLocaleString()}</td><td>{r.candidateName} ({r.candidateCode})</td><td>{r.modelCode}/{r.partCode}</td><td>{r.score}/{r.fullScore}</td><td>{r.status}</td></tr>)}</tbody></table></div>}</CardContent></Card></div></TabsContent> : null}
 
-          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>สำรองโครงสร้างคลังข้อสอบเพื่อย้ายหรือเก็บเวอร์ชัน</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> ดาวน์โหลด JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>วางข้อมูลที่ export มาแล้วเพื่อนำกลับเข้าสู่ระบบ</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>ล้างข้อความ</Button></div></CardContent></Card></div></TabsContent> : null}
+          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>สำรองโครงสร้างคลังข้อสอบเพื่อย้ายหรือเก็บเวอร์ชัน</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> ดาวน์โหลด JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>วางข้อความหรือเลือกไฟล์ JSON แล้วระบบจะจัดรูปแบบให้เข้ากับ UI อัตโนมัติ</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><label className="upload-button"><FileJson size={16} /> เลือกไฟล์ JSON<input type="file" accept=".json,application/json" hidden onChange={(e) => importJSONFile(e.target.files?.[0])} /></label><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>ล้างข้อความ</Button></div></CardContent></Card></div></TabsContent> : null}
         </Tabs>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
 
 
