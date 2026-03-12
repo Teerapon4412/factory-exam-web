@@ -23,6 +23,7 @@ import "./App.css";
 const STORAGE_KEY = "factory_exam_builder_v2";
 const RESULTS_KEY = "factory_exam_results_v1";
 const SESSION_KEY = "factory_exam_session_v1";
+const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -298,6 +299,17 @@ const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
   score: 0,
 }));
 
+const createEvaluationDraft = () => ({
+  sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+  modelId: "",
+  partId: "",
+  employeeId: "",
+  employeeCode: "",
+  employeeName: "",
+  evaluator: "",
+  rows: createEvaluationRows(),
+});
+
 const downloadCsv = (filename, headers, rows) => {
   const lines = [headers.map(csvCell).join(","), ...rows.map((row) => row.map(csvCell).join(","))];
   const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
@@ -445,16 +457,29 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
-  const [evaluationForm, setEvaluationForm] = useState(() => ({
-    sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
-    modelId: "",
-    partId: "",
-    employeeId: "",
-    employeeCode: "",
-    employeeName: "",
-    evaluator: "",
-    rows: createEvaluationRows(),
-  }));
+  const [evaluationForm, setEvaluationForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
+      if (!saved) return createEvaluationDraft();
+      const parsed = JSON.parse(saved);
+      return {
+        ...createEvaluationDraft(),
+        ...parsed,
+        rows: Array.isArray(parsed?.rows) && parsed.rows.length
+          ? parsed.rows.map((row, index) => ({
+              id: row.id || uid(),
+              no: index + 1,
+              item: row.item || "",
+              method: row.method || "",
+              weight: Number(row.weight || 0),
+              score: Number(row.score || 0),
+            }))
+          : createEvaluationRows(),
+      };
+    } catch {
+      return createEvaluationDraft();
+    }
+  });
   const [evaluationHistory, setEvaluationHistory] = useState([]);
   const [evaluationStatus, setEvaluationStatus] = useState("idle");
   const [evaluationError, setEvaluationError] = useState("");
@@ -476,6 +501,14 @@ export default function App() {
       // Ignore storage restrictions in locked-down browsers.
     }
   }, [resultHistory]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EVALUATION_DRAFT_KEY, JSON.stringify(evaluationForm));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [evaluationForm]);
 
   useEffect(() => {
     if (!session) {
@@ -1100,14 +1133,13 @@ export default function App() {
 
   const resetEvaluation = () => {
     setEvaluationForm({
-      sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+      ...createEvaluationDraft(),
       modelId: bank.models[0]?.id || "",
       partId: bank.models[0]?.parts?.[0]?.id || "",
-      employeeId: "",
       employeeCode: session?.role === "ADMIN" ? "" : (session?.employeeCode || ""),
       employeeName: session?.role === "ADMIN" ? "" : (session?.displayName || ""),
+      employeeId: session?.role === "ADMIN" ? "" : (session?.id || ""),
       evaluator: session?.role === "ADMIN" ? (session?.displayName || "") : "",
-      rows: createEvaluationRows(),
     });
     setEvaluationError("");
   };
@@ -1196,6 +1228,7 @@ export default function App() {
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       setEvaluationHistory((prev) => [data, ...prev]);
       setEvaluationStatus("ready");
+      resetEvaluation();
     } catch (error) {
       console.error(error);
       setEvaluationStatus("error");
