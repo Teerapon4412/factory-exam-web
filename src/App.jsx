@@ -447,11 +447,17 @@ export default function App() {
   const [dashboardSearch, setDashboardSearch] = useState("");
   const [evaluationForm, setEvaluationForm] = useState(() => ({
     sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+    modelId: "",
+    partId: "",
+    employeeId: "",
     employeeCode: "",
     employeeName: "",
     evaluator: "",
     rows: createEvaluationRows(),
   }));
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
+  const [evaluationStatus, setEvaluationStatus] = useState("idle");
+  const [evaluationError, setEvaluationError] = useState("");
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -655,6 +661,22 @@ export default function App() {
     () => employees.filter((employee) => employee.isActive),
     [employees],
   );
+  const evaluationModel = useMemo(
+    () => bank.models.find((entry) => entry.id === evaluationForm.modelId) || null,
+    [bank.models, evaluationForm.modelId],
+  );
+  const evaluationPartOptions = useMemo(
+    () => evaluationModel?.parts || [],
+    [evaluationModel],
+  );
+  const evaluationPart = useMemo(
+    () => evaluationPartOptions.find((entry) => entry.id === evaluationForm.partId) || null,
+    [evaluationPartOptions, evaluationForm.partId],
+  );
+  const latestEvaluationExamResult = useMemo(() => {
+    if (!evaluationForm.employeeCode || !evaluationForm.partId) return null;
+    return resultHistory.find((entry) => entry.candidateCode === evaluationForm.employeeCode && entry.partId === evaluationForm.partId) || null;
+  }, [resultHistory, evaluationForm.employeeCode, evaluationForm.partId]);
 
   const byModelPart = useMemo(() => {
     const map = new Map();
@@ -698,6 +720,38 @@ export default function App() {
     };
 
     fetchEmployees();
+    return () => { ignore = true; };
+  }, [isAdmin, session]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchEvaluations = async () => {
+      if (!session?.token || !isAdmin) {
+        setEvaluationHistory([]);
+        return;
+      }
+
+      try {
+        setEvaluationStatus("loading");
+        const res = await fetch(`${API_BASE}/evaluations`, {
+          headers: authHeaders(session),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (ignore) return;
+        setEvaluationHistory(Array.isArray(data) ? data : []);
+        setEvaluationStatus("ready");
+      } catch (error) {
+        console.error(error);
+        if (!ignore) {
+          setEvaluationStatus("error");
+          setEvaluationError("โหลดประวัติผลประเมินไม่สำเร็จ");
+        }
+      }
+    };
+
+    fetchEvaluations();
     return () => { ignore = true; };
   }, [isAdmin, session]);
 
@@ -1005,6 +1059,7 @@ export default function App() {
     const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === employeeCode);
     setEvaluationForm((prev) => ({
       ...prev,
+      employeeId: selectedEmployee?.id || "",
       employeeCode: selectedEmployee?.employeeCode || "",
       employeeName: selectedEmployee?.fullName || "",
     }));
@@ -1014,8 +1069,25 @@ export default function App() {
     const selectedEmployee = activeEmployees.find((employee) => employee.fullName === fullName);
     setEvaluationForm((prev) => ({
       ...prev,
+      employeeId: selectedEmployee?.id || "",
       employeeCode: selectedEmployee?.employeeCode || "",
       employeeName: selectedEmployee?.fullName || "",
+    }));
+  };
+
+  const selectEvaluationModel = (modelIdValue) => {
+    const selectedModel = bank.models.find((entry) => entry.id === modelIdValue) || null;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      modelId: modelIdValue,
+      partId: selectedModel?.parts?.[0]?.id || "",
+    }));
+  };
+
+  const selectEvaluationPart = (partIdValue) => {
+    setEvaluationForm((prev) => ({
+      ...prev,
+      partId: partIdValue,
     }));
   };
 
@@ -1029,11 +1101,15 @@ export default function App() {
   const resetEvaluation = () => {
     setEvaluationForm({
       sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
+      modelId: bank.models[0]?.id || "",
+      partId: bank.models[0]?.parts?.[0]?.id || "",
+      employeeId: "",
       employeeCode: session?.role === "ADMIN" ? "" : (session?.employeeCode || ""),
       employeeName: session?.role === "ADMIN" ? "" : (session?.displayName || ""),
       evaluator: session?.role === "ADMIN" ? (session?.displayName || "") : "",
       rows: createEvaluationRows(),
     });
+    setEvaluationError("");
   };
 
   const exportEvaluationCsv = () => {
@@ -1058,10 +1134,74 @@ export default function App() {
     if (!session || session.role === "ADMIN") return;
     setEvaluationForm((prev) => ({
       ...prev,
+      employeeId: prev.employeeId || session.id || "",
       employeeCode: prev.employeeCode || session.employeeCode || "",
       employeeName: prev.employeeName || session.displayName || "",
     }));
   }, [session]);
+
+  useEffect(() => {
+    if (!bank.models.length) return;
+    setEvaluationForm((prev) => {
+      const nextModelId = prev.modelId || bank.models[0]?.id || "";
+      const selectedModel = bank.models.find((entry) => entry.id === nextModelId) || bank.models[0];
+      const nextPartId = selectedModel?.parts.find((entry) => entry.id === prev.partId)?.id || selectedModel?.parts?.[0]?.id || "";
+      if (nextModelId === prev.modelId && nextPartId === prev.partId) return prev;
+      return {
+        ...prev,
+        modelId: nextModelId,
+        partId: nextPartId,
+      };
+    });
+  }, [bank.models]);
+
+  useEffect(() => {
+    if (!activeEmployees.length || !evaluationForm.employeeCode || evaluationForm.employeeId) return;
+    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === evaluationForm.employeeCode);
+    if (!selectedEmployee) return;
+    setEvaluationForm((prev) => ({
+      ...prev,
+      employeeId: selectedEmployee.id,
+      employeeName: prev.employeeName || selectedEmployee.fullName,
+    }));
+  }, [activeEmployees, evaluationForm.employeeCode, evaluationForm.employeeId]);
+
+  const saveEvaluation = async () => {
+    if (!evaluationForm.employeeId) return setEvaluationError("กรุณาเลือกพนักงาน");
+    if (!evaluationModel || !evaluationPart) return setEvaluationError("กรุณาเลือก Model / Part");
+
+    try {
+      setEvaluationStatus("saving");
+      setEvaluationError("");
+      const payload = {
+        employeeId: evaluationForm.employeeId,
+        sectionTitle: evaluationForm.sectionTitle,
+        evaluator: evaluationForm.evaluator,
+        modelId: evaluationModel.id,
+        modelCode: evaluationModel.modelCode,
+        modelName: evaluationModel.modelName,
+        partId: evaluationPart.id,
+        partCode: evaluationPart.partCode,
+        partName: evaluationPart.partName,
+        totalScore: evaluationTotal,
+        maxScore: evaluationMax,
+        rows: evaluationForm.rows,
+      };
+      const res = await fetch(`${API_BASE}/evaluations`, {
+        method: "POST",
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setEvaluationHistory((prev) => [data, ...prev]);
+      setEvaluationStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setEvaluationStatus("error");
+      setEvaluationError(error.message || "บันทึกผลประเมินไม่สำเร็จ");
+    }
+  };
 
   if (!session) {
     return (
@@ -1195,6 +1335,28 @@ export default function App() {
                       <Input value={evaluationForm.sectionTitle} onChange={(e) => patchEvaluationMeta("sectionTitle", e.target.value)} />
                       <div className="three-col">
                         <div>
+                          <Label>Model</Label>
+                          <select value={evaluationForm.modelId} onChange={(e) => selectEvaluationModel(e.target.value)} style={S.input}>
+                            <option value="">เลือก Model</option>
+                            {bank.models.map((entry) => (
+                              <option key={entry.id} value={entry.id}>
+                                {entry.modelCode} - {entry.modelName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Part</Label>
+                          <select value={evaluationForm.partId} onChange={(e) => selectEvaluationPart(e.target.value)} style={S.input}>
+                            <option value="">เลือก Part</option>
+                            {evaluationPartOptions.map((entry) => (
+                              <option key={entry.id} value={entry.id}>
+                                {entry.partCode} - {entry.partName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
                           <Label>รหัสพนักงาน</Label>
                           <select value={evaluationForm.employeeCode} onChange={(e) => selectEvaluationEmployeeByCode(e.target.value)} style={S.input}>
                             <option value="">เลือกรหัสพนักงาน</option>
@@ -1221,7 +1383,13 @@ export default function App() {
                           <Input value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} />
                         </div>
                       </div>
+                      <div className="evaluation-summary-strip">
+                        <div className="mini-note">Part ที่เลือก: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
+                        <div className="mini-note">คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "ยังไม่มีผลสอบของ Part นี้"}</strong></div>
+                      </div>
+                      {evaluationError ? <div className="alert-error">{evaluationError}</div> : null}
                       <div className="button-row">
+                        <Button onClick={saveEvaluation}>บันทึกผลประเมิน</Button>
                         <Button variant="outline" onClick={resetEvaluation}>รีเซ็ตฟอร์ม</Button>
                         <Button variant="outline" onClick={exportEvaluationCsv}>Export CSV</Button>
                         <Button variant="outline" onClick={() => window.print()}>พิมพ์ฟอร์ม</Button>
@@ -1237,7 +1405,9 @@ export default function App() {
                       <div className="evaluation-sheet-meta">
                         <span>รหัสพนักงาน: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
                         <span>ชื่อพนักงาน: <strong>{evaluationForm.employeeName || "-"}</strong></span>
+                        <span>Model/Part: <strong>{evaluationModel && evaluationPart ? `${evaluationModel.modelCode} / ${evaluationPart.partCode}` : "-"}</strong></span>
                         <span>ผู้ประเมิน: <strong>{evaluationForm.evaluator || "-"}</strong></span>
+                        <span>คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
                       </div>
                       <table className="evaluation-table">
                         <thead>
@@ -1308,6 +1478,52 @@ export default function App() {
                         </tfoot>
                       </table>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="table-header-row">
+                      <div>
+                        <h3>ประวัติผลประเมินย้อนหลัง</h3>
+                        <p>ผูกกับพนักงานและ Part เดียวกับผลสอบ เพื่อย้อนดูได้ภายหลัง</p>
+                      </div>
+                      <div className="mini-note">
+                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `ทั้งหมด ${evaluationHistory.length} รายการ`}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {evaluationHistory.length === 0 ? (
+                      <div className="empty-state">ยังไม่มีผลประเมินในระบบ</div>
+                    ) : (
+                      <div className="dashboard-table-wrap">
+                        <table className="dashboard-table">
+                          <thead>
+                            <tr>
+                              <th>เวลา</th>
+                              <th>พนักงาน</th>
+                              <th>Model / Part</th>
+                              <th>คะแนนประเมิน</th>
+                              <th>คะแนนสอบล่าสุด</th>
+                              <th>ผู้ประเมิน</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {evaluationHistory.map((entry) => (
+                              <tr key={entry.id}>
+                                <td>{new Date(entry.createdAt).toLocaleString()}</td>
+                                <td>{entry.employeeName} ({entry.employeeCode})</td>
+                                <td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td>
+                                <td>{entry.totalScore}/{entry.maxScore}</td>
+                                <td>{entry.examFullScore ? `${entry.examScore}/${entry.examFullScore} (${entry.examStatus || "-"})` : "-"}</td>
+                                <td>{entry.evaluator || "-"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

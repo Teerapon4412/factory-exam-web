@@ -336,6 +336,14 @@ select:focus {
   background: rgba(14, 26, 36, 0.04);
 }
 
+.evaluation-summary-strip {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(14, 26, 36, 0.04);
+}
+
 .question-list {
   display: grid;
   gap: 10px;

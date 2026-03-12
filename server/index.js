@@ -5,11 +5,13 @@ import { fileURLToPath } from "node:url";
 import {
   authenticateEmployeeByCode,
   appendResult,
+  createEvaluation,
   createEmployee,
   createSession,
   deleteEmployee,
   deleteSession,
   getSession,
+  listEvaluations,
   listEmployees,
   loadState,
   saveState,
@@ -125,6 +127,29 @@ app.post("/api/results", requireAuth, async (req, res, next) => {
     };
     res.status(201).json(await appendResult(entry));
   } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/evaluations", requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    res.json(await listEvaluations());
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/evaluations", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const evaluation = await createEvaluation(req.body ?? {});
+    res.status(201).json(evaluation);
+  } catch (error) {
+    if (error?.message === "REQUIRED_FIELDS") {
+      return res.status(400).json({ error: "Required fields are missing" });
+    }
+    if (error?.message === "EMPLOYEE_NOT_FOUND") {
+      return res.status(404).json({ error: "Employee not found" });
+    }
     next(error);
   }
 });

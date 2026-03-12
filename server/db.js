@@ -105,6 +105,30 @@ function openDb() {
       expires_at TEXT NOT NULL,
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS evaluations (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      employee_code TEXT NOT NULL,
+      employee_name TEXT NOT NULL,
+      evaluator TEXT NOT NULL DEFAULT '',
+      section_title TEXT NOT NULL,
+      model_id TEXT NOT NULL DEFAULT '',
+      model_code TEXT NOT NULL DEFAULT '',
+      model_name TEXT NOT NULL DEFAULT '',
+      part_id TEXT NOT NULL,
+      part_code TEXT NOT NULL DEFAULT '',
+      part_name TEXT NOT NULL DEFAULT '',
+      total_score REAL NOT NULL DEFAULT 0,
+      max_score REAL NOT NULL DEFAULT 0,
+      exam_score REAL NOT NULL DEFAULT 0,
+      exam_full_score REAL NOT NULL DEFAULT 0,
+      exam_status TEXT NOT NULL DEFAULT '',
+      rows_json TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+    );
   `);
 
   const stateRow = db.prepare("SELECT key FROM app_state WHERE key = ?").get("global_state");
@@ -388,4 +412,180 @@ export async function deleteSession(token) {
   if (!token) return;
   const db = await getDb();
   db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+}
+
+function parseEvaluationRow(row) {
+  return {
+    id: row.id,
+    employeeId: row.employee_id,
+    employeeCode: row.employee_code,
+    employeeName: row.employee_name,
+    evaluator: row.evaluator,
+    sectionTitle: row.section_title,
+    modelId: row.model_id,
+    modelCode: row.model_code,
+    modelName: row.model_name,
+    partId: row.part_id,
+    partCode: row.part_code,
+    partName: row.part_name,
+    totalScore: Number(row.total_score || 0),
+    maxScore: Number(row.max_score || 0),
+    examScore: Number(row.exam_score || 0),
+    examFullScore: Number(row.exam_full_score || 0),
+    examStatus: row.exam_status || "",
+    rows: JSON.parse(row.rows_json || "[]"),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function findLatestExamResult(results, employeeCode, partId) {
+  return (Array.isArray(results) ? results : []).find((entry) => (
+    entry?.candidateCode === employeeCode && entry?.partId === partId
+  )) || null;
+}
+
+export async function listEvaluations() {
+  const db = await getDb();
+  const rows = db.prepare(`
+    SELECT
+      id,
+      employee_id,
+      employee_code,
+      employee_name,
+      evaluator,
+      section_title,
+      model_id,
+      model_code,
+      model_name,
+      part_id,
+      part_code,
+      part_name,
+      total_score,
+      max_score,
+      exam_score,
+      exam_full_score,
+      exam_status,
+      rows_json,
+      created_at,
+      updated_at
+    FROM evaluations
+    ORDER BY created_at DESC
+  `).all();
+  return rows.map(parseEvaluationRow);
+}
+
+export async function createEvaluation(input) {
+  const db = await getDb();
+  const employeeId = String(input.employeeId || "").trim();
+  const partId = String(input.partId || "").trim();
+  const sectionTitle = String(input.sectionTitle || "").trim();
+  const evaluator = String(input.evaluator || "").trim();
+  const rows = Array.isArray(input.rows) ? input.rows : [];
+
+  if (!employeeId || !partId || !sectionTitle || !rows.length) {
+    throw new Error("REQUIRED_FIELDS");
+  }
+
+  const employee = db.prepare(`
+    SELECT id, employee_code, full_name
+    FROM employees
+    WHERE id = ? AND is_active = 1
+  `).get(employeeId);
+  if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
+
+  const state = await loadState();
+  const examResult = findLatestExamResult(state.results, employee.employee_code, partId);
+  const timestamp = nowIso();
+  const payload = {
+    id: crypto.randomUUID(),
+    employeeId: employee.id,
+    employeeCode: employee.employee_code,
+    employeeName: employee.full_name,
+    evaluator,
+    sectionTitle,
+    modelId: String(input.modelId || "").trim(),
+    modelCode: String(input.modelCode || "").trim(),
+    modelName: String(input.modelName || "").trim(),
+    partId,
+    partCode: String(input.partCode || "").trim(),
+    partName: String(input.partName || "").trim(),
+    totalScore: Number(input.totalScore || 0),
+    maxScore: Number(input.maxScore || 0),
+    examScore: Number(examResult?.score || 0),
+    examFullScore: Number(examResult?.fullScore || 0),
+    examStatus: String(examResult?.status || ""),
+    rowsJson: JSON.stringify(rows),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  db.prepare(`
+    INSERT INTO evaluations (
+      id,
+      employee_id,
+      employee_code,
+      employee_name,
+      evaluator,
+      section_title,
+      model_id,
+      model_code,
+      model_name,
+      part_id,
+      part_code,
+      part_name,
+      total_score,
+      max_score,
+      exam_score,
+      exam_full_score,
+      exam_status,
+      rows_json,
+      created_at,
+      updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    payload.id,
+    payload.employeeId,
+    payload.employeeCode,
+    payload.employeeName,
+    payload.evaluator,
+    payload.sectionTitle,
+    payload.modelId,
+    payload.modelCode,
+    payload.modelName,
+    payload.partId,
+    payload.partCode,
+    payload.partName,
+    payload.totalScore,
+    payload.maxScore,
+    payload.examScore,
+    payload.examFullScore,
+    payload.examStatus,
+    payload.rowsJson,
+    payload.createdAt,
+    payload.updatedAt,
+  );
+
+  return parseEvaluationRow({
+    id: payload.id,
+    employee_id: payload.employeeId,
+    employee_code: payload.employeeCode,
+    employee_name: payload.employeeName,
+    evaluator: payload.evaluator,
+    section_title: payload.sectionTitle,
+    model_id: payload.modelId,
+    model_code: payload.modelCode,
+    model_name: payload.modelName,
+    part_id: payload.partId,
+    part_code: payload.partCode,
+    part_name: payload.partName,
+    total_score: payload.totalScore,
+    max_score: payload.maxScore,
+    exam_score: payload.examScore,
+    exam_full_score: payload.examFullScore,
+    exam_status: payload.examStatus,
+    rows_json: payload.rowsJson,
+    created_at: payload.createdAt,
+    updated_at: payload.updatedAt,
+  });
 }
