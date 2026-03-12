@@ -5,11 +5,12 @@
     "type": "module",
     "scripts": {
         "dev": "concurrently \"npm run server\" \"vite\"",
-        "build": "vite build",
-        "lint": "eslint .",
-        "preview": "vite preview",
-        "server": "node server/index.js"
-    },
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "seed:employees": "node scripts/upsert-employees.mjs scripts/employees.seed.json"
+  },
     "dependencies": {
         "concurrently": "^9.2.1",
         "cors": "^2.8.6",
