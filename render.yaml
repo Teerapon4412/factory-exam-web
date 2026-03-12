@@ -5,7 +5,7 @@ services:
     plan: starter
     autoDeploy: true
     buildCommand: npm install && npm run build
-    startCommand: npm run seed:employees && npm run server
+    startCommand: npm run seed:employees && npm run seed:bank && npm run server
     healthCheckPath: /api/health
     disk:
       name: factory_exam_data
