@@ -1228,7 +1228,6 @@ export default function App() {
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       setEvaluationHistory((prev) => [data, ...prev]);
       setEvaluationStatus("ready");
-      resetEvaluation();
     } catch (error) {
       console.error(error);
       setEvaluationStatus("error");
