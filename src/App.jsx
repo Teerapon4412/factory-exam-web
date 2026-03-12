@@ -216,6 +216,69 @@ const reorder = (qs) => qs.map((q, i) => ({ ...q, questionNo: i + 1 }));
 const full = (qs) => qs.reduce((s, q) => s + Number(q.score || 0), 0);
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
+const hasQuestionContent = (q) => {
+  const text = String(q?.questionText || "").trim();
+  const imageUrl = String(q?.imageUrl || "").trim();
+  const choices = Object.values(q?.choices || {}).map((v) => String(v || "").trim());
+  return Boolean(text || imageUrl || choices.some(Boolean));
+};
+
+const sanitizeBank = (rawBank) => {
+  const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : starterBank();
+  const models = normalizedBank.models
+    .map((model, modelIndex) => {
+      const parts = (model.parts || [])
+        .map((part, partIndex) => {
+          const questions = reorder(
+            (part.questions || [])
+              .filter(hasQuestionContent)
+              .map((q, qIndex) => ({
+                ...emptyQ(qIndex + 1),
+                ...q,
+                id: q.id || uid(),
+                choices: {
+                  A: q.choices?.A || "",
+                  B: q.choices?.B || "",
+                  C: q.choices?.C || "",
+                  D: q.choices?.D || "",
+                },
+              })),
+          );
+
+          if (!questions.length) return null;
+
+          return {
+            ...emptyPart(partIndex + 1),
+            ...part,
+            id: part.id || uid(),
+            partCode: part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`,
+            partName: part.partName || `Part ${partIndex + 1}`,
+            subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
+            passScore: Number(part.passScore ?? 35),
+            randomizeQuestions: Boolean(part.randomizeQuestions),
+            showResultImmediately: part.showResultImmediately !== false,
+            questions,
+          };
+        })
+        .filter(Boolean);
+
+      if (!parts.length) return null;
+
+      return {
+        id: model.id || uid(),
+        modelCode: model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`,
+        modelName: model.modelName || `Model ${modelIndex + 1}`,
+        parts,
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    title: normalizedBank.title || "Factory Online Exam",
+    models: models.length ? models : starterBank().models,
+  };
+};
+
 const downloadCsv = (filename, headers, rows) => {
   const lines = [headers.map(csvCell).join(","), ...rows.map((row) => row.map(csvCell).join(","))];
   const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
@@ -229,7 +292,7 @@ const downloadCsv = (filename, headers, rows) => {
 
 function normalize(raw) {
   if (Array.isArray(raw?.models) && raw.models.length) {
-    return {
+    return sanitizeBank({
       title: raw.title || "Factory Online Exam",
       models: raw.models.map((m, mi) => ({
         id: m.id || uid(),
@@ -253,7 +316,7 @@ function normalize(raw) {
           ),
         })),
       })),
-    };
+    });
   }
 
   if (Array.isArray(raw?.questions)) {
@@ -275,7 +338,7 @@ function normalize(raw) {
         choices: { A: q.choices?.A || "", B: q.choices?.B || "", C: q.choices?.C || "", D: q.choices?.D || "" },
       }))),
     }];
-    return b;
+    return sanitizeBank(b);
   }
 
   return starterBank();
@@ -833,6 +896,21 @@ export default function App() {
   const reset = () => { setAnswers({}); setSubmitted(false); setSubmitError(""); };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
   const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
+  const importJSONFile = async (file) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const n = normalize(JSON.parse(text));
+      setBank(n);
+      setModelId(n.models[0].id);
+      setPartId(n.models[0].parts[0].id);
+      setQId(n.models[0].parts[0].questions[0]?.id || null);
+      setImportText(JSON.stringify(n, null, 2));
+      reset();
+    } catch (e) {
+      alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
+    }
+  };
   const saveLocal = async () => {
     try {
       setSyncStatus("saving");
@@ -1103,7 +1181,7 @@ export default function App() {
 
           {isAdmin ? <TabsContent value="dashboard"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Model</Label><select value={dashboardModelFilter} onChange={(e) => { setDashboardModelFilter(e.target.value); setDashboardPartFilter("ALL"); }} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardModelOptions.map((m) => <option key={m.modelCode} value={m.modelCode}>{m.modelCode} - {m.modelName}</option>)}</select></div><div><Label>Part</Label><select value={dashboardPartFilter} onChange={(e) => setDashboardPartFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardPartOptions.map((p) => <option key={p.key} value={p.key}>{p.modelCode}/{p.partCode} - {p.partName}</option>)}</select></div><div><Label>สถานะ</Label><select value={dashboardStatusFilter} onChange={(e) => setDashboardStatusFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>ค้นหา</Label><Input value={dashboardSearch} onChange={(e) => setDashboardSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part" /></div></div></CardContent></Card><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">จำนวนครั้งสอบทั้งหมด</div><div className="metric-value">{dashboardSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">จำนวนที่ผ่าน</div><div className="metric-value">{dashboardSummary.passed}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">คะแนนเฉลี่ยรวม</div><div className="metric-value">{dashboardSummary.avgPct}%</div></CardContent></Card></div><Card><CardHeader><div className="table-header-row"><div><h3>สรุปราย Model / Part</h3><p>ดูจำนวนครั้ง อัตราผ่าน และคะแนนเฉลี่ยแยกตามสายการสอบ</p></div><div className="button-row"><Button variant="outline" onClick={exportDashboardSummaryCsv}>Export Summary CSV</Button><Button variant="outline" onClick={exportDashboardHistoryCsv}>Export History CSV</Button><Button variant="outline" onClick={() => { if (window.confirm("ต้องการล้างผลสอบทั้งหมดหรือไม่")) setResultHistory([]); }}>ล้างข้อมูล Dashboard</Button></div></div></CardHeader><CardContent>{byModelPart.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Model</th><th>Part</th><th>จำนวนครั้ง</th><th>ผ่าน</th><th>อัตราผ่าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>{byModelPart.map((row, idx) => <tr key={`${row.modelCode}-${row.partCode}-${idx}`}><td>{row.modelCode} - {row.modelName}</td><td>{row.partCode} - {row.partName}</td><td>{row.attempts}</td><td>{row.passed}</td><td>{row.passRate}%</td><td>{row.avgPct}%</td></tr>)}</tbody></table></div>}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>ผลสอบล่าสุด</h3><p>แสดงข้อมูลล่าสุด 20 รายการตามตัวกรองปัจจุบัน</p></div></div></CardHeader><CardContent>{filteredHistory.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>เวลา</th><th>พนักงาน</th><th>Model/Part</th><th>คะแนน</th><th>สถานะ</th></tr></thead><tbody>{filteredHistory.slice(0, 20).map((r) => <tr key={r.id}><td>{new Date(r.submittedAt).toLocaleString()}</td><td>{r.candidateName} ({r.candidateCode})</td><td>{r.modelCode}/{r.partCode}</td><td>{r.score}/{r.fullScore}</td><td>{r.status}</td></tr>)}</tbody></table></div>}</CardContent></Card></div></TabsContent> : null}
 
-          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>สำรองโครงสร้างคลังข้อสอบเพื่อย้ายหรือเก็บเวอร์ชัน</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> ดาวน์โหลด JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>วางข้อมูลที่ export มาแล้วเพื่อนำกลับเข้าสู่ระบบ</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>ล้างข้อความ</Button></div></CardContent></Card></div></TabsContent> : null}
+          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>สำรองโครงสร้างคลังข้อสอบเพื่อย้ายหรือเก็บเวอร์ชัน</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> ดาวน์โหลด JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>วางข้อความหรือเลือกไฟล์ JSON แล้วระบบจะจัดรูปแบบให้เข้ากับ UI อัตโนมัติ</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><label className="upload-button"><FileJson size={16} /> เลือกไฟล์ JSON<input type="file" accept=".json,application/json" hidden onChange={(e) => importJSONFile(e.target.files?.[0])} /></label><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>ล้างข้อความ</Button></div></CardContent></Card></div></TabsContent> : null}
         </Tabs>
       </div>
     </div>
