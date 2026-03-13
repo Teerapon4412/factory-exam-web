@@ -1,5 +1,6 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import fallbackExamBankSeed from "../scripts/exam-bank.seed.json";
 import {
   ArrowLeft,
   BarChart3,
@@ -216,7 +217,7 @@ const emptyModel = (i = 1, starter = false) => ({
   parts: Array.from({ length: 10 }, (_, idx) => emptyPart(idx + 1, starter && idx === 0)),
 });
 
-const starterBank = () => ({ title: "Factory Online Exam", models: [emptyModel(1, true)] });
+const emptyStarterBank = () => ({ title: "Factory Online Exam", models: [emptyModel(1, true)] });
 const reorder = (qs) => qs.map((q, i) => ({ ...q, questionNo: i + 1 }));
 const full = (qs) => qs.reduce((s, q) => s + Number(q.score || 0), 0);
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -229,7 +230,7 @@ const hasQuestionContent = (q) => {
 };
 
 const sanitizeBank = (rawBank) => {
-  const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : starterBank();
+  const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : emptyStarterBank();
   const models = normalizedBank.models
     .map((model, modelIndex) => {
       const parts = (model.parts || [])
@@ -280,9 +281,12 @@ const sanitizeBank = (rawBank) => {
 
   return {
     title: normalizedBank.title || "Factory Online Exam",
-    models: models.length ? models : starterBank().models,
+    models: models.length ? models : emptyStarterBank().models,
   };
 };
+
+const fallbackStarterBank = sanitizeBank(fallbackExamBankSeed);
+const starterBank = () => JSON.parse(JSON.stringify(fallbackStarterBank));
 
 const scoreLevels = [1, 2, 3, 4, 5];
 const defaultEvaluationItems = [

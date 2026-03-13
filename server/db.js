@@ -3,16 +3,29 @@ import path from "node:path";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import crypto from "node:crypto";
+import fallbackExamBankSeed from "../scripts/exam-bank.seed.json" with { type: "json" };
 
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
 const dbPath = path.join(dataDir, "factory-exam.sqlite");
 const SESSION_TTL_DAYS = Number(process.env.SESSION_TTL_DAYS || 14);
 
-const defaultState = {
-  bank: {
+function createFallbackBank() {
+  if (fallbackExamBankSeed && Array.isArray(fallbackExamBankSeed.models) && fallbackExamBankSeed.models.length) {
+    return JSON.parse(JSON.stringify(fallbackExamBankSeed));
+  }
+
+  return {
     title: "Factory Online Exam",
     models: [],
-  },
+  };
+}
+
+function hasBankContent(bank) {
+  return Array.isArray(bank?.models) && bank.models.some((model) => Array.isArray(model?.parts) && model.parts.some((part) => Array.isArray(part?.questions) && part.questions.length));
+}
+
+const defaultState = {
+  bank: createFallbackBank(),
   results: [],
   news: [],
 };
@@ -188,7 +201,7 @@ export async function loadState() {
   try {
     const parsed = JSON.parse(row.value);
     return {
-      bank: parsed.bank ?? defaultState.bank,
+      bank: hasBankContent(parsed.bank) ? parsed.bank : defaultState.bank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
       news: Array.isArray(parsed.news) ? parsed.news : defaultState.news,
     };
@@ -200,7 +213,7 @@ export async function loadState() {
 export async function saveState(state) {
   const db = await getDb();
   const safeState = {
-    bank: state.bank ?? defaultState.bank,
+    bank: hasBankContent(state.bank) ? state.bank : defaultState.bank,
     results: Array.isArray(state.results) ? state.results : defaultState.results,
     news: Array.isArray(state.news) ? state.news : defaultState.news,
   };
