@@ -1,6 +1,7 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  ArrowLeft,
   BarChart3,
   BookOpen,
   ClipboardCheck,
@@ -10,6 +11,7 @@ import {
   ImagePlus,
   LockKeyhole,
   LogOut,
+  Megaphone,
   Plus,
   Save,
   Settings2,
@@ -22,6 +24,7 @@ import "./App.css";
 
 const STORAGE_KEY = "factory_exam_builder_v2";
 const RESULTS_KEY = "factory_exam_results_v1";
+const NEWS_KEY = "factory_exam_news_v1";
 const SESSION_KEY = "factory_exam_session_v1";
 const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -310,6 +313,38 @@ const createEvaluationDraft = () => ({
   rows: createEvaluationRows(),
 });
 
+const starterNews = () => ([
+  {
+    id: uid(),
+    title: "ประกาศต้อนรับพนักงานเข้าสู่ระบบข้อสอบ",
+    summary: "ติดตามข่าวสารสำคัญ, ตารางสอบ, และประกาศจากหัวหน้างานได้ในหน้านี้",
+    content: "ระบบนี้ใช้สำหรับทั้งการทำข้อสอบออนไลน์และการสื่อสารข่าวสารภายในหน่วยงาน ผู้ใช้สามารถเลือกเข้าอ่านประกาศล่าสุดหรือเริ่มทำข้อสอบได้ทันทีหลังล็อกอิน",
+    pinned: true,
+    publishedAt: new Date().toISOString(),
+  },
+]);
+
+const emptyNewsForm = () => ({
+  title: "",
+  summary: "",
+  content: "",
+  imageUrl: "",
+  pinned: false,
+});
+
+const normalizeNews = (items) => {
+  if (!Array.isArray(items) || !items.length) return starterNews();
+  return items.map((item) => ({
+    id: item.id || uid(),
+    title: String(item.title || "").trim(),
+    summary: String(item.summary || "").trim(),
+    content: String(item.content || "").trim(),
+    imageUrl: String(item.imageUrl || "").trim(),
+    pinned: Boolean(item.pinned),
+    publishedAt: item.publishedAt || new Date().toISOString(),
+  })).filter((item) => item.title || item.content);
+};
+
 const downloadCsv = (filename, headers, rows) => {
   const lines = [headers.map(csvCell).join(","), ...rows.map((row) => row.map(csvCell).join(","))];
   const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
@@ -394,6 +429,15 @@ const loadResults = () => {
   }
 };
 
+const loadNews = () => {
+  try {
+    const s = localStorage.getItem(NEWS_KEY);
+    return s ? normalizeNews(JSON.parse(s)) : starterNews();
+  } catch {
+    return starterNews();
+  }
+};
+
 const loadSession = () => {
   try {
     const s = localStorage.getItem(SESSION_KEY);
@@ -446,6 +490,7 @@ export default function App() {
   const [submitError, setSubmitError] = useState("");
   const [importText, setImportText] = useState("");
   const [resultHistory, setResultHistory] = useState(loadResults);
+  const [newsItems, setNewsItems] = useState(loadNews);
   const [dataReady, setDataReady] = useState(false);
   const [syncStatus, setSyncStatus] = useState("loading");
   const [employees, setEmployees] = useState([]);
@@ -457,6 +502,10 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
+  const [entryPoint, setEntryPoint] = useState("portal");
+  const [newsForm, setNewsForm] = useState(emptyNewsForm);
+  const [editingNewsId, setEditingNewsId] = useState(null);
+  const [newsError, setNewsError] = useState("");
   const [evaluationForm, setEvaluationForm] = useState(() => {
     try {
       const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
@@ -501,6 +550,14 @@ export default function App() {
       // Ignore storage restrictions in locked-down browsers.
     }
   }, [resultHistory]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NEWS_KEY, JSON.stringify(newsItems));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [newsItems]);
 
   useEffect(() => {
     try {
@@ -572,8 +629,10 @@ export default function App() {
 
         const nextBank = normalize(data.bank ?? starterBank());
         const nextResults = Array.isArray(data.results) ? data.results : [];
+        const nextNews = normalizeNews(data.news);
         setBank(nextBank);
         setResultHistory(nextResults);
+        setNewsItems(nextNews);
         setModelId(nextBank.models[0]?.id || null);
         setPartId(nextBank.models[0]?.parts[0]?.id || null);
         setQId(nextBank.models[0]?.parts[0]?.questions[0]?.id || null);
@@ -599,7 +658,7 @@ export default function App() {
         const res = await fetch(`${API_BASE}/state`, {
           method: "PUT",
           headers: authHeaders(session, { "Content-Type": "application/json" }),
-          body: JSON.stringify({ bank, results: resultHistory }),
+          body: JSON.stringify({ bank, results: resultHistory, news: newsItems }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         setSyncStatus("synced");
@@ -610,7 +669,7 @@ export default function App() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [bank, resultHistory, dataReady, isAdmin, session]);
+  }, [bank, resultHistory, newsItems, dataReady, isAdmin, session]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
@@ -723,6 +782,13 @@ export default function App() {
     });
     return Array.from(map.values()).map((row) => ({ ...row, passRate: row.attempts ? Math.round((row.passed / row.attempts) * 100) : 0, avgPct: row.attempts ? Math.round(row.scorePctSum / row.attempts) : 0 })).sort((a, b) => b.attempts - a.attempts);
   }, [filteredHistory]);
+  const orderedNews = useMemo(
+    () => [...newsItems].sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    }),
+    [newsItems],
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -868,6 +934,68 @@ export default function App() {
     }
   };
 
+  const resetNewsForm = () => {
+    setNewsForm(emptyNewsForm());
+    setEditingNewsId(null);
+    setNewsError("");
+  };
+
+  const startEditNews = (item) => {
+    setEditingNewsId(item.id);
+    setNewsForm({
+      title: item.title || "",
+      summary: item.summary || "",
+      content: item.content || "",
+      imageUrl: item.imageUrl || "",
+      pinned: Boolean(item.pinned),
+    });
+    setNewsError("");
+  };
+
+  const saveNews = () => {
+    const payload = {
+      title: newsForm.title.trim(),
+      summary: newsForm.summary.trim(),
+      content: newsForm.content.trim(),
+      imageUrl: newsForm.imageUrl.trim(),
+      pinned: Boolean(newsForm.pinned),
+    };
+    if (!payload.title || !payload.content) {
+      setNewsError("กรุณากรอกหัวข้อข่าวและรายละเอียดข่าว");
+      return;
+    }
+
+    const nextItem = {
+      id: editingNewsId || uid(),
+      ...payload,
+      publishedAt: editingNewsId
+        ? (newsItems.find((item) => item.id === editingNewsId)?.publishedAt || new Date().toISOString())
+        : new Date().toISOString(),
+    };
+
+    setNewsItems((prev) => (
+      editingNewsId
+        ? prev.map((item) => (item.id === editingNewsId ? nextItem : item))
+        : [nextItem, ...prev]
+    ));
+    resetNewsForm();
+  };
+
+  const removeNews = (item) => {
+    if (!window.confirm(`ต้องการลบข่าว "${item.title}" ใช่หรือไม่`)) return;
+    setNewsItems((prev) => prev.filter((entry) => entry.id !== item.id));
+    if (editingNewsId === item.id) resetNewsForm();
+  };
+
+  const uploadNewsImage = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setNewsForm((prev) => ({ ...prev, imageUrl: String(e.target?.result || "") }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, [f]: v } : m)) }));
   const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, [f]: v } : p)) })) }));
   const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== partId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
@@ -989,6 +1117,7 @@ export default function App() {
       // Ignore storage restrictions in locked-down browsers.
     }
     setSession(null);
+    setEntryPoint("portal");
     setLoginError("");
     setLoginForm({ employeeCode: "" });
     setDataReady(false);
@@ -1043,7 +1172,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
         headers: authHeaders(session, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ bank, results: resultHistory }),
+        body: JSON.stringify({ bank, results: resultHistory, news: newsItems }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       try {
@@ -1268,6 +1397,135 @@ export default function App() {
       </div>
     );
   }
+
+  if (entryPoint === "portal") {
+    return (
+      <div className="app-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>Welcome</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
+                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
+              </div>
+              <h1>เลือกการใช้งาน</h1>
+              <p>หลังจากล็อกอินแล้ว คุณสามารถเลือกเข้าทำข้อสอบหรือเข้าอ่านข่าวสารภายในได้จากหน้านี้</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>ข่าวสารล่าสุด</span><strong>{orderedNews.length}</strong></div>
+              <div className="hero-stat"><span>Model ข้อสอบ</span><strong>{bank.models.length}</strong></div>
+              <div className="hero-stat"><span>Part ทั้งหมด</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
+              <div className="hero-stat"><span>โหมดใช้งาน</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
+            </div>
+          </motion.section>
+
+          <div className="portal-grid">
+            <Card className="portal-card">
+              <CardContent className="portal-card-content">
+                <div className="section-heading"><Eye size={20} /><div><h3>เข้าทำข้อสอบ</h3><p>เปิดหน้าใช้งานข้อสอบ, ประเมิน, dashboard และเครื่องมือที่เกี่ยวข้อง</p></div></div>
+                <Button onClick={() => setEntryPoint("exam")}>ไปหน้าข้อสอบ</Button>
+              </CardContent>
+            </Card>
+
+            <Card className="portal-card">
+              <CardContent className="portal-card-content">
+                <div className="section-heading"><Megaphone size={20} /><div><h3>อ่านข่าวสาร</h3><p>ติดตามประกาศล่าสุด, ข้อมูลภายใน, และข่าวสารที่เกี่ยวข้องกับการทำงาน</p></div></div>
+                <Button onClick={() => setEntryPoint("news")}>ไปหน้าข่าวสาร</Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (entryPoint === "news") {
+    return (
+      <div className="app-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>News Center</Badge><Badge outline>{orderedNews.length} ข่าว</Badge></div>
+                <div className="hero-session">
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
+                </div>
+              </div>
+              <h1>ข่าวสารและประกาศ</h1>
+              <p>พื้นที่กลางสำหรับสื่อสารข่าวภายใน หลังล็อกอินแล้วผู้ใช้สามารถเลือกกลับไปเข้าทำข้อสอบได้ทุกเมื่อ</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>ข่าวปักหมุด</span><strong>{orderedNews.filter((item) => item.pinned).length}</strong></div>
+              <div className="hero-stat"><span>ข่าวทั้งหมด</span><strong>{orderedNews.length}</strong></div>
+            </div>
+          </motion.section>
+
+          {isAdmin ? (
+            <Card>
+              <CardHeader><div className="section-heading"><Megaphone size={18} /><div><h3>จัดการข่าวสาร</h3><p>เพิ่ม, แก้ไข, และลบข่าวที่จะแชร์ให้ผู้ใช้หลังล็อกอิน</p></div></div></CardHeader>
+              <CardContent>
+                <div className="form-stack">
+                  <Label>หัวข้อข่าว</Label>
+                  <Input value={newsForm.title} onChange={(e) => setNewsForm((prev) => ({ ...prev, title: e.target.value }))} />
+                  <Label>สรุปสั้น</Label>
+                  <Input value={newsForm.summary} onChange={(e) => setNewsForm((prev) => ({ ...prev, summary: e.target.value }))} />
+                  <Label>ลิงก์รูปภาพข่าว</Label>
+                  <Input value={newsForm.imageUrl} onChange={(e) => setNewsForm((prev) => ({ ...prev, imageUrl: e.target.value }))} placeholder="https://..." />
+                  <label className="upload-button">
+                    <ImagePlus size={16} /> เลือกรูปข่าว
+                    <input type="file" accept="image/*" hidden onChange={(e) => uploadNewsImage(e.target.files?.[0])} />
+                  </label>
+                  {newsForm.imageUrl ? <img src={newsForm.imageUrl} alt="news-preview" className="news-image" /> : null}
+                  <Label>รายละเอียดข่าว</Label>
+                  <Textarea rows={5} value={newsForm.content} onChange={(e) => setNewsForm((prev) => ({ ...prev, content: e.target.value }))} />
+                  <label className="news-pin-toggle">
+                    <input type="checkbox" checked={newsForm.pinned} onChange={(e) => setNewsForm((prev) => ({ ...prev, pinned: e.target.checked }))} />
+                    <span>ปักหมุดข่าวนี้ไว้ด้านบน</span>
+                  </label>
+                  {newsError ? <div className="alert-error">{newsError}</div> : null}
+                  <div className="button-row">
+                    <Button onClick={saveNews}>{editingNewsId ? "บันทึกการแก้ไขข่าว" : "เพิ่มข่าวใหม่"}</Button>
+                    <Button variant="outline" onClick={resetNewsForm}>ล้างฟอร์มข่าว</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <div className="news-grid">
+            {orderedNews.map((item) => (
+              <Card key={item.id} className="news-card">
+                <CardContent className="news-card-content">
+                  <div className="hero-badges">
+                    {item.pinned ? <Badge>ปักหมุด</Badge> : <Badge outline>ข่าวสาร</Badge>}
+                    <Badge outline>{new Date(item.publishedAt).toLocaleDateString()}</Badge>
+                  </div>
+                  {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="news-image" /> : null}
+                  <h3>{item.title}</h3>
+                  {item.summary ? <p className="news-summary">{item.summary}</p> : null}
+                  <div className="news-content">{item.content}</div>
+                  {isAdmin ? (
+                    <div className="button-row">
+                      <Button variant="outline" onClick={() => startEditNews(item)}>แก้ไข</Button>
+                      <Button variant="destructive" onClick={() => removeNews(item)}>ลบ</Button>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <div className="backdrop-grid" />
