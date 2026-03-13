@@ -671,6 +671,35 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [bank, resultHistory, newsItems, dataReady, isAdmin, session]);
 
+  useEffect(() => {
+    if (!dataReady || !session?.token || isAdmin || !["portal", "news"].includes(entryPoint)) return;
+
+    let ignore = false;
+
+    const refreshNews = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/state`, {
+          headers: authHeaders(session),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (ignore) return;
+        setNewsItems(normalizeNews(data.news));
+        setSyncStatus("synced");
+      } catch (error) {
+        console.error(error);
+        if (!ignore) setSyncStatus("offline");
+      }
+    };
+
+    refreshNews();
+    const timer = setInterval(refreshNews, 15000);
+    return () => {
+      ignore = true;
+      clearInterval(timer);
+    };
+  }, [dataReady, session, isAdmin, entryPoint]);
+
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
   const question = useMemo(() => part?.questions.find((q) => q.id === qId) || part?.questions[0] || null, [part, qId]);
