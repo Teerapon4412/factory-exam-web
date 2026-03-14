@@ -882,6 +882,44 @@ export default function App() {
     [resultHistory, selectedEmployeeResultCode],
   );
 
+  const selectedEmployeePartComparison = useMemo(() => {
+    if (!selectedEmployeeResultCode) return [];
+
+    const examByPart = new Map();
+    selectedEmployeeResults.forEach((entry) => {
+      const key = entry.partId || [entry.modelCode, entry.partCode].join("__");
+      if (!examByPart.has(key)) examByPart.set(key, entry);
+    });
+
+    const evaluationByPart = new Map();
+    evaluationHistory
+      .filter((entry) => entry.employeeCode === selectedEmployeeResultCode)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .forEach((entry) => {
+        const key = entry.partId || [entry.modelCode, entry.partCode].join("__");
+        if (!evaluationByPart.has(key)) evaluationByPart.set(key, entry);
+      });
+
+    const keys = new Set([...examByPart.keys(), ...evaluationByPart.keys()]);
+    return Array.from(keys).map((key) => {
+      const exam = examByPart.get(key) || null;
+      const evaluation = evaluationByPart.get(key) || null;
+      return {
+        key,
+        modelCode: exam?.modelCode || evaluation?.modelCode || "-",
+        partCode: exam?.partCode || evaluation?.partCode || "-",
+        partName: exam?.partName || evaluation?.partName || "-",
+        examScore: exam?.score ?? null,
+        examFullScore: exam?.fullScore ?? null,
+        examStatus: exam?.status || "-",
+        evaluationScore: evaluation?.totalScore ?? null,
+        evaluationMaxScore: evaluation?.maxScore ?? null,
+        evaluator: evaluation?.evaluator || "-",
+        comparedAt: evaluation?.createdAt || exam?.submittedAt || "",
+      };
+    }).sort((a, b) => a.partCode.localeCompare(b.partCode));
+  }, [selectedEmployeeResultCode, selectedEmployeeResults, evaluationHistory]);
+
   useEffect(() => {
     if (!employeeResultSummaries.length) {
       setSelectedEmployeeResultCode("");
@@ -1650,7 +1688,7 @@ export default function App() {
               <Card>
                 <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Score details</h3><p>Shows attempts, pass count, average score, and detailed exam records.</p></div></div></CardHeader>
                 <CardContent>
-                  {selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div></div>}
+                  {selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div><Card><CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>Exam vs evaluation by part</h3><p>Compare each part's latest exam score with the latest evaluation score for the same employee.</p></div></div></CardHeader><CardContent>{selectedEmployeePartComparison.length === 0 ? <div className="empty-state">No exam/evaluation comparison data for this employee yet.</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Part</th><th>Exam score</th><th>Exam status</th><th>Evaluation score</th><th>Evaluator</th><th>Latest record</th></tr></thead><tbody>{selectedEmployeePartComparison.map((entry) => <tr key={entry.key}><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.examFullScore != null ? `${entry.examScore}/${entry.examFullScore}` : "-"}</td><td><span className={`status-pill status-${String(entry.examStatus || "").toLowerCase()}`.trim()}>{entry.examStatus}</span></td><td>{entry.evaluationMaxScore != null ? `${entry.evaluationScore}/${entry.evaluationMaxScore}` : "-"}</td><td>{entry.evaluator}</td><td>{entry.comparedAt ? new Date(entry.comparedAt).toLocaleString() : "-"}</td></tr>)}</tbody></table></div>}</CardContent></Card></div>}
                 </CardContent>
               </Card>
             </div>
