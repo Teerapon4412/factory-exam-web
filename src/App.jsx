@@ -1568,12 +1568,97 @@ export default function App() {
                 <Button onClick={() => setEntryPoint("news")}>ไปหน้าข่าวสาร</Button>
               </CardContent>
             </Card>
+
+            {isAdmin ? (
+              <Card className="portal-card">
+                <CardContent className="portal-card-content">
+                  <div className="section-heading"><BarChart3 size={20} /><div><h3>Employee score summary</h3><p>View average scores, latest results, and per-person details on a separate page.</p></div></div>
+                  <Button onClick={() => setEntryPoint("scores")}>Open score summary</Button>
+                </CardContent>
+              </Card>
+            ) : null}
+
           </div>
         </div>
       </div>
     );
   }
 
+  if (entryPoint === "scores" && isAdmin) {
+    return (
+      <div className="app-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>Employee Scores</Badge><Badge outline>{employeeResultSummaries.length} employees</Badge></div>
+                <div className="hero-session">
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> Back</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> Logout</Button>
+                </div>
+              </div>
+              <h1>Employee score summary</h1>
+              <p>Separate summary screen for reviewing each employee's latest results, average score, and full exam history.</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>Employees</span><strong>{employeeResultSummaries.length}</strong></div>
+              <div className="hero-stat"><span>Total attempts</span><strong>{resultHistory.length}</strong></div>
+              <div className="hero-stat"><span>Latest pass</span><strong>{employeeResultSummaries.filter((entry) => entry.latestStatus === "PASS").length}</strong></div>
+              <div className="hero-stat"><span>Average score</span><strong>{employeeResultSummaries.length ? Math.round(employeeResultSummaries.reduce((sum, entry) => sum + entry.avgPct, 0) / employeeResultSummaries.length) : 0}%</strong></div>
+            </div>
+          </motion.section>
+
+          <div className="dashboard-layout">
+            <Card>
+              <CardContent>
+                <div className="dashboard-filters">
+                  <div>
+                    <Label>Search employee</Label>
+                    <Input value={employeeResultsSearch} onChange={(e) => setEmployeeResultsSearch(e.target.value)} placeholder="Employee name or code" />
+                  </div>
+                  <div>
+                    <Label>Latest status</Label>
+                    <select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}>
+                      <option value="ALL">All</option>
+                      <option value="PASS">PASS</option>
+                      <option value="FAIL">FAIL</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Matched employees</Label>
+                    <Input value={employeeResultSummaries.length} readOnly />
+                  </div>
+                  <div>
+                    <Label>Export</Label>
+                    <Button variant="outline" onClick={exportSelectedEmployeeResultsCsv} disabled={!selectedEmployeeResults.length}>Export employee CSV</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="employee-results-layout">
+              <Card>
+                <CardHeader><div className="section-heading"><Users size={18} /><div><h3>Employees with scores</h3><p>Select a name to open that employee's score summary.</p></div></div></CardHeader>
+                <CardContent className="employee-result-list">
+                  {employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | Latest {entry.latestModelPart || "-"}</div></div><div className="employee-result-side"><span className={`status-pill status-${String(entry.latestStatus || "").toLowerCase()}`.trim()}>{entry.latestStatus}</span><strong>{entry.avgPct}%</strong></div></button>)}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Score details</h3><p>Shows attempts, pass count, average score, and detailed exam records.</p></div></div></CardHeader>
+                <CardContent>
+                  {selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div></div>}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (entryPoint === "news") {
     return (
       <div className="app-shell">
