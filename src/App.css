@@ -531,6 +531,16 @@ select:focus {
   color: #fff;
 }
 
+.exam-lock-card {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.92), rgba(240, 253, 244, 0.98));
+  color: var(--ink);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.exam-lock-card .exam-submit-actions p {
+  color: rgba(20, 83, 45, 0.84);
+}
+
 .exam-submit-actions {
   display: flex;
   align-items: center;
@@ -577,6 +587,12 @@ select:focus {
   background: rgba(254, 226, 226, 0.95);
   color: #7f1d1d;
   border-color: rgba(239, 68, 68, 0.26);
+}
+
+.answer-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+  transform: none;
 }
 
 .result-banner {
