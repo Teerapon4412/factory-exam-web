@@ -3,16 +3,29 @@ import path from "node:path";
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import crypto from "node:crypto";
+import fallbackExamBankSeed from "../scripts/exam-bank.seed.json" with { type: "json" };
 
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
 const dbPath = path.join(dataDir, "factory-exam.sqlite");
 const SESSION_TTL_DAYS = Number(process.env.SESSION_TTL_DAYS || 14);
 
-const defaultState = {
-  bank: {
+function createFallbackBank() {
+  if (fallbackExamBankSeed && Array.isArray(fallbackExamBankSeed.models) && fallbackExamBankSeed.models.length) {
+    return JSON.parse(JSON.stringify(fallbackExamBankSeed));
+  }
+
+  return {
     title: "Factory Online Exam",
     models: [],
-  },
+  };
+}
+
+function hasBankContent(bank) {
+  return Array.isArray(bank?.models) && bank.models.some((model) => Array.isArray(model?.parts) && model.parts.some((part) => Array.isArray(part?.questions) && part.questions.length));
+}
+
+const defaultState = {
+  bank: createFallbackBank(),
   results: [],
 };
 
@@ -68,6 +81,33 @@ function employeePublicFields(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function newsPublicFields(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    summary: row.summary,
+    content: row.content,
+    imageUrl: row.image_url,
+    pinned: Boolean(row.pinned),
+    publishedAt: row.published_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function sanitizeNewsInput(input, current = null) {
+  const title = String(input?.title ?? current?.title ?? '').trim();
+  const summary = String(input?.summary ?? current?.summary ?? '').trim();
+  const content = String(input?.content ?? current?.content ?? '').trim();
+  const imageUrl = String(input?.imageUrl ?? current?.imageUrl ?? '').trim();
+  const pinned = typeof input?.pinned === 'boolean' ? input.pinned : Boolean(current?.pinned);
+
+  if (!title || !content) throw new Error('REQUIRED_FIELDS');
+
+  return { title, summary, content, imageUrl, pinned };
 }
 
 function openDb() {
@@ -129,12 +169,59 @@ function openDb() {
       updated_at TEXT NOT NULL,
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS news (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL,
+      image_url TEXT NOT NULL DEFAULT '',
+      pinned INTEGER NOT NULL DEFAULT 0,
+      published_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   const stateRow = db.prepare("SELECT key FROM app_state WHERE key = ?").get("global_state");
   if (!stateRow) {
     db.prepare("INSERT INTO app_state (key, value, updated_at) VALUES (?, ?, ?)")
       .run("global_state", JSON.stringify(defaultState), nowIso());
+  }
+
+  const newsCountRow = db.prepare("SELECT COUNT(*) AS count FROM news").get();
+  if (Number(newsCountRow?.count || 0) === 0) {
+    const rawState = db.prepare("SELECT value FROM app_state WHERE key = ?").get("global_state");
+    if (rawState?.value) {
+      try {
+        const parsed = JSON.parse(rawState.value);
+        const legacyNews = Array.isArray(parsed?.news) ? parsed.news : [];
+        if (legacyNews.length) {
+          const insertNews = db.prepare(`
+            INSERT INTO news (
+              id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          const timestamp = nowIso();
+          for (const item of legacyNews) {
+            const publishedAt = String(item?.publishedAt || timestamp);
+            insertNews.run(
+              String(item?.id || crypto.randomUUID()),
+              String(item?.title || '').trim(),
+              String(item?.summary || '').trim(),
+              String(item?.content || '').trim(),
+              String(item?.imageUrl || '').trim(),
+              item?.pinned ? 1 : 0,
+              publishedAt,
+              timestamp,
+              timestamp,
+            );
+          }
+        }
+      } catch {
+        // Ignore legacy news migration failures and continue booting.
+      }
+    }
   }
 
   const adminRow = db.prepare("SELECT id FROM employees WHERE username = ?").get(adminSeed.username);
@@ -187,7 +274,7 @@ export async function loadState() {
   try {
     const parsed = JSON.parse(row.value);
     return {
-      bank: parsed.bank ?? defaultState.bank,
+      bank: hasBankContent(parsed.bank) ? parsed.bank : defaultState.bank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
     };
   } catch {
@@ -198,7 +285,7 @@ export async function loadState() {
 export async function saveState(state) {
   const db = await getDb();
   const safeState = {
-    bank: state.bank ?? defaultState.bank,
+    bank: hasBankContent(state.bank) ? state.bank : defaultState.bank,
     results: Array.isArray(state.results) ? state.results : defaultState.results,
   };
 
@@ -226,6 +313,96 @@ export async function listEmployees() {
     ORDER BY role DESC, full_name COLLATE NOCASE ASC
   `).all();
   return rows.map(employeePublicFields);
+}
+
+export async function listNews() {
+  const db = await getDb();
+  const rows = db.prepare(`
+    SELECT id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+    FROM news
+    ORDER BY pinned DESC, published_at DESC, created_at DESC
+  `).all();
+  return rows.map(newsPublicFields);
+}
+
+export async function createNews(input) {
+  const db = await getDb();
+  const timestamp = nowIso();
+  const payload = sanitizeNewsInput(input);
+  const id = crypto.randomUUID();
+  const publishedAt = String(input?.publishedAt || timestamp);
+
+  db.prepare(`
+    INSERT INTO news (
+      id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    payload.title,
+    payload.summary,
+    payload.content,
+    payload.imageUrl,
+    payload.pinned ? 1 : 0,
+    publishedAt,
+    timestamp,
+    timestamp,
+  );
+
+  return newsPublicFields({
+    id,
+    title: payload.title,
+    summary: payload.summary,
+    content: payload.content,
+    image_url: payload.imageUrl,
+    pinned: payload.pinned ? 1 : 0,
+    published_at: publishedAt,
+    created_at: timestamp,
+    updated_at: timestamp,
+  });
+}
+
+export async function updateNews(id, input) {
+  const db = await getDb();
+  const current = db.prepare(`
+    SELECT id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+    FROM news
+    WHERE id = ?
+  `).get(id);
+  if (!current) throw new Error('NOT_FOUND');
+
+  const payload = sanitizeNewsInput(input, newsPublicFields(current));
+  const updatedAt = nowIso();
+
+  db.prepare(`
+    UPDATE news
+    SET title = ?, summary = ?, content = ?, image_url = ?, pinned = ?, updated_at = ?
+    WHERE id = ?
+  `).run(
+    payload.title,
+    payload.summary,
+    payload.content,
+    payload.imageUrl,
+    payload.pinned ? 1 : 0,
+    updatedAt,
+    id,
+  );
+
+  return newsPublicFields({
+    ...current,
+    title: payload.title,
+    summary: payload.summary,
+    content: payload.content,
+    image_url: payload.imageUrl,
+    pinned: payload.pinned ? 1 : 0,
+    updated_at: updatedAt,
+  });
+}
+
+export async function deleteNews(id) {
+  const db = await getDb();
+  const current = db.prepare('SELECT id FROM news WHERE id = ?').get(id);
+  if (!current) throw new Error('NOT_FOUND');
+  db.prepare('DELETE FROM news WHERE id = ?').run(id);
 }
 
 export async function createEmployee(input) {

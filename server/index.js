@@ -9,13 +9,17 @@ import {
   createEmployee,
   createSession,
   deleteEmployee,
+  deleteNews,
   deleteSession,
   getSession,
   listEvaluations,
   listEmployees,
+  listNews,
   loadState,
   saveState,
+  createNews,
   updateEmployee,
+  updateNews,
 } from "./db.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -127,6 +131,53 @@ app.post("/api/results", requireAuth, async (req, res, next) => {
     };
     res.status(201).json(await appendResult(entry));
   } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/news", requireAuth, async (_req, res, next) => {
+  try {
+    res.json(await listNews());
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/news", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const news = await createNews(req.body ?? {});
+    res.status(201).json(news);
+  } catch (error) {
+    if (error?.message === "REQUIRED_FIELDS") {
+      return res.status(400).json({ error: "Required fields are missing" });
+    }
+    next(error);
+  }
+});
+
+app.put("/api/news/:id", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const news = await updateNews(req.params.id, req.body ?? {});
+    res.json(news);
+  } catch (error) {
+    if (error?.message === "NOT_FOUND") {
+      return res.status(404).json({ error: "News not found" });
+    }
+    if (error?.message === "REQUIRED_FIELDS") {
+      return res.status(400).json({ error: "Required fields are missing" });
+    }
+    next(error);
+  }
+});
+
+app.delete("/api/news/:id", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    await deleteNews(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    if (error?.message === "NOT_FOUND") {
+      return res.status(404).json({ error: "News not found" });
+    }
     next(error);
   }
 });
