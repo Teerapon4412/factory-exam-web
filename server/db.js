@@ -93,6 +93,7 @@ function newsPublicFields(row) {
     content: row.content,
     imageUrl: row.image_url,
     pinned: Boolean(row.pinned),
+    published: row.published == null ? true : Boolean(row.published),
     publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -105,10 +106,11 @@ function sanitizeNewsInput(input, current = null) {
   const content = String(input?.content ?? current?.content ?? '').trim();
   const imageUrl = String(input?.imageUrl ?? current?.imageUrl ?? '').trim();
   const pinned = typeof input?.pinned === 'boolean' ? input.pinned : Boolean(current?.pinned);
+  const published = typeof input?.published === 'boolean' ? input.published : current?.published !== false;
 
   if (!title || !content) throw new Error('REQUIRED_FIELDS');
 
-  return { title, summary, content, imageUrl, pinned };
+  return { title, summary, content, imageUrl, pinned, published };
 }
 
 function openDb() {
@@ -178,11 +180,17 @@ function openDb() {
       content TEXT NOT NULL,
       image_url TEXT NOT NULL DEFAULT '',
       pinned INTEGER NOT NULL DEFAULT 0,
+      published INTEGER NOT NULL DEFAULT 1,
       published_at TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
   `);
+
+  const newsColumns = db.prepare("PRAGMA table_info(news)").all();
+  if (!newsColumns.some((column) => column.name === "published")) {
+    db.exec("ALTER TABLE news ADD COLUMN published INTEGER NOT NULL DEFAULT 1");
+  }
 
   const stateRow = db.prepare("SELECT key FROM app_state WHERE key = ?").get("global_state");
   if (!stateRow) {
@@ -200,8 +208,8 @@ function openDb() {
         if (legacyNews.length) {
           const insertNews = db.prepare(`
             INSERT INTO news (
-              id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              id, title, summary, content, image_url, pinned, published, published_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `);
           const timestamp = nowIso();
           for (const item of legacyNews) {
@@ -213,6 +221,7 @@ function openDb() {
               String(item?.content || '').trim(),
               String(item?.imageUrl || '').trim(),
               item?.pinned ? 1 : 0,
+              item?.published === false ? 0 : 1,
               publishedAt,
               timestamp,
               timestamp,
@@ -318,11 +327,13 @@ export async function listEmployees() {
   return rows.map(employeePublicFields);
 }
 
-export async function listNews() {
+export async function listNews(options = {}) {
   const db = await getDb();
+  const includeHidden = Boolean(options.includeHidden);
   const rows = db.prepare(`
-    SELECT id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+    SELECT id, title, summary, content, image_url, pinned, published, published_at, created_at, updated_at
     FROM news
+    ${includeHidden ? "" : "WHERE published = 1"}
     ORDER BY pinned DESC, published_at DESC, created_at DESC
   `).all();
   return rows.map(newsPublicFields);
@@ -337,8 +348,8 @@ export async function createNews(input) {
 
   db.prepare(`
     INSERT INTO news (
-      id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      id, title, summary, content, image_url, pinned, published, published_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id,
     payload.title,
@@ -346,6 +357,7 @@ export async function createNews(input) {
     payload.content,
     payload.imageUrl,
     payload.pinned ? 1 : 0,
+    payload.published ? 1 : 0,
     publishedAt,
     timestamp,
     timestamp,
@@ -358,6 +370,7 @@ export async function createNews(input) {
     content: payload.content,
     image_url: payload.imageUrl,
     pinned: payload.pinned ? 1 : 0,
+    published: payload.published ? 1 : 0,
     published_at: publishedAt,
     created_at: timestamp,
     updated_at: timestamp,
@@ -367,7 +380,7 @@ export async function createNews(input) {
 export async function updateNews(id, input) {
   const db = await getDb();
   const current = db.prepare(`
-    SELECT id, title, summary, content, image_url, pinned, published_at, created_at, updated_at
+    SELECT id, title, summary, content, image_url, pinned, published, published_at, created_at, updated_at
     FROM news
     WHERE id = ?
   `).get(id);
@@ -378,7 +391,7 @@ export async function updateNews(id, input) {
 
   db.prepare(`
     UPDATE news
-    SET title = ?, summary = ?, content = ?, image_url = ?, pinned = ?, updated_at = ?
+    SET title = ?, summary = ?, content = ?, image_url = ?, pinned = ?, published = ?, updated_at = ?
     WHERE id = ?
   `).run(
     payload.title,
@@ -386,6 +399,7 @@ export async function updateNews(id, input) {
     payload.content,
     payload.imageUrl,
     payload.pinned ? 1 : 0,
+    payload.published ? 1 : 0,
     updatedAt,
     id,
   );
@@ -397,6 +411,7 @@ export async function updateNews(id, input) {
     content: payload.content,
     image_url: payload.imageUrl,
     pinned: payload.pinned ? 1 : 0,
+    published: payload.published ? 1 : 0,
     updated_at: updatedAt,
   });
 }

@@ -14,6 +14,7 @@ import {
   LogOut,
   Megaphone,
   Plus,
+  Search,
   Save,
   Settings2,
   ShieldCheck,
@@ -334,6 +335,7 @@ const emptyNewsForm = () => ({
   content: "",
   imageUrl: "",
   pinned: false,
+  published: true,
 });
 
 const normalizeNews = (items) => {
@@ -346,6 +348,7 @@ const normalizeNews = (items) => {
     content: String(item.content || "").trim(),
     imageUrl: String(item.imageUrl || "").trim(),
     pinned: Boolean(item.pinned),
+    published: item.published !== false,
     publishedAt: item.publishedAt || new Date().toISOString(),
   })).filter((item) => item.title || item.content);
 };
@@ -499,10 +502,15 @@ export default function App() {
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
   const [dashboardSearch, setDashboardSearch] = useState("");
+  const [employeeResultsSearch, setEmployeeResultsSearch] = useState("");
+  const [employeeResultsStatusFilter, setEmployeeResultsStatusFilter] = useState("ALL");
+  const [selectedEmployeeResultCode, setSelectedEmployeeResultCode] = useState("");
   const [entryPoint, setEntryPoint] = useState("portal");
   const [newsForm, setNewsForm] = useState(emptyNewsForm);
   const [editingNewsId, setEditingNewsId] = useState(null);
   const [newsError, setNewsError] = useState("");
+  const [newsSearch, setNewsSearch] = useState("");
+  const [newsVisibilityFilter, setNewsVisibilityFilter] = useState("ALL");
   const [evaluationForm, setEvaluationForm] = useState(() => {
     try {
       const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
@@ -616,7 +624,7 @@ export default function App() {
         const data = await stateRes.json();
         if (ignore) return;
 
-        const newsRes = await fetch(`${API_BASE}/news`, {
+        const newsRes = await fetch(nextSession.role === "ADMIN" ? `${API_BASE}/news?includeHidden=1` : `${API_BASE}/news`, {
           headers: authHeaders(nextSession),
         });
         if (!newsRes.ok) throw new Error(`HTTP ${newsRes.status}`);
@@ -673,7 +681,7 @@ export default function App() {
 
     const refreshNews = async () => {
       try {
-        const res = await fetch(`${API_BASE}/news`, {
+        const res = await fetch(session.role === "ADMIN" ? `${API_BASE}/news?includeHidden=1` : `${API_BASE}/news`, {
           headers: authHeaders(session),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -813,6 +821,77 @@ export default function App() {
     }),
     [newsItems],
   );
+
+  const visibleNews = useMemo(() => {
+    const q = newsSearch.trim().toLowerCase();
+    return orderedNews.filter((item) => {
+      if (isAdmin) {
+        if (newsVisibilityFilter === "PUBLISHED" && !item.published) return false;
+        if (newsVisibilityFilter === "HIDDEN" && item.published) return false;
+      }
+      if (!q) return true;
+      const hay = [item.title, item.summary, item.content].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }, [orderedNews, newsSearch, newsVisibilityFilter, isAdmin]);
+
+  const employeeResultSummaries = useMemo(() => {
+    const q = employeeResultsSearch.trim().toLowerCase();
+    const map = new Map();
+    resultHistory.forEach((entry) => {
+      const key = entry.candidateCode || entry.employeeCode || entry.id;
+      const prev = map.get(key) || {
+        candidateCode: entry.candidateCode || "-",
+        candidateName: entry.candidateName || "-",
+        attempts: 0,
+        passed: 0,
+        scorePctSum: 0,
+        latestSubmittedAt: entry.submittedAt,
+        latestStatus: entry.status,
+        latestModelPart: [entry.modelCode, entry.partCode].filter(Boolean).join("/"),
+      };
+      prev.attempts += 1;
+      prev.passed += entry.status === "PASS" ? 1 : 0;
+      prev.scorePctSum += entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0;
+      if (new Date(entry.submittedAt).getTime() > new Date(prev.latestSubmittedAt).getTime()) {
+        prev.latestSubmittedAt = entry.submittedAt;
+        prev.latestStatus = entry.status;
+        prev.latestModelPart = [entry.modelCode, entry.partCode].filter(Boolean).join("/");
+        prev.candidateName = entry.candidateName || prev.candidateName;
+      }
+      map.set(key, prev);
+    });
+    return Array.from(map.values())
+      .map((entry) => ({
+        ...entry,
+        avgPct: entry.attempts ? Math.round(entry.scorePctSum / entry.attempts) : 0,
+        passRate: entry.attempts ? Math.round((entry.passed / entry.attempts) * 100) : 0,
+      }))
+      .filter((entry) => {
+        if (employeeResultsStatusFilter !== "ALL" && entry.latestStatus !== employeeResultsStatusFilter) return false;
+        if (!q) return true;
+        return [entry.candidateCode, entry.candidateName].join(" ").toLowerCase().includes(q);
+      })
+      .sort((a, b) => new Date(b.latestSubmittedAt).getTime() - new Date(a.latestSubmittedAt).getTime());
+  }, [resultHistory, employeeResultsSearch, employeeResultsStatusFilter]);
+
+  const selectedEmployeeResults = useMemo(
+    () => resultHistory
+      .filter((entry) => entry.candidateCode === selectedEmployeeResultCode)
+      .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()),
+    [resultHistory, selectedEmployeeResultCode],
+  );
+
+  useEffect(() => {
+    if (!employeeResultSummaries.length) {
+      setSelectedEmployeeResultCode("");
+      return;
+    }
+
+    if (!employeeResultSummaries.some((entry) => entry.candidateCode === selectedEmployeeResultCode)) {
+      setSelectedEmployeeResultCode(employeeResultSummaries[0].candidateCode);
+    }
+  }, [employeeResultSummaries, selectedEmployeeResultCode]);
 
   useEffect(() => {
     let ignore = false;
@@ -972,6 +1051,7 @@ export default function App() {
       content: item.content || "",
       imageUrl: item.imageUrl || "",
       pinned: Boolean(item.pinned),
+      published: item.published !== false,
     });
     setNewsError("");
   };
@@ -983,6 +1063,7 @@ export default function App() {
       content: newsForm.content.trim(),
       imageUrl: newsForm.imageUrl.trim(),
       pinned: Boolean(newsForm.pinned),
+      published: newsForm.published !== false,
     };
     if (!payload.title || !payload.content) {
       setNewsError("Please enter both a news title and news details");
@@ -1257,6 +1338,13 @@ export default function App() {
     downloadCsv(`dashboard_history_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "pass_score", "correct", "question_count", "status"], rows);
   };
 
+  const exportSelectedEmployeeResultsCsv = () => {
+    if (!selectedEmployeeResults.length) return;
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = selectedEmployeeResults.map((entry) => [new Date(entry.submittedAt).toISOString(), entry.candidateName, entry.candidateCode, entry.modelCode, entry.modelName, entry.partCode, entry.partName, entry.score, entry.fullScore, entry.status]);
+    downloadCsv(`employee_results_${selectedEmployeeResultCode || "employee"}_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "status"], rows);
+  };
+
   const patchEvaluationMeta = (field, value) => {
     setEvaluationForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -1496,60 +1584,87 @@ export default function App() {
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
             <div className="hero-copy">
               <div className="hero-topbar">
-                <div className="hero-badges"><Badge>News Center</Badge><Badge outline>{orderedNews.length} ข่าว</Badge></div>
+                <div className="hero-badges"><Badge>News Center</Badge><Badge outline>{visibleNews.length} items</Badge></div>
                 <div className="hero-session">
-                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
-                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> Back</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> Logout</Button>
                 </div>
               </div>
-              <h1>ข่าวสารและประกาศ</h1>
-              <p>พื้นที่กลางสำหรับสื่อสารข่าวภายใน หลังล็อกอินแล้วผู้ใช้สามารถเลือกกลับไปเข้าทำข้อสอบได้ทุกเมื่อ</p>
+              <h1>News and announcements</h1>
+              <p>Read the latest internal updates here, then jump back to the exam area whenever you need.</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>ข่าวปักหมุด</span><strong>{orderedNews.filter((item) => item.pinned).length}</strong></div>
-              <div className="hero-stat"><span>ข่าวทั้งหมด</span><strong>{orderedNews.length}</strong></div>
+              <div className="hero-stat"><span>Pinned</span><strong>{orderedNews.filter((item) => item.pinned).length}</strong></div>
+              <div className="hero-stat"><span>Published</span><strong>{orderedNews.filter((item) => item.published !== false).length}</strong></div>
+              {isAdmin ? <div className="hero-stat"><span>Hidden</span><strong>{orderedNews.filter((item) => item.published === false).length}</strong></div> : null}
             </div>
           </motion.section>
 
           {isAdmin ? (
             <Card>
-              <CardHeader><div className="section-heading"><Megaphone size={18} /><div><h3>จัดการข่าวสาร</h3><p>เพิ่ม, แก้ไข, และลบข่าวที่จะแชร์ให้ผู้ใช้หลังล็อกอิน</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><Megaphone size={18} /><div><h3>Manage news</h3><p>Create, edit, and control which announcements are visible to all employees.</p></div></div></CardHeader>
               <CardContent>
                 <div className="form-stack">
-                  <Label>หัวข้อข่าว</Label>
+                  <Label>Title</Label>
                   <Input value={newsForm.title} onChange={(e) => setNewsForm((prev) => ({ ...prev, title: e.target.value }))} />
-                  <Label>สรุปสั้น</Label>
+                  <Label>Summary</Label>
                   <Input value={newsForm.summary} onChange={(e) => setNewsForm((prev) => ({ ...prev, summary: e.target.value }))} />
-                  <Label>ลิงก์รูปภาพข่าว</Label>
+                  <Label>Image URL</Label>
                   <Input value={newsForm.imageUrl} onChange={(e) => setNewsForm((prev) => ({ ...prev, imageUrl: e.target.value }))} placeholder="https://..." />
                   <label className="upload-button">
-                    <ImagePlus size={16} /> เลือกรูปข่าว
+                    <ImagePlus size={16} /> Upload news image
                     <input type="file" accept="image/*" hidden onChange={(e) => uploadNewsImage(e.target.files?.[0])} />
                   </label>
                   {newsForm.imageUrl ? <img src={newsForm.imageUrl} alt="news-preview" className="news-image" /> : null}
-                  <Label>รายละเอียดข่าว</Label>
+                  <Label>Detail</Label>
                   <Textarea rows={5} value={newsForm.content} onChange={(e) => setNewsForm((prev) => ({ ...prev, content: e.target.value }))} />
                   <label className="news-pin-toggle">
                     <input type="checkbox" checked={newsForm.pinned} onChange={(e) => setNewsForm((prev) => ({ ...prev, pinned: e.target.checked }))} />
-                    <span>ปักหมุดข่าวนี้ไว้ด้านบน</span>
+                    <span>Pin this item to the top</span>
+                  </label>
+                  <label className="news-pin-toggle">
+                    <input type="checkbox" checked={newsForm.published !== false} onChange={(e) => setNewsForm((prev) => ({ ...prev, published: e.target.checked }))} />
+                    <span>Publish for all users</span>
                   </label>
                   {newsError ? <div className="alert-error">{newsError}</div> : null}
                   <div className="button-row">
-                    <Button onClick={saveNews}>{editingNewsId ? "บันทึกการแก้ไขข่าว" : "เพิ่มข่าวใหม่"}</Button>
-                    <Button variant="outline" onClick={resetNewsForm}>ล้างฟอร์มข่าว</Button>
+                    <Button onClick={saveNews}>{editingNewsId ? "Save changes" : "Create news"}</Button>
+                    <Button variant="outline" onClick={resetNewsForm}>Clear form</Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ) : null}
 
+          <Card>
+            <CardContent className="news-toolbar">
+              <div className="news-search-wrap">
+                <Search size={18} />
+                <Input value={newsSearch} onChange={(e) => setNewsSearch(e.target.value)} placeholder="Search title, summary, or content" />
+              </div>
+              {isAdmin ? (
+                <div>
+                  <Label>Visibility</Label>
+                  <select value={newsVisibilityFilter} onChange={(e) => setNewsVisibilityFilter(e.target.value)} style={S.input}>
+                    <option value="ALL">All</option>
+                    <option value="PUBLISHED">Published</option>
+                    <option value="HIDDEN">Hidden</option>
+                  </select>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
           <div className="news-grid">
-            {orderedNews.map((item) => (
-              <Card key={item.id} className="news-card">
+            {visibleNews.length === 0 ? <Card><CardContent className="empty-state">No news matched the current filter.</CardContent></Card> : visibleNews.map((item) => (
+              <Card key={item.id} className={`news-card ${item.published === false ? "is-hidden" : ""}`.trim()}>
                 <CardContent className="news-card-content">
-                  <div className="hero-badges">
-                    {item.pinned ? <Badge>ปักหมุด</Badge> : <Badge outline>ข่าวสาร</Badge>}
-                    <Badge outline>{new Date(item.publishedAt).toLocaleDateString()}</Badge>
+                  <div className="news-meta-row">
+                    <div className="hero-badges">
+                      {item.pinned ? <Badge>Pinned</Badge> : <Badge outline>News</Badge>}
+                      <Badge outline>{new Date(item.publishedAt).toLocaleDateString()}</Badge>
+                      {isAdmin ? <Badge outline>{item.published === false ? "Hidden" : "Published"}</Badge> : null}
+                    </div>
                   </div>
                   {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="news-image" /> : null}
                   <h3>{item.title}</h3>
@@ -1557,8 +1672,8 @@ export default function App() {
                   <div className="news-content">{item.content}</div>
                   {isAdmin ? (
                     <div className="button-row">
-                      <Button variant="outline" onClick={() => startEditNews(item)}>แก้ไข</Button>
-                      <Button variant="destructive" onClick={() => removeNews(item)}>ลบ</Button>
+                      <Button variant="outline" onClick={() => startEditNews(item)}>Edit</Button>
+                      <Button variant="destructive" onClick={() => removeNews(item)}>Delete</Button>
                     </div>
                   ) : null}
                 </CardContent>
@@ -1569,7 +1684,6 @@ export default function App() {
       </div>
     );
   }
-
   return (
     <div className="app-shell">
       <div className="backdrop-grid" />
@@ -1603,7 +1717,7 @@ export default function App() {
           <TabsList>
             {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
-            {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
+            {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
 
           {isAdmin ? (
@@ -1971,6 +2085,8 @@ export default function App() {
               </div>
             </TabsContent>
           ) : null}
+
+          {isAdmin ? <TabsContent value="employee-results"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Search employee</Label><Input value={employeeResultsSearch} onChange={(e) => setEmployeeResultsSearch(e.target.value)} placeholder="Employee name or code" /></div><div><Label>Latest status</Label><select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}><option value="ALL">All</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>Matched employees</Label><Input value={employeeResultSummaries.length} readOnly /></div><div><Label>Export</Label><Button variant="outline" onClick={exportSelectedEmployeeResultsCsv} disabled={!selectedEmployeeResults.length}>Export employee CSV</Button></div></div></CardContent></Card><div className="employee-results-layout"><Card><CardHeader><div className="section-heading"><Users size={18} /><div><h3>Employees with exam history</h3><p>Select an employee to view recent attempts and score trends.</p></div></div></CardHeader><CardContent className="employee-result-list">{employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | Latest {entry.latestModelPart || "-"}</div></div><div className="employee-result-side"><span className={`status-pill status-${String(entry.latestStatus || "").toLowerCase()}`.trim()}>{entry.latestStatus}</span><strong>{entry.avgPct}%</strong></div></button>)}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Employee exam summary</h3><p>See attempt count, pass count, and the detailed exam list for the selected person.</p></div></div></CardHeader><CardContent>{selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view detailed attempts.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div></div>}</CardContent></Card></div></div></TabsContent> : null}
 
           {isAdmin ? <TabsContent value="dashboard"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Model</Label><select value={dashboardModelFilter} onChange={(e) => { setDashboardModelFilter(e.target.value); setDashboardPartFilter("ALL"); }} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardModelOptions.map((m) => <option key={m.modelCode} value={m.modelCode}>{m.modelCode} - {m.modelName}</option>)}</select></div><div><Label>Part</Label><select value={dashboardPartFilter} onChange={(e) => setDashboardPartFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardPartOptions.map((p) => <option key={p.key} value={p.key}>{p.modelCode}/{p.partCode} - {p.partName}</option>)}</select></div><div><Label>สถานะ</Label><select value={dashboardStatusFilter} onChange={(e) => setDashboardStatusFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>ค้นหา</Label><Input value={dashboardSearch} onChange={(e) => setDashboardSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part" /></div></div></CardContent></Card><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">จำนวนครั้งสอบทั้งหมด</div><div className="metric-value">{dashboardSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">จำนวนที่ผ่าน</div><div className="metric-value">{dashboardSummary.passed}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">คะแนนเฉลี่ยรวม</div><div className="metric-value">{dashboardSummary.avgPct}%</div></CardContent></Card></div><Card><CardHeader><div className="table-header-row"><div><h3>สรุปราย Model / Part</h3><p>ดูจำนวนครั้ง อัตราผ่าน และคะแนนเฉลี่ยแยกตามสายการสอบ</p></div><div className="button-row"><Button variant="outline" onClick={exportDashboardSummaryCsv}>Export Summary CSV</Button><Button variant="outline" onClick={exportDashboardHistoryCsv}>Export History CSV</Button><Button variant="outline" onClick={() => { if (window.confirm("ต้องการล้างผลสอบทั้งหมดหรือไม่")) setResultHistory([]); }}>ล้างข้อมูล Dashboard</Button></div></div></CardHeader><CardContent>{byModelPart.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Model</th><th>Part</th><th>จำนวนครั้ง</th><th>ผ่าน</th><th>อัตราผ่าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>{byModelPart.map((row, idx) => <tr key={`${row.modelCode}-${row.partCode}-${idx}`}><td>{row.modelCode} - {row.modelName}</td><td>{row.partCode} - {row.partName}</td><td>{row.attempts}</td><td>{row.passed}</td><td>{row.passRate}%</td><td>{row.avgPct}%</td></tr>)}</tbody></table></div>}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>ผลสอบล่าสุด</h3><p>แสดงข้อมูลล่าสุด 20 รายการตามตัวกรองปัจจุบัน</p></div></div></CardHeader><CardContent>{filteredHistory.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>เวลา</th><th>พนักงาน</th><th>Model/Part</th><th>คะแนน</th><th>สถานะ</th></tr></thead><tbody>{filteredHistory.slice(0, 20).map((r) => <tr key={r.id}><td>{new Date(r.submittedAt).toLocaleString()}</td><td>{r.candidateName} ({r.candidateCode})</td><td>{r.modelCode}/{r.partCode}</td><td>{r.score}/{r.fullScore}</td><td>{r.status}</td></tr>)}</tbody></table></div>}</CardContent></Card></div></TabsContent> : null}
 

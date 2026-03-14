@@ -135,9 +135,10 @@ app.post("/api/results", requireAuth, async (req, res, next) => {
   }
 });
 
-app.get("/api/news", requireAuth, async (_req, res, next) => {
+app.get("/api/news", requireAuth, async (req, res, next) => {
   try {
-    res.json(await listNews());
+    const includeHidden = req.user?.role === "ADMIN" && String(req.query.includeHidden || "") === "1";
+    res.json(await listNews({ includeHidden }));
   } catch (error) {
     next(error);
   }

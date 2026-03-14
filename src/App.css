@@ -288,6 +288,33 @@ select:focus {
   gap: 16px;
 }
 
+.news-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.6fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.news-search-wrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.news-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.news-card.is-hidden {
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  opacity: 0.82;
+}
+
 .news-summary {
   margin: 0;
   color: var(--muted);
@@ -619,6 +646,70 @@ select:focus {
   font-weight: 800;
 }
 
+.employee-results-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
+  gap: 16px;
+}
+
+.employee-result-list,
+.detail-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.employee-result-row {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.84);
+  cursor: pointer;
+}
+
+.employee-result-row.is-active {
+  border-color: rgba(16, 43, 58, 0.35);
+  background: linear-gradient(135deg, rgba(16, 43, 58, 0.1), rgba(118, 181, 197, 0.08));
+}
+
+.employee-result-meta {
+  margin-top: 4px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.employee-result-side {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.status-pass {
+  background: rgba(220, 252, 231, 0.95);
+  color: #166534;
+}
+
+.status-fail {
+  background: rgba(254, 226, 226, 0.95);
+  color: #991b1b;
+}
+
 .evaluation-layout {
   display: grid;
   gap: 16px;
@@ -755,7 +846,9 @@ select:focus {
   .split-grid,
   .choice-grid,
   .io-grid,
-  .portal-grid {
+  .portal-grid,
+  .employee-results-layout,
+  .news-toolbar {
     grid-template-columns: 1fr;
   }
 
