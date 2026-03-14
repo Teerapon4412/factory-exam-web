@@ -623,7 +623,9 @@ select:focus {
 
 .dashboard-table-wrap {
   width: 100%;
-  overflow: auto;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .dashboard-table {
@@ -650,6 +652,12 @@ select:focus {
   display: grid;
   grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
   gap: 16px;
+}
+
+.employee-results-layout > *,
+.detail-stack > *,
+.dashboard-layout > * {
+  min-width: 0;
 }
 
 .employee-result-list,
