@@ -27,6 +27,7 @@ function hasBankContent(bank) {
 const defaultState = {
   bank: createFallbackBank(),
   results: [],
+  news: [],
 };
 
 const adminSeed = {
@@ -276,6 +277,7 @@ export async function loadState() {
     return {
       bank: hasBankContent(parsed.bank) ? parsed.bank : defaultState.bank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
+      news: Array.isArray(parsed.news) ? parsed.news : defaultState.news,
     };
   } catch {
     return defaultState;
@@ -287,6 +289,7 @@ export async function saveState(state) {
   const safeState = {
     bank: hasBankContent(state.bank) ? state.bank : defaultState.bank,
     results: Array.isArray(state.results) ? state.results : defaultState.results,
+    news: Array.isArray(state.news) ? state.news : defaultState.news,
   };
 
   db.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?")
