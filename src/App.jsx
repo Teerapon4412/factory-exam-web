@@ -418,22 +418,11 @@ function normalize(raw) {
 }
 
 const loadBank = () => {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    return s ? normalize(JSON.parse(s)) : starterBank();
-  } catch {
-    return starterBank();
-  }
+  return starterBank();
 };
 
 const loadResults = () => {
-  try {
-    const s = localStorage.getItem(RESULTS_KEY);
-    const parsed = s ? JSON.parse(s) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return [];
 };
 
 
@@ -547,22 +536,6 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
-    } catch {
-      // Ignore storage restrictions in locked-down browsers.
-    }
-  }, [bank]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(RESULTS_KEY, JSON.stringify(resultHistory));
-    } catch {
-      // Ignore storage restrictions in locked-down browsers.
-    }
-  }, [resultHistory]);
-
-  useEffect(() => {
-    try {
       localStorage.setItem(EVALUATION_DRAFT_KEY, JSON.stringify(evaluationForm));
     } catch {
       // Ignore storage restrictions in locked-down browsers.
@@ -638,6 +611,12 @@ export default function App() {
         const nextBank = normalize(data.bank ?? starterBank());
         const nextResults = Array.isArray(data.results) ? data.results : [];
         const nextNews = normalizeNews(newsData);
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(RESULTS_KEY);
+        } catch {
+          // Ignore storage restrictions in locked-down browsers.
+        }
         setBank(nextBank);
         setResultHistory(nextResults);
         setNewsItems(nextNews);
@@ -1364,11 +1343,6 @@ export default function App() {
         body: JSON.stringify({ bank, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(bank));
-      } catch {
-        // Ignore storage restrictions in locked-down browsers.
-      }
       alert("บันทึกคลังข้อสอบลงฐานข้อมูลเรียบร้อยแล้ว");
       setSyncStatus("synced");
     } catch (error) {
