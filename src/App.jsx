@@ -289,13 +289,12 @@ const sanitizeBank = (rawBank) => {
 const fallbackStarterBank = sanitizeBank(fallbackExamBankSeed);
 const starterBank = () => JSON.parse(JSON.stringify(fallbackStarterBank));
 
-const scoreLevels = [1, 2, 3, 4, 5];
+const scoreLevels = [1, 2, 3, 4];
 const defaultEvaluationItems = [
   { item: "ปฏิบัติตาม WI และมาตรฐานงาน", method: "สังเกต", weight: 20 },
   { item: "คุณภาพงานและความถูกต้อง", method: "ตรวจงาน", weight: 25 },
   { item: "ความร่วมมือกับทีม", method: "ประเมิน", weight: 20 },
   { item: "การตอบสนองเมื่อพบ NG", method: "สัมภาษณ์", weight: 15 },
-  { item: "ความพร้อมของพื้นที่และ 5ส", method: "ตรวจพื้นที่", weight: 20 },
 ];
 
 const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
@@ -2240,4 +2239,3 @@ export default function App() {
     </div>
   );
 }
-
