@@ -515,19 +515,25 @@ export default function App() {
       const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
       if (!saved) return createEvaluationDraft();
       const parsed = JSON.parse(saved);
+      const defaultRows = createEvaluationRows();
       return {
         ...createEvaluationDraft(),
         ...parsed,
         rows: Array.isArray(parsed?.rows) && parsed.rows.length
-          ? parsed.rows.map((row, index) => ({
-              id: row.id || uid(),
-              no: index + 1,
-              item: row.item || "",
-              method: row.method || "",
-              weight: Number(row.weight || 0),
-              score: Number(row.score || 0),
-            }))
-          : createEvaluationRows(),
+          ? defaultRows.map((defaultRow, index) => {
+              const row = parsed.rows[index];
+              return row
+                ? {
+                    id: row.id || uid(),
+                    no: index + 1,
+                    item: row.item || "",
+                    method: row.method || "",
+                    weight: Number(row.weight || 0),
+                    score: Number(row.score || 0),
+                  }
+                : defaultRow;
+            })
+          : defaultRows,
       };
     } catch {
       return createEvaluationDraft();
