@@ -531,6 +531,9 @@ export default function App() {
   const [evaluationHistory, setEvaluationHistory] = useState([]);
   const [evaluationStatus, setEvaluationStatus] = useState("idle");
   const [evaluationError, setEvaluationError] = useState("");
+  const [evaluationSearch, setEvaluationSearch] = useState("");
+  const [evaluationPartFilter, setEvaluationPartFilter] = useState("ALL");
+  const [evaluationEvaluatorFilter, setEvaluationEvaluatorFilter] = useState("ALL");
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -799,6 +802,40 @@ export default function App() {
     if (!evaluationForm.employeeCode || !evaluationForm.partId) return null;
     return resultHistory.find((entry) => entry.candidateCode === evaluationForm.employeeCode && entry.partId === evaluationForm.partId) || null;
   }, [resultHistory, evaluationForm.employeeCode, evaluationForm.partId]);
+  const evaluationPartFilterOptions = useMemo(() => {
+    const seen = new Map();
+    evaluationHistory.forEach((entry) => {
+      const key = `${entry.modelCode}__${entry.partCode}__${entry.partName}`;
+      if (!seen.has(key)) seen.set(key, { key, label: `${entry.modelCode}/${entry.partCode} - ${entry.partName}` });
+    });
+    return Array.from(seen.values());
+  }, [evaluationHistory]);
+  const evaluationEvaluatorOptions = useMemo(() => {
+    const seen = new Set();
+    evaluationHistory.forEach((entry) => {
+      if (entry.evaluator) seen.add(entry.evaluator);
+    });
+    return Array.from(seen.values()).sort((a, b) => a.localeCompare(b, "th"));
+  }, [evaluationHistory]);
+  const filteredEvaluationHistory = useMemo(() => {
+    const q = evaluationSearch.trim().toLowerCase();
+    return evaluationHistory.filter((entry) => {
+      if (evaluationPartFilter !== "ALL") {
+        const partKey = `${entry.modelCode}__${entry.partCode}__${entry.partName}`;
+        if (partKey !== evaluationPartFilter) return false;
+      }
+      if (evaluationEvaluatorFilter !== "ALL" && (entry.evaluator || "") !== evaluationEvaluatorFilter) return false;
+      if (!q) return true;
+      return [
+        entry.employeeName,
+        entry.employeeCode,
+        entry.modelCode,
+        entry.partCode,
+        entry.partName,
+        entry.evaluator,
+      ].some((value) => String(value || "").toLowerCase().includes(q));
+    });
+  }, [evaluationHistory, evaluationSearch, evaluationPartFilter, evaluationEvaluatorFilter]);
 
   const byModelPart = useMemo(() => {
     const map = new Map();
@@ -1525,7 +1562,10 @@ export default function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      setEvaluationHistory((prev) => [data, ...prev]);
+      setEvaluationHistory((prev) => {
+        const next = [data, ...prev.filter((entry) => entry.id !== data.id)];
+        return next.sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime());
+      });
       setEvaluationStatus("ready");
     } catch (error) {
       console.error(error);
@@ -2060,12 +2100,36 @@ export default function App() {
                         <p>ผูกกับพนักงานและ Part เดียวกับผลสอบ เพื่อย้อนดูได้ภายหลัง</p>
                       </div>
                       <div className="mini-note">
-                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `ทั้งหมด ${evaluationHistory.length} รายการ`}
+                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `ตรงเงื่อนไข ${filteredEvaluationHistory.length} จาก ${evaluationHistory.length} รายการ`}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    {evaluationHistory.length === 0 ? (
+                    <div className="dashboard-filters">
+                      <div>
+                        <Label>ค้นหา</Label>
+                        <Input value={evaluationSearch} onChange={(e) => setEvaluationSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part / ผู้ประเมิน" />
+                      </div>
+                      <div>
+                        <Label>Part</Label>
+                        <select value={evaluationPartFilter} onChange={(e) => setEvaluationPartFilter(e.target.value)} style={S.input}>
+                          <option value="ALL">ทั้งหมด</option>
+                          {evaluationPartFilterOptions.map((entry) => (
+                            <option key={entry.key} value={entry.key}>{entry.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label>ผู้ประเมิน</Label>
+                        <select value={evaluationEvaluatorFilter} onChange={(e) => setEvaluationEvaluatorFilter(e.target.value)} style={S.input}>
+                          <option value="ALL">ทั้งหมด</option>
+                          {evaluationEvaluatorOptions.map((entry) => (
+                            <option key={entry} value={entry}>{entry}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {filteredEvaluationHistory.length === 0 ? (
                       <div className="empty-state">ยังไม่มีผลประเมินในระบบ</div>
                     ) : (
                       <div className="dashboard-table-wrap">
@@ -2081,9 +2145,9 @@ export default function App() {
                             </tr>
                           </thead>
                           <tbody>
-                            {evaluationHistory.map((entry) => (
+                            {filteredEvaluationHistory.map((entry) => (
                               <tr key={entry.id}>
-                                <td>{new Date(entry.createdAt).toLocaleString()}</td>
+                                <td>{new Date(entry.updatedAt || entry.createdAt).toLocaleString()}</td>
                                 <td>{entry.employeeName} ({entry.employeeCode})</td>
                                 <td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td>
                                 <td>{entry.totalScore}/{entry.maxScore}</td>

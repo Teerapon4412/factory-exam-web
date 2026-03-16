@@ -665,7 +665,7 @@ export async function listEvaluations() {
       created_at,
       updated_at
     FROM evaluations
-    ORDER BY created_at DESC
+    ORDER BY updated_at DESC, created_at DESC
   `).all();
   return rows.map(parseEvaluationRow);
 }
@@ -715,51 +715,104 @@ export async function createEvaluation(input) {
     updatedAt: timestamp,
   };
 
-  db.prepare(`
-    INSERT INTO evaluations (
-      id,
-      employee_id,
-      employee_code,
-      employee_name,
-      evaluator,
-      section_title,
-      model_id,
-      model_code,
-      model_name,
-      part_id,
-      part_code,
-      part_name,
-      total_score,
-      max_score,
-      exam_score,
-      exam_full_score,
-      exam_status,
-      rows_json,
-      created_at,
-      updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    payload.id,
-    payload.employeeId,
-    payload.employeeCode,
-    payload.employeeName,
-    payload.evaluator,
-    payload.sectionTitle,
-    payload.modelId,
-    payload.modelCode,
-    payload.modelName,
-    payload.partId,
-    payload.partCode,
-    payload.partName,
-    payload.totalScore,
-    payload.maxScore,
-    payload.examScore,
-    payload.examFullScore,
-    payload.examStatus,
-    payload.rowsJson,
-    payload.createdAt,
-    payload.updatedAt,
-  );
+  const existing = db.prepare(`
+    SELECT id, created_at
+    FROM evaluations
+    WHERE employee_id = ? AND part_id = ?
+    ORDER BY updated_at DESC, created_at DESC
+    LIMIT 1
+  `).get(payload.employeeId, payload.partId);
+
+  if (existing) {
+    payload.id = existing.id;
+    payload.createdAt = existing.created_at;
+
+    db.prepare(`
+      UPDATE evaluations
+      SET
+        employee_code = ?,
+        employee_name = ?,
+        evaluator = ?,
+        section_title = ?,
+        model_id = ?,
+        model_code = ?,
+        model_name = ?,
+        part_code = ?,
+        part_name = ?,
+        total_score = ?,
+        max_score = ?,
+        exam_score = ?,
+        exam_full_score = ?,
+        exam_status = ?,
+        rows_json = ?,
+        updated_at = ?
+      WHERE id = ?
+    `).run(
+      payload.employeeCode,
+      payload.employeeName,
+      payload.evaluator,
+      payload.sectionTitle,
+      payload.modelId,
+      payload.modelCode,
+      payload.modelName,
+      payload.partCode,
+      payload.partName,
+      payload.totalScore,
+      payload.maxScore,
+      payload.examScore,
+      payload.examFullScore,
+      payload.examStatus,
+      payload.rowsJson,
+      payload.updatedAt,
+      payload.id,
+    );
+  } else {
+    db.prepare(`
+      INSERT INTO evaluations (
+        id,
+        employee_id,
+        employee_code,
+        employee_name,
+        evaluator,
+        section_title,
+        model_id,
+        model_code,
+        model_name,
+        part_id,
+        part_code,
+        part_name,
+        total_score,
+        max_score,
+        exam_score,
+        exam_full_score,
+        exam_status,
+        rows_json,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      payload.id,
+      payload.employeeId,
+      payload.employeeCode,
+      payload.employeeName,
+      payload.evaluator,
+      payload.sectionTitle,
+      payload.modelId,
+      payload.modelCode,
+      payload.modelName,
+      payload.partId,
+      payload.partCode,
+      payload.partName,
+      payload.totalScore,
+      payload.maxScore,
+      payload.examScore,
+      payload.examFullScore,
+      payload.examStatus,
+      payload.rowsJson,
+      payload.createdAt,
+      payload.updatedAt,
+    );
+  }
 
   return parseEvaluationRow({
     id: payload.id,
