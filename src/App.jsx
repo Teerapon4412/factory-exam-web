@@ -289,7 +289,7 @@ const sanitizeBank = (rawBank) => {
 const fallbackStarterBank = sanitizeBank(fallbackExamBankSeed);
 const starterBank = () => JSON.parse(JSON.stringify(fallbackStarterBank));
 
-const scoreLevels = [1, 2, 3, 4];
+const scoreLevels = [1, 2, 3];
 const defaultEvaluationItems = [
   { item: "ปฏิบัติตาม WI และมาตรฐานงาน", method: "สังเกต", weight: 20 },
   { item: "คุณภาพงานและความถูกต้อง", method: "ตรวจงาน", weight: 25 },
@@ -797,7 +797,7 @@ export default function App() {
     [evaluationForm.rows],
   );
   const evaluationMax = useMemo(
-    () => evaluationForm.rows.reduce((sum, row) => sum + (5 * Number(row.weight || 0)), 0),
+    () => evaluationForm.rows.reduce((sum, row) => sum + (scoreLevels[scoreLevels.length - 1] * Number(row.weight || 0)), 0),
     [evaluationForm.rows],
   );
   const activeEmployees = useMemo(
