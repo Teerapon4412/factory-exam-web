@@ -911,8 +911,8 @@ export default function App() {
     resultHistory.forEach((entry) => {
       const key = entry.candidateCode || entry.employeeCode || entry.id;
       const prev = map.get(key) || {
-        candidateCode: entry.candidateCode || "-",
-        candidateName: entry.candidateName || "-",
+        candidateCode: entry.candidateCode || entry.employeeCode || "-",
+        candidateName: entry.candidateName || entry.employeeName || "-",
         attempts: 0,
         passed: 0,
         scorePctSum: 0,
@@ -927,7 +927,7 @@ export default function App() {
         prev.latestSubmittedAt = entry.submittedAt;
         prev.latestStatus = entry.status;
         prev.latestModelPart = [entry.modelCode, entry.partCode].filter(Boolean).join("/");
-        prev.candidateName = entry.candidateName || prev.candidateName;
+        prev.candidateName = entry.candidateName || entry.employeeName || prev.candidateName;
       }
       map.set(key, prev);
     });
@@ -947,7 +947,7 @@ export default function App() {
 
   const selectedEmployeeResults = useMemo(
     () => resultHistory
-      .filter((entry) => entry.candidateCode === selectedEmployeeResultCode)
+      .filter((entry) => (entry.candidateCode || entry.employeeCode) === selectedEmployeeResultCode)
       .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()),
     [resultHistory, selectedEmployeeResultCode],
   );
