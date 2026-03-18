@@ -558,6 +558,45 @@ export default function App() {
     setCandidateCode(session.employeeCode || "");
   }, [session]);
 
+  const applySharedData = (nextBank, nextResults, nextNews, preserveSelection = false) => {
+    setBank(nextBank);
+    setResultHistory(nextResults);
+    setNewsItems(nextNews);
+
+    if (!preserveSelection) {
+      setModelId(nextBank.models[0]?.id || null);
+      setPartId(nextBank.models[0]?.parts[0]?.id || null);
+      setQId(nextBank.models[0]?.parts[0]?.questions[0]?.id || null);
+      return;
+    }
+
+    const selectedModel = nextBank.models.find((entry) => entry.id === modelId) || nextBank.models[0];
+    const selectedPart = selectedModel?.parts.find((entry) => entry.id === partId) || selectedModel?.parts[0];
+    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === qId) || selectedPart?.questions[0] || null;
+    setModelId(selectedModel?.id || null);
+    setPartId(selectedPart?.id || null);
+    setQId(selectedQuestion?.id || null);
+  };
+
+  const fetchSharedData = async (activeSession, preserveSelection = false) => {
+    const stateRes = await fetch(`${API_BASE}/state`, {
+      headers: authHeaders(activeSession),
+    });
+    if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status}`);
+    const data = await stateRes.json();
+
+    const newsRes = await fetch(activeSession.role === "ADMIN" ? `${API_BASE}/news?includeHidden=1` : `${API_BASE}/news`, {
+      headers: authHeaders(activeSession),
+    });
+    if (!newsRes.ok) throw new Error(`HTTP ${newsRes.status}`);
+    const newsData = await newsRes.json();
+
+    const nextBank = normalize(data.bank ?? starterBank());
+    const nextResults = Array.isArray(data.results) ? data.results : [];
+    const nextNews = normalizeNews(newsData);
+    applySharedData(nextBank, nextResults, nextNews, preserveSelection);
+  };
+
   useEffect(() => {
     let ignore = false;
 
@@ -598,34 +637,14 @@ export default function App() {
 
       try {
         setSyncStatus("loading");
-        const stateRes = await fetch(`${API_BASE}/state`, {
-          headers: authHeaders(nextSession),
-        });
-        if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status}`);
-        const data = await stateRes.json();
-        if (ignore) return;
-
-        const newsRes = await fetch(nextSession.role === "ADMIN" ? `${API_BASE}/news?includeHidden=1` : `${API_BASE}/news`, {
-          headers: authHeaders(nextSession),
-        });
-        if (!newsRes.ok) throw new Error(`HTTP ${newsRes.status}`);
-        const newsData = await newsRes.json();
-
-        const nextBank = normalize(data.bank ?? starterBank());
-        const nextResults = Array.isArray(data.results) ? data.results : [];
-        const nextNews = normalizeNews(newsData);
+        await fetchSharedData(nextSession);
         try {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(RESULTS_KEY);
         } catch {
           // Ignore storage restrictions in locked-down browsers.
         }
-        setBank(nextBank);
-        setResultHistory(nextResults);
-        setNewsItems(nextNews);
-        setModelId(nextBank.models[0]?.id || null);
-        setPartId(nextBank.models[0]?.parts[0]?.id || null);
-        setQId(nextBank.models[0]?.parts[0]?.questions[0]?.id || null);
+        if (ignore) return;
         setSyncStatus("synced");
       } catch (error) {
         console.error(error);
@@ -666,15 +685,11 @@ export default function App() {
 
     let ignore = false;
 
-    const refreshNews = async () => {
+    const refreshSharedData = async () => {
       try {
-        const res = await fetch(session.role === "ADMIN" ? `${API_BASE}/news?includeHidden=1` : `${API_BASE}/news`, {
-          headers: authHeaders(session),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
         if (ignore) return;
-        setNewsItems(normalizeNews(data));
+        await fetchSharedData(session, true);
+        if (ignore) return;
         setSyncStatus("synced");
       } catch (error) {
         console.error(error);
@@ -682,13 +697,13 @@ export default function App() {
       }
     };
 
-    refreshNews();
-    const timer = setInterval(refreshNews, 15000);
+    refreshSharedData();
+    const timer = setInterval(refreshSharedData, 15000);
     return () => {
       ignore = true;
       clearInterval(timer);
     };
-  }, [dataReady, session, isAdmin, entryPoint]);
+  }, [dataReady, session, isAdmin, entryPoint, modelId, partId, qId]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
