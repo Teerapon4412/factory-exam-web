@@ -41,6 +41,17 @@ const emptyEmployeeForm = {
   isActive: true,
 };
 
+const evaluationAssignedEvaluators = [
+  "206006 นางสาวคณิตา ลุนใต้",
+  "210027 นางสาวพรพิไล ศรีทนนาง",
+  "211075 นางสาวบรรจง ราชณาจักร์",
+  "204041 นางเบญจวรรณ การะเกษ",
+  "206029 นางสาวพัชราภรณ์ ปัญญาสิทธิ์",
+  "199033 นางสาววราลัย วงศ์จีรภัทร",
+  "197036 นางอรุญณี บัวศรี",
+  "203009 นางณาตยา ปรีถวิล",
+];
+
 const S = {
   card: {
     borderRadius: 24,
@@ -845,7 +856,7 @@ export default function App() {
     });
     return Array.from(seen.values());
   }, [evaluationHistory]);
-  const evaluationEvaluatorOptions = useMemo(() => {
+  const evaluationHistoryEvaluatorOptions = useMemo(() => {
     const seen = new Set();
     evaluationHistory.forEach((entry) => {
       if (entry.evaluator) seen.add(entry.evaluator);
@@ -2147,7 +2158,12 @@ export default function App() {
                         </div>
                         <div>
                           <Label>ผู้ประเมิน</Label>
-                          <Input value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} />
+                          <select value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} style={S.input}>
+                            <option value="">เลือกผู้ประเมิน</option>
+                            {evaluationAssignedEvaluators.map((entry) => (
+                              <option key={entry} value={entry}>{entry}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div className="evaluation-summary-strip">
@@ -2280,7 +2296,7 @@ export default function App() {
                         <Label>ผู้ประเมิน</Label>
                         <select value={evaluationEvaluatorFilter} onChange={(e) => setEvaluationEvaluatorFilter(e.target.value)} style={S.input}>
                           <option value="ALL">ทั้งหมด</option>
-                          {evaluationEvaluatorOptions.map((entry) => (
+                          {evaluationHistoryEvaluatorOptions.map((entry) => (
                             <option key={entry} value={entry}>{entry}</option>
                           ))}
                         </select>
