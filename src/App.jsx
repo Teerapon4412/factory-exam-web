@@ -138,8 +138,13 @@ const Button = ({ children, onClick, variant = "default", disabled = false, clas
 
 const TabsCtx = createContext(null);
 
-const Tabs = ({ defaultValue, children }) => {
-  const [value, setValue] = useState(defaultValue);
+const Tabs = ({ defaultValue, value: controlledValue, onValueChange, children }) => {
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const value = controlledValue !== undefined ? controlledValue : internalValue;
+  const setValue = (nextValue) => {
+    if (controlledValue === undefined) setInternalValue(nextValue);
+    onValueChange?.(nextValue);
+  };
   return <TabsCtx.Provider value={{ value, setValue }}>{children}</TabsCtx.Provider>;
 };
 
@@ -493,6 +498,7 @@ export default function App() {
   const [employeeResultsSearch, setEmployeeResultsSearch] = useState("");
   const [employeeResultsStatusFilter, setEmployeeResultsStatusFilter] = useState("ALL");
   const [selectedEmployeeResultCode, setSelectedEmployeeResultCode] = useState("");
+  const [activeTab, setActiveTab] = useState("preview");
   const [entryPoint, setEntryPoint] = useState("portal");
   const [newsForm, setNewsForm] = useState(emptyNewsForm);
   const [editingNewsId, setEditingNewsId] = useState(null);
@@ -536,6 +542,11 @@ export default function App() {
   const [evaluationEvaluatorFilter, setEvaluationEvaluatorFilter] = useState("ALL");
 
   const isAdmin = session?.role === "ADMIN";
+
+  useEffect(() => {
+    if (!session) return;
+    setActiveTab(isAdmin ? "builder" : "preview");
+  }, [session?.token, isAdmin]);
 
   useEffect(() => {
     try {
@@ -1044,6 +1055,53 @@ export default function App() {
     fetchEvaluations();
     return () => { ignore = true; };
   }, [isAdmin, session]);
+
+  useEffect(() => {
+    if (!dataReady || !session?.token || !isAdmin) return;
+
+    const shouldRefreshSharedData = entryPoint === "scores" || ["employee-results", "dashboard", "evaluation"].includes(activeTab);
+    const shouldRefreshEmployees = entryPoint === "scores" || ["employees", "evaluation", "employee-results"].includes(activeTab);
+    const shouldRefreshEvaluations = entryPoint === "scores" || ["evaluation", "employee-results"].includes(activeTab);
+    if (!shouldRefreshSharedData && !shouldRefreshEmployees && !shouldRefreshEvaluations) return;
+
+    let ignore = false;
+
+    const refreshAdminViews = async () => {
+      try {
+        if (shouldRefreshSharedData) {
+          await fetchSharedData(session, true);
+        }
+
+        if (shouldRefreshEmployees) {
+          const employeesRes = await fetch(`${API_BASE}/employees`, {
+            headers: authHeaders(session),
+          });
+          if (!employeesRes.ok) throw new Error(`HTTP ${employeesRes.status}`);
+          const employeesData = await employeesRes.json();
+          if (!ignore) setEmployees(Array.isArray(employeesData) ? employeesData : []);
+        }
+
+        if (shouldRefreshEvaluations) {
+          const evaluationsRes = await fetch(`${API_BASE}/evaluations`, {
+            headers: authHeaders(session),
+          });
+          if (!evaluationsRes.ok) throw new Error(`HTTP ${evaluationsRes.status}`);
+          const evaluationsData = await evaluationsRes.json();
+          if (!ignore) setEvaluationHistory(Array.isArray(evaluationsData) ? evaluationsData : []);
+        }
+      } catch (error) {
+        console.error(error);
+        if (!ignore) setSyncStatus("offline");
+      }
+    };
+
+    refreshAdminViews();
+    const timer = setInterval(refreshAdminViews, 15000);
+    return () => {
+      ignore = true;
+      clearInterval(timer);
+    };
+  }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, qId]);
 
   const resetEmployeeForm = () => {
     setEmployeeForm(emptyEmployeeForm);
@@ -1891,7 +1949,7 @@ export default function App() {
           <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>บัญชีผู้ใช้งานทั่วไปทำข้อสอบได้อย่างเดียว</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
         )}
 
-        <Tabs key={session.role} defaultValue={isAdmin ? "builder" : "preview"}>
+        <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue={isAdmin ? "builder" : "preview"}>
           <TabsList>
             {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
