@@ -184,23 +184,23 @@ const emptyQ = (i = 1) => ({
 const starterQs = () => [
   {
     ...emptyQ(1),
-    questionText: "à¸‚à¹‰à¸­à¹ƒà¸”à¸„à¸·à¸­à¸§à¸´à¸˜à¸µà¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸Šà¸´à¹‰à¸™à¸‡à¸²à¸™à¸à¹ˆà¸­à¸™à¹€à¸£à¸´à¹ˆà¸¡à¸‡à¸²à¸™à¸­à¸¢à¹ˆà¸²à¸‡à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡",
+    questionText: "ข้อใดคือวิธีตรวจสอบชิ้นงานก่อนเริ่มงานอย่างถูกต้อง",
     choices: {
-      A: "à¸•à¸£à¸§à¸ˆà¸•à¸²à¸¡ WI à¹à¸¥à¸°à¸ˆà¸¸à¸”à¸„à¸§à¸šà¸„à¸¸à¸¡",
-      B: "à¸”à¸¹à¸„à¸£à¹ˆà¸²à¸§ à¹† à¹à¸¥à¹‰à¸§à¹€à¸£à¸´à¹ˆà¸¡à¸‡à¸²à¸™à¹„à¸”à¹‰à¹€à¸¥à¸¢",
-      C: "à¸–à¸²à¸¡à¹€à¸žà¸·à¹ˆà¸­à¸™à¸‚à¹‰à¸²à¸‡ à¹† à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸”à¸µà¸¢à¸§",
-      D: "à¸‚à¹‰à¸²à¸¡à¸à¸²à¸£à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸–à¹‰à¸²à¸‡à¸²à¸™à¸£à¸µà¸š",
+      A: "ตรวจตาม WI และจุดควบคุม",
+      B: "ดูคร่าว ๆ แล้วเริ่มงานได้เลย",
+      C: "ถามเพื่อนข้าง ๆ อย่างเดียว",
+      D: "ข้ามการตรวจสอบถ้างานรีบ",
     },
   },
   {
     ...emptyQ(2),
-    questionText: "à¹€à¸¡à¸·à¹ˆà¸­à¸žà¸š NG à¸£à¸°à¸«à¸§à¹ˆà¸²à¸‡à¸à¸²à¸£à¸œà¸¥à¸´à¸• à¸„à¸§à¸£à¸—à¸³à¸­à¸¢à¹ˆà¸²à¸‡à¹„à¸£à¹€à¸›à¹‡à¸™à¸­à¸±à¸™à¸”à¸±à¸šà¹à¸£à¸",
+    questionText: "เมื่อพบ NG ระหว่างการผลิต ควรทำอย่างไรเป็นอันดับแรก",
     correctAnswer: "B",
     choices: {
-      A: "à¸›à¸¥à¹ˆà¸­à¸¢à¸œà¹ˆà¸²à¸™à¹€à¸žà¸£à¸²à¸°à¸¢à¸±à¸‡à¸œà¸¥à¸´à¸•à¹„à¸”à¹‰",
-      B: "à¹à¸¢à¸à¸‡à¸²à¸™ à¹à¸ˆà¹‰à¸‡ Leader à¹à¸¥à¸°à¸šà¸±à¸™à¸—à¸¶à¸à¸•à¸²à¸¡à¸£à¸°à¸šà¸š",
-      C: "à¸™à¸³à¹„à¸›à¹ƒà¸ªà¹ˆà¸à¸¥à¹ˆà¸­à¸‡à¸”à¸µà¸›à¸™à¸à¸±à¸™",
-      D: "à¸£à¸­à¹ƒà¸«à¹‰ QA à¸¡à¸²à¹€à¸ˆà¸­à¹€à¸­à¸‡",
+      A: "ปล่อยผ่านเพราะยังผลิตได้",
+      B: "แยกงาน แจ้ง Leader และบันทึกตามระบบ",
+      C: "นำไปใส่กล่องดีปนกัน",
+      D: "รอให้ QA มาเจอเอง",
     },
   },
 ];
@@ -209,7 +209,7 @@ const emptyPart = (i = 1, starter = false) => ({
   id: uid(),
   partCode: `Part${String(i).padStart(2, "0")}`,
   partName: `Part ${i}`,
-  subtitle: "à¸£à¸°à¸šà¸šà¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¸žà¸™à¸±à¸à¸‡à¸²à¸™",
+  subtitle: "ระบบข้อสอบออนไลน์พนักงาน",
   passScore: 35,
   randomizeQuestions: false,
   showResultImmediately: true,
@@ -265,7 +265,7 @@ const sanitizeBank = (rawBank) => {
             id: part.id || uid(),
             partCode: part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`,
             partName: part.partName || `Part ${partIndex + 1}`,
-            subtitle: part.subtitle || "à¸£à¸°à¸šà¸šà¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¸žà¸™à¸±à¸à¸‡à¸²à¸™",
+            subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
             passScore: Number(part.passScore ?? 35),
             randomizeQuestions: Boolean(part.randomizeQuestions),
             showResultImmediately: part.showResultImmediately !== false,
@@ -325,9 +325,9 @@ const createEvaluationDraft = () => ({
 const starterNews = () => ([
   {
     id: uid(),
-    title: "à¸›à¸£à¸°à¸à¸²à¸¨à¸•à¹‰à¸­à¸™à¸£à¸±à¸šà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸šà¸‚à¹‰à¸­à¸ªà¸­à¸š",
-    summary: "à¸•à¸´à¸”à¸•à¸²à¸¡à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸ªà¸³à¸„à¸±à¸, à¸•à¸²à¸£à¸²à¸‡à¸ªà¸­à¸š, à¹à¸¥à¸°à¸›à¸£à¸°à¸à¸²à¸¨à¸ˆà¸²à¸à¸«à¸±à¸§à¸«à¸™à¹‰à¸²à¸‡à¸²à¸™à¹„à¸”à¹‰à¹ƒà¸™à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰",
-    content: "à¸£à¸°à¸šà¸šà¸™à¸µà¹‰à¹ƒà¸Šà¹‰à¸ªà¸³à¸«à¸£à¸±à¸šà¸—à¸±à¹‰à¸‡à¸à¸²à¸£à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¹à¸¥à¸°à¸à¸²à¸£à¸ªà¸·à¹ˆà¸­à¸ªà¸²à¸£à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸ à¸²à¸¢à¹ƒà¸™à¸«à¸™à¹ˆà¸§à¸¢à¸‡à¸²à¸™ à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸¥à¸·à¸­à¸à¹€à¸‚à¹‰à¸²à¸­à¹ˆà¸²à¸™à¸›à¸£à¸°à¸à¸²à¸¨à¸¥à¹ˆà¸²à¸ªà¸¸à¸”à¸«à¸£à¸·à¸­à¹€à¸£à¸´à¹ˆà¸¡à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹„à¸”à¹‰à¸—à¸±à¸™à¸—à¸µà¸«à¸¥à¸±à¸‡à¸¥à¹‡à¸­à¸à¸­à¸´à¸™",
+    title: "ประกาศต้อนรับพนักงานเข้าสู่ระบบข้อสอบ",
+    summary: "ติดตามข่าวสารสำคัญ, ตารางสอบ, และประกาศจากหัวหน้างานได้ในหน้านี้",
+    content: "ระบบนี้ใช้สำหรับทั้งการทำข้อสอบออนไลน์และการสื่อสารข่าวสารภายในหน่วยงาน ผู้ใช้สามารถเลือกเข้าอ่านประกาศล่าสุดหรือเริ่มทำข้อสอบได้ทันทีหลังล็อกอิน",
     pinned: true,
     publishedAt: new Date().toISOString(),
   },
@@ -380,7 +380,7 @@ function normalize(raw) {
           id: p.id || uid(),
           partCode: p.partCode || `Part${String(pi + 1).padStart(2, "0")}`,
           partName: p.partName || `Part ${pi + 1}`,
-          subtitle: p.subtitle || "à¸£à¸°à¸šà¸šà¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¸žà¸™à¸±à¸à¸‡à¸²à¸™",
+          subtitle: p.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
           passScore: Number(p.passScore ?? 35),
           randomizeQuestions: Boolean(p.randomizeQuestions),
           showResultImmediately: p.showResultImmediately !== false,
@@ -405,7 +405,7 @@ function normalize(raw) {
       ...emptyPart(1),
       partCode: raw.partCode || "Part01",
       partName: raw.partName || "Part 1",
-      subtitle: raw.subtitle || "à¸£à¸°à¸šà¸šà¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¸žà¸™à¸±à¸à¸‡à¸²à¸™",
+      subtitle: raw.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
       passScore: Number(raw.passScore ?? 35),
       randomizeQuestions: Boolean(raw.randomizeQuestions),
       showResultImmediately: raw.showResultImmediately !== false,
@@ -1024,7 +1024,7 @@ export default function App() {
         console.error(error);
         if (!ignore) {
           setEmployeeStatus("error");
-          setEmployeeError("à¹‚à¸«à¸¥à¸”à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+          setEmployeeError("โหลดรายชื่อพนักงานไม่สำเร็จ");
         }
       }
     };
@@ -1056,7 +1056,7 @@ export default function App() {
         console.error(error);
         if (!ignore) {
           setEvaluationStatus("error");
-          setEvaluationError("à¹‚à¸«à¸¥à¸”à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸œà¸¥à¸›à¸£à¸°à¹€à¸¡à¸´à¸™à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+          setEvaluationError("โหลดประวัติผลประเมินไม่สำเร็จ");
         }
       }
     };
@@ -1174,7 +1174,7 @@ export default function App() {
     };
 
     if (!payload.employeeCode || !payload.fullName) {
-      setEmployeeError("à¸à¸£à¸¸à¸“à¸²à¸à¸£à¸­à¸à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹ƒà¸«à¹‰à¸„à¸£à¸š");
+      setEmployeeError("กรุณากรอกข้อมูลพนักงานให้ครบ");
       return;
     }
 
@@ -1199,12 +1199,12 @@ export default function App() {
     } catch (error) {
       console.error(error);
       setEmployeeStatus("error");
-      setEmployeeError(error.message || "à¸šà¸±à¸™à¸—à¸¶à¸à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      setEmployeeError(error.message || "บันทึกข้อมูลพนักงานไม่สำเร็จ");
     }
   };
 
   const removeEmployee = async (employee) => {
-    if (!window.confirm(`à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸¥à¸šà¸žà¸™à¸±à¸à¸‡à¸²à¸™ ${employee.fullName} à¹ƒà¸Šà¹ˆà¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ`)) return;
+    if (!window.confirm(`ต้องการลบพนักงาน ${employee.fullName} ใช่หรือไม่`)) return;
 
     try {
       setEmployeeStatus("saving");
@@ -1220,7 +1220,7 @@ export default function App() {
     } catch (error) {
       console.error(error);
       setEmployeeStatus("error");
-      setEmployeeError(error.message || "à¸¥à¸šà¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      setEmployeeError(error.message || "ลบข้อมูลพนักงานไม่สำเร็จ");
     }
   };
 
@@ -1322,7 +1322,7 @@ export default function App() {
   };
 
   const removeModel = () => {
-    if (bank.models.length <= 1) return alert("à¸•à¹‰à¸­à¸‡à¸¡à¸µà¸­à¸¢à¹ˆà¸²à¸‡à¸™à¹‰à¸­à¸¢ 1 Model");
+    if (bank.models.length <= 1) return alert("ต้องมีอย่างน้อย 1 Model");
     const remaining = bank.models.filter((m) => m.id !== model.id);
     setBank((b) => ({ ...b, models: remaining }));
     setModelId(remaining[0].id);
@@ -1330,7 +1330,7 @@ export default function App() {
   };
 
   const addPart = () => {
-    if (model.parts.length >= 20) return alert("1 Model à¹€à¸žà¸´à¹ˆà¸¡à¹„à¸”à¹‰à¸ªà¸¹à¸‡à¸ªà¸¸à¸” 20 Part");
+    if (model.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(model.parts.length + 1, false);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
     setPartId(n.id);
@@ -1338,7 +1338,7 @@ export default function App() {
   };
 
   const removePart = () => {
-    if (model.parts.length <= 1) return alert("à¸•à¹‰à¸­à¸‡à¸¡à¸µà¸­à¸¢à¹ˆà¸²à¸‡à¸™à¹‰à¸­à¸¢ 1 Part à¸•à¹ˆà¸­ Model");
+    if (model.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
     const remaining = model.parts.filter((p) => p.id !== part.id);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: remaining } : m)) }));
     setPartId(remaining[0].id);
@@ -1382,7 +1382,7 @@ export default function App() {
     e.preventDefault();
     const employeeCode = loginForm.employeeCode.trim();
 
-    if (!employeeCode) return setLoginError("à¸à¸£à¸¸à¸“à¸²à¸à¸£à¸­à¸à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™");
+    if (!employeeCode) return setLoginError("กรุณากรอกรหัสพนักงาน");
 
     try {
       setLoginError("");
@@ -1392,10 +1392,10 @@ export default function App() {
         body: JSON.stringify({ employeeCode }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸šà¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      if (!res.ok) throw new Error(data.error || "เข้าสู่ระบบไม่สำเร็จ");
 
       const nextSession = normalizeSession(data);
-      if (!nextSession) throw new Error("à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸šà¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      if (!nextSession) throw new Error("เข้าสู่ระบบไม่สำเร็จ");
 
       try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
@@ -1408,7 +1408,7 @@ export default function App() {
       setSyncStatus("loading");
     } catch (error) {
       console.error(error);
-      setLoginError(error.message || "à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸šà¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      setLoginError(error.message || "เข้าสู่ระบบไม่สำเร็จ");
     }
   };
 
@@ -1439,7 +1439,7 @@ export default function App() {
 
   const submit = async () => {
     if (submitted) return;
-    if (answered < part.questions.length) return setSubmitError(`à¸à¸£à¸¸à¸“à¸²à¸•à¸­à¸šà¹ƒà¸«à¹‰à¸„à¸£à¸šà¸à¹ˆà¸­à¸™à¸ªà¹ˆà¸‡ (${answered}/${part.questions.length})`);
+    if (answered < part.questions.length) return setSubmitError(`กรุณาตอบให้ครบก่อนส่ง (${answered}/${part.questions.length})`);
     setSubmitError("");
     setSubmitted(true);
     const entry = { id: uid(), submittedAt: new Date().toISOString(), candidateName: candidateName || "-", candidateCode: candidateCode || "-", modelId: model.id, modelCode: model.modelCode, modelName: model.modelName, partId: part.id, partCode: part.partCode, partName: part.partName, score: result.score, fullScore: scoreFull, passScore: part.passScore, correct: result.correct, questionCount: part.questions.length, status: result.status };
@@ -1469,7 +1469,7 @@ export default function App() {
     setSubmitError("");
   };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
-  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ: ${e.message}`); } };
+  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
   const importJSONFile = async (file) => {
     if (!file) return;
     try {
@@ -1482,7 +1482,7 @@ export default function App() {
       setImportText(JSON.stringify(n, null, 2));
       reset();
     } catch (e) {
-      alert(`à¹€à¸›à¸´à¸”à¹„à¸Ÿà¸¥à¹Œà¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ: ${e.message}`);
+      alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
     }
   };
   const saveLocal = async () => {  const reloadBuilderFromServer = () => {
@@ -1505,17 +1505,17 @@ export default function App() {
         body: JSON.stringify({ bank, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      alert("à¸šà¸±à¸™à¸—à¸¶à¸à¸„à¸¥à¸±à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸šà¸¥à¸‡à¸à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹€à¸£à¸µà¸¢à¸šà¸£à¹‰à¸­à¸¢à¹à¸¥à¹‰à¸§");
+      alert("บันทึกคลังข้อสอบลงฐานข้อมูลเรียบร้อยแล้ว");
       setSyncStatus("synced");
     } catch (error) {
       console.error(error);
       setSyncStatus("offline");
-      alert("à¸šà¸±à¸™à¸—à¸¶à¸à¸¥à¸‡à¸à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ à¸à¸£à¸¸à¸“à¸²à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸à¸²à¸£à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¹€à¸‹à¸´à¸£à¹Œà¸Ÿà¹€à¸§à¸­à¸£à¹Œ");
+      alert("บันทึกลงฐานข้อมูลไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อเซิร์ฟเวอร์");
     }
   };
 
   const exportCSV = () => {
-    if (!submitted) return alert("à¸à¸£à¸¸à¸“à¸²à¸ªà¹ˆà¸‡à¸„à¸³à¸•à¸­à¸šà¸à¹ˆà¸­à¸™à¸ˆà¸¶à¸‡à¸ˆà¸°à¸šà¸±à¸™à¸—à¸¶à¸à¸œà¸¥à¸ªà¸­à¸šà¹„à¸”à¹‰");
+    if (!submitted) return alert("กรุณาส่งคำตอบก่อนจึงจะบันทึกผลสอบได้");
     const now = new Date().toISOString();
     const rows = previewQs.map((q, i) => {
       const selected = answers[q.id] || "-";
@@ -1708,21 +1708,21 @@ export default function App() {
         <div className="login-layout">
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="login-showcase">
             <div className="hero-badges"><Badge>Secure Access</Badge><Badge outline>Admin / User</Badge></div>
-            <h1>à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸šà¹€à¸žà¸·à¹ˆà¸­à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸‚à¹‰à¸­à¸ªà¸­à¸šà¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ</h1>
-            <p>à¸à¸£à¸­à¸à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹€à¸žà¸µà¸¢à¸‡à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸”à¸µà¸¢à¸§ à¸£à¸°à¸šà¸šà¸ˆà¸°à¸ˆà¸±à¸šà¸„à¸¹à¹ˆà¸Šà¸·à¹ˆà¸­à¹à¸¥à¸°à¸ªà¸´à¸—à¸˜à¸´à¹Œà¸à¸²à¸£à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸ˆà¸²à¸à¸à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹ƒà¸«à¹‰à¸­à¸±à¸•à¹‚à¸™à¸¡à¸±à¸•à¸´</p>
+            <h1>เข้าสู่ระบบเพื่อใช้งานข้อสอบออนไลน์</h1>
+            <p>กรอกรหัสพนักงานเพียงอย่างเดียว ระบบจะจับคู่ชื่อและสิทธิ์การใช้งานจากฐานข้อมูลพนักงานให้อัตโนมัติ</p>
             <div className="login-feature-list">
-              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN à¸ˆà¸±à¸”à¸à¸²à¸£à¸‚à¹‰à¸­à¸ªà¸­à¸š, Dashboard à¹à¸¥à¸° Import/Export à¹„à¸”à¹‰</span></div>
-              <div className="login-feature-item"><Eye size={18} /><span>USER à¹€à¸‚à¹‰à¸²à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹à¸¥à¸°à¸”à¸¹à¸œà¸¥à¸ªà¸­à¸šà¹„à¸”à¹‰à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸”à¸µà¸¢à¸§</span></div>
+              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN จัดการข้อสอบ, Dashboard และ Import/Export ได้</span></div>
+              <div className="login-feature-item"><Eye size={18} /><span>USER เข้าทำข้อสอบและดูผลสอบได้อย่างเดียว</span></div>
             </div>
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="login-card">
-              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>à¸à¸£à¸­à¸à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹€à¸žà¸·à¹ˆà¸­à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸š</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกรหัสพนักงานเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="à¹€à¸Šà¹ˆà¸™ 199032 à¸«à¸£à¸·à¸­ ADMIN1234" /></div>
+                  <div><Label>รหัสพนักงาน</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เช่น 199032 หรือ ADMIN1234" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
-                  <Button type="submit"><LockKeyhole size={16} /> à¹€à¸‚à¹‰à¸²à¸ªà¸¹à¹ˆà¸£à¸°à¸šà¸š</Button>
+                  <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
                 
               </CardContent>
@@ -1744,31 +1744,31 @@ export default function App() {
             <div className="hero-copy">
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Welcome</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š</Button></div>
+                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
               </div>
-              <h1>à¹€à¸¥à¸·à¸­à¸à¸à¸²à¸£à¹ƒà¸Šà¹‰à¸‡à¸²à¸™</h1>
-              <p>à¸«à¸¥à¸±à¸‡à¸ˆà¸²à¸à¸¥à¹‡à¸­à¸à¸­à¸´à¸™à¹à¸¥à¹‰à¸§ à¸„à¸¸à¸“à¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸¥à¸·à¸­à¸à¹€à¸‚à¹‰à¸²à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸šà¸«à¸£à¸·à¸­à¹€à¸‚à¹‰à¸²à¸­à¹ˆà¸²à¸™à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸ à¸²à¸¢à¹ƒà¸™à¹„à¸”à¹‰à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰</p>
+              <h1>เลือกการใช้งาน</h1>
+              <p>หลังจากล็อกอินแล้ว คุณสามารถเลือกเข้าทำข้อสอบหรือเข้าอ่านข่าวสารภายในได้จากหน้านี้</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸¥à¹ˆà¸²à¸ªà¸¸à¸”</span><strong>{orderedNews.length}</strong></div>
-              <div className="hero-stat"><span>Model à¸‚à¹‰à¸­à¸ªà¸­à¸š</span><strong>{bank.models.length}</strong></div>
-              <div className="hero-stat"><span>Part à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
-              <div className="hero-stat"><span>à¹‚à¸«à¸¡à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
+              <div className="hero-stat"><span>ข่าวสารล่าสุด</span><strong>{orderedNews.length}</strong></div>
+              <div className="hero-stat"><span>Model ข้อสอบ</span><strong>{bank.models.length}</strong></div>
+              <div className="hero-stat"><span>Part ทั้งหมด</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
+              <div className="hero-stat"><span>โหมดใช้งาน</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
             </div>
           </motion.section>
 
           <div className="portal-grid">
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Eye size={20} /><div><h3>à¹€à¸‚à¹‰à¸²à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸š</h3><p>à¹€à¸›à¸´à¸”à¸«à¸™à¹‰à¸²à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸‚à¹‰à¸­à¸ªà¸­à¸š, à¸›à¸£à¸°à¹€à¸¡à¸´à¸™, dashboard à¹à¸¥à¸°à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸¡à¸·à¸­à¸—à¸µà¹ˆà¹€à¸à¸µà¹ˆà¸¢à¸§à¸‚à¹‰à¸­à¸‡</p></div></div>
-                <Button onClick={() => setEntryPoint("exam")}>à¹„à¸›à¸«à¸™à¹‰à¸²à¸‚à¹‰à¸­à¸ªà¸­à¸š</Button>
+                <div className="section-heading"><Eye size={20} /><div><h3>เข้าทำข้อสอบ</h3><p>เปิดหน้าใช้งานข้อสอบ, ประเมิน, dashboard และเครื่องมือที่เกี่ยวข้อง</p></div></div>
+                <Button onClick={() => setEntryPoint("exam")}>ไปหน้าข้อสอบ</Button>
               </CardContent>
             </Card>
 
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Megaphone size={20} /><div><h3>à¸­à¹ˆà¸²à¸™à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£</h3><p>à¸•à¸´à¸”à¸•à¸²à¸¡à¸›à¸£à¸°à¸à¸²à¸¨à¸¥à¹ˆà¸²à¸ªà¸¸à¸”, à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ à¸²à¸¢à¹ƒà¸™, à¹à¸¥à¸°à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£à¸—à¸µà¹ˆà¹€à¸à¸µà¹ˆà¸¢à¸§à¸‚à¹‰à¸­à¸‡à¸à¸±à¸šà¸à¸²à¸£à¸—à¸³à¸‡à¸²à¸™</p></div></div>
-                <Button onClick={() => setEntryPoint("news")}>à¹„à¸›à¸«à¸™à¹‰à¸²à¸‚à¹ˆà¸²à¸§à¸ªà¸²à¸£</Button>
+                <div className="section-heading"><Megaphone size={20} /><div><h3>อ่านข่าวสาร</h3><p>ติดตามประกาศล่าสุด, ข้อมูลภายใน, และข่าวสารที่เกี่ยวข้องกับการทำงาน</p></div></div>
+                <Button onClick={() => setEntryPoint("news")}>ไปหน้าข่าวสาร</Button>
               </CardContent>
             </Card>
 
@@ -1982,23 +1982,23 @@ export default function App() {
           <div className="hero-copy">
             <div className="hero-topbar">
               <div className="hero-badges"><Badge>Factory Exam Builder</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-              <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> à¸à¸¥à¸±à¸šà¹€à¸¡à¸™à¸¹</Button><Badge outline>{syncStatus === "saving" ? "Saving..." : syncStatus === "offline" ? "Server Offline" : syncStatus === "loading" ? "Loading..." : "Server Synced"}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š</Button></div>
+              <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button><Badge outline>{syncStatus === "saving" ? "Saving..." : syncStatus === "offline" ? "Server Offline" : syncStatus === "loading" ? "Loading..." : "Server Synced"}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
             </div>
             <h1>{bank.title}</h1>
-            <p>à¸ˆà¸±à¸”à¸à¸²à¸£à¸‚à¹‰à¸­à¸ªà¸­à¸šà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹à¸šà¸šà¸„à¸£à¸šà¸§à¸‡à¸ˆà¸£ à¸•à¸±à¹‰à¸‡à¹à¸•à¹ˆà¸ªà¸£à¹‰à¸²à¸‡à¸„à¸¥à¸±à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸š à¹à¸ªà¸”à¸‡à¸•à¸±à¸§à¸­à¸¢à¹ˆà¸²à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸š à¹„à¸›à¸ˆà¸™à¸–à¸¶à¸‡à¸•à¸´à¸”à¸•à¸²à¸¡à¸œà¸¥à¸ªà¸­à¸šà¹ƒà¸™ Dashboard à¹€à¸”à¸µà¸¢à¸§</p>
+            <p>จัดการข้อสอบพนักงานแบบครบวงจร ตั้งแต่สร้างคลังข้อสอบ แสดงตัวอย่างข้อสอบ ไปจนถึงติดตามผลสอบใน Dashboard เดียว</p>
           </div>
           <div className="hero-stats">
-            <div className="hero-stat"><span>à¸ˆà¸³à¸™à¸§à¸™ Model</span><strong>{bank.models.length}</strong></div>
-            <div className="hero-stat"><span>Part à¸—à¸µà¹ˆà¹€à¸¥à¸·à¸­à¸</span><strong>{model?.parts.length || 0}</strong></div>
-            <div className="hero-stat"><span>à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹ƒà¸™ Part</span><strong>{part?.questions.length || 0}</strong></div>
-            <div className="hero-stat"><span>à¸„à¸°à¹à¸™à¸™à¹€à¸•à¹‡à¸¡</span><strong>{scoreFull}</strong></div>
+            <div className="hero-stat"><span>จำนวน Model</span><strong>{bank.models.length}</strong></div>
+            <div className="hero-stat"><span>Part ที่เลือก</span><strong>{model?.parts.length || 0}</strong></div>
+            <div className="hero-stat"><span>ข้อสอบใน Part</span><strong>{part?.questions.length || 0}</strong></div>
+            <div className="hero-stat"><span>คะแนนเต็ม</span><strong>{scoreFull}</strong></div>
           </div>
         </motion.section>
 
         {isAdmin ? (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Quick Actions</p><h2>à¹€à¸£à¸´à¹ˆà¸¡à¹à¸à¹‰à¹„à¸‚à¸„à¸¥à¸±à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹„à¸”à¹‰à¸—à¸±à¸™à¸—à¸µ</h2></div><div className="action-buttons"><Button onClick={addQ}><Plus size={16} /> à¹€à¸žà¸´à¹ˆà¸¡à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹ƒà¸«à¸¡à¹ˆ</Button><Button variant="outline" onClick={saveLocal}><Save size={16} /> à¸šà¸±à¸™à¸—à¸¶à¸à¸¥à¸‡à¸à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥</Button><Button variant="outline" onClick={exportJSON}><FileJson size={16} /> Export JSON</Button></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Quick Actions</p><h2>เริ่มแก้ไขคลังข้อสอบได้ทันที</h2></div><div className="action-buttons"><Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button><Button variant="outline" onClick={saveLocal}><Save size={16} /> บันทึกลงฐานข้อมูล</Button><Button variant="outline" onClick={exportJSON}><FileJson size={16} /> Export JSON</Button></div></CardContent></Card>
         ) : (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>à¸šà¸±à¸à¸Šà¸µà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸—à¸±à¹ˆà¸§à¹„à¸›à¸—à¸³à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹„à¸”à¹‰à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸”à¸µà¸¢à¸§</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>บัญชีผู้ใช้งานทั่วไปทำข้อสอบได้อย่างเดียว</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
         )}
 
         <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue={isAdmin ? "builder" : "preview"}>
@@ -2012,31 +2012,31 @@ export default function App() {
             <TabsContent value="builder">
               <div className="split-grid">
                 <Card>
-                  <CardHeader><div className="section-heading"><BookOpen size={18} /><div><h3>à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² Model / Part</h3><p>à¸à¸³à¸«à¸™à¸”à¹‚à¸„à¸£à¸‡à¸ªà¸£à¹‰à¸²à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹à¸¥à¸°à¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸‚à¸­à¸‡à¹à¸•à¹ˆà¸¥à¸° Part</p></div></div></CardHeader>
+                  <CardHeader><div className="section-heading"><BookOpen size={18} /><div><h3>ตั้งค่า Model / Part</h3><p>กำหนดโครงสร้างข้อสอบและเงื่อนไขของแต่ละ Part</p></div></div></CardHeader>
                   <CardContent>
                     <div className="form-stack">
-                      <Label>à¸Šà¸·à¹ˆà¸­à¸£à¸°à¸šà¸š</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
+                      <Label>ชื่อระบบ</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
                       <Label>Model</Label>
                       <select value={model.id} onChange={(e) => { setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
-                      <div className="button-row"><Button onClick={addModel}><Plus size={16} /> à¹€à¸žà¸´à¹ˆà¸¡ Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> à¸¥à¸š Model</Button></div>
+                      <div className="button-row"><Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model</Button></div>
                       <Label>Model Code</Label><Input value={model.modelCode} onChange={(e) => patchModel("modelCode", e.target.value)} />
                       <Label>Model Name</Label><Input value={model.modelName} onChange={(e) => patchModel("modelName", e.target.value)} />
                       <Label>Part</Label>
                       <select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
-                      <div className="button-row"><Button disabled={model.parts.length >= 20} onClick={addPart}><Plus size={16} /> à¹€à¸žà¸´à¹ˆà¸¡ Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> à¸¥à¸š Part</Button></div>
-                      <div className="mini-note">Model à¸™à¸µà¹‰à¸¡à¸µ {model.parts.length} Part (à¸ªà¸¹à¸‡à¸ªà¸¸à¸” 20)</div>
+                      <div className="button-row"><Button disabled={model.parts.length >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
+                      <div className="mini-note">Model นี้มี {model.parts.length} Part (สูงสุด 20)</div>
                       <Label>Part Code</Label><Input value={part.partCode} onChange={(e) => patchPart("partCode", e.target.value)} />
                       <Label>Part Name</Label><Input value={part.partName} onChange={(e) => patchPart("partName", e.target.value)} />
-                      <Label>à¸„à¸³à¸­à¸˜à¸´à¸šà¸²à¸¢</Label><Input value={part.subtitle} onChange={(e) => patchPart("subtitle", e.target.value)} />
+                      <Label>คำอธิบาย</Label><Input value={part.subtitle} onChange={(e) => patchPart("subtitle", e.target.value)} />
                       <div className="two-col"><div><Label>Pass Score</Label><Input type="number" value={part.passScore} onChange={(e) => patchPart("passScore", Number(e.target.value))} /></div><div><Label>Full Score</Label><Input type="number" value={scoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
-                      <div className="toggle-row"><span>à¸ªà¸¸à¹ˆà¸¡à¸¥à¸³à¸”à¸±à¸šà¸‚à¹‰à¸­à¸ªà¸­à¸š</span><Button variant={part.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !part.randomizeQuestions)}>{part.randomizeQuestions ? "ON" : "OFF"}</Button></div>
-                      <div className="toggle-row"><span>à¹à¸ªà¸”à¸‡à¸œà¸¥à¸—à¸±à¸™à¸—à¸µà¸«à¸¥à¸±à¸‡à¸ªà¹ˆà¸‡</span><Button variant={part.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !part.showResultImmediately)}>{part.showResultImmediately ? "ON" : "OFF"}</Button></div>
-                      <div className="question-list">{part.questions.map((q, i) => <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}><span className="question-chip-no">à¸‚à¹‰à¸­ {i + 1}</span><strong>{q.questionText || "à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰à¸à¸£à¸­à¸à¸„à¸³à¸–à¸²à¸¡"}</strong><small>{q.score} à¸„à¸°à¹à¸™à¸™</small></button>)}</div>
+                      <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={part.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !part.randomizeQuestions)}>{part.randomizeQuestions ? "ON" : "OFF"}</Button></div>
+                      <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={part.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !part.showResultImmediately)}>{part.showResultImmediately ? "ON" : "OFF"}</Button></div>
+                      <div className="question-list">{part.questions.map((q, i) => <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}><span className="question-chip-no">ข้อ {i + 1}</span><strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong><small>{q.score} คะแนน</small></button>)}</div>
                     </div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>à¹à¸à¹‰à¹„à¸‚à¸‚à¹‰à¸­à¸ªà¸­à¸š</h3><p>à¸›à¸£à¸±à¸šà¸„à¸³à¸–à¸²à¸¡ à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸ à¸£à¸¹à¸›à¸›à¸£à¸°à¸à¸­à¸š à¹à¸¥à¸°à¸„à¸°à¹à¸™à¸™à¹ƒà¸™à¸ˆà¸¸à¸”à¹€à¸”à¸µà¸¢à¸§</p></div></div></CardHeader>
+                  <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>แก้ไขข้อสอบ</h3><p>ปรับคำถาม ตัวเลือก รูปประกอบ และคะแนนในจุดเดียว</p></div></div></CardHeader>
                   <CardContent>
                     {builderServerUpdate ? (
                       <div className="alert-error" style={{ marginBottom: 16 }}>
@@ -2050,7 +2050,7 @@ export default function App() {
                         </button>
                       </div>
                     ) : null}
-                    {!question ? <div className="empty-state">à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸‚à¹‰à¸­à¸ªà¸­à¸š</div> : <div className="editor-layout"><div className="button-row"><Button variant="outline" onClick={() => moveQ(-1)}>à¸‚à¸¶à¹‰à¸™</Button><Button variant="outline" onClick={() => moveQ(1)}>à¸¥à¸‡</Button><Button variant="outline" onClick={dupQ}>à¸„à¸±à¸”à¸¥à¸­à¸</Button><Button variant="destructive" onClick={delQ}><Trash2 size={16} /> à¸¥à¸š</Button></div><Label>à¸„à¸³à¸–à¸²à¸¡</Label><Textarea rows={4} value={question.questionText} onChange={(e) => patchQ(question.id, { questionText: e.target.value })} /><div className="two-col"><div><Label>à¸„à¸°à¹à¸™à¸™</Label><Input type="number" value={question.score} onChange={(e) => patchQ(question.id, { score: Number(e.target.value) })} /></div><div><Label>à¸„à¸³à¸•à¸­à¸šà¸—à¸µà¹ˆà¸–à¸¹à¸</Label><select value={question.correctAnswer} onChange={(e) => patchQ(question.id, { correctAnswer: e.target.value })} style={S.input}><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div><Label>à¸¥à¸´à¸‡à¸à¹Œà¸£à¸¹à¸›à¸ à¸²à¸ž</Label><Input value={question.imageUrl} onChange={(e) => patchQ(question.id, { imageUrl: e.target.value })} /><label className="upload-button"><ImagePlus size={16} /> à¹€à¸¥à¸·à¸­à¸à¸£à¸¹à¸›<input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0])} /></label>{question.imageUrl ? <img src={question.imageUrl} alt="question" className="question-image" /> : null}<div className="choice-grid">{["A", "B", "C", "D"].map((key) => <Card key={key} className="choice-card"><CardContent><Label>à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸ {key}</Label><Textarea rows={3} value={question.choices[key]} onChange={(e) => patchChoice(question.id, key, e.target.value)} /><Button variant="outline" onClick={() => patchQ(question.id, { correctAnswer: key })}>à¸•à¸±à¹‰à¸‡à¹€à¸›à¹‡à¸™à¸„à¸³à¸•à¸­à¸šà¸—à¸µà¹ˆà¸–à¸¹à¸</Button></CardContent></Card>)}</div></div>}
+                    {!question ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : <div className="editor-layout"><div className="button-row"><Button variant="outline" onClick={() => moveQ(-1)}>ขึ้น</Button><Button variant="outline" onClick={() => moveQ(1)}>ลง</Button><Button variant="outline" onClick={dupQ}>คัดลอก</Button><Button variant="destructive" onClick={delQ}><Trash2 size={16} /> ลบ</Button></div><Label>คำถาม</Label><Textarea rows={4} value={question.questionText} onChange={(e) => patchQ(question.id, { questionText: e.target.value })} /><div className="two-col"><div><Label>คะแนน</Label><Input type="number" value={question.score} onChange={(e) => patchQ(question.id, { score: Number(e.target.value) })} /></div><div><Label>คำตอบที่ถูก</Label><select value={question.correctAnswer} onChange={(e) => patchQ(question.id, { correctAnswer: e.target.value })} style={S.input}><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div><Label>ลิงก์รูปภาพ</Label><Input value={question.imageUrl} onChange={(e) => patchQ(question.id, { imageUrl: e.target.value })} /><label className="upload-button"><ImagePlus size={16} /> เลือกรูป<input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0])} /></label>{question.imageUrl ? <img src={question.imageUrl} alt="question" className="question-image" /> : null}<div className="choice-grid">{["A", "B", "C", "D"].map((key) => <Card key={key} className="choice-card"><CardContent><Label>ตัวเลือก {key}</Label><Textarea rows={3} value={question.choices[key]} onChange={(e) => patchChoice(question.id, key, e.target.value)} /><Button variant="outline" onClick={() => patchQ(question.id, { correctAnswer: key })}>ตั้งเป็นคำตอบที่ถูก</Button></CardContent></Card>)}</div></div>}
                   </CardContent>
                 </Card>
               </div>
@@ -2072,20 +2072,20 @@ export default function App() {
                     <div className="section-heading">
                       <FileSpreadsheet size={18} />
                       <div>
-                        <h3>à¹à¸šà¸šà¸›à¸£à¸°à¹€à¸¡à¸´à¸™à¸à¸²à¸£à¸›à¸à¸´à¸šà¸±à¸•à¸´à¸‡à¸²à¸™</h3>
-                        <p>à¸«à¸™à¹‰à¸²à¹ƒà¸«à¸¡à¹ˆà¸ªà¸³à¸«à¸£à¸±à¸šà¸à¸£à¸­à¸à¸„à¸°à¹à¸™à¸™à¹à¸šà¸šà¸•à¸²à¸£à¸²à¸‡à¸•à¸²à¸¡à¸Ÿà¸­à¸£à¹Œà¸¡à¸›à¸£à¸°à¹€à¸¡à¸´à¸™à¸‡à¸²à¸™à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸‡à¸²à¸™</p>
+                        <h3>แบบประเมินการปฏิบัติงาน</h3>
+                        <p>หน้าใหม่สำหรับกรอกคะแนนแบบตารางตามฟอร์มประเมินงานจากหน้างาน</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="form-stack">
-                      <Label>à¸«à¸±à¸§à¸‚à¹‰à¸­à¸ªà¹ˆà¸§à¸™à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</Label>
+                      <Label>หัวข้อส่วนประเมิน</Label>
                       <Input value={evaluationForm.sectionTitle} onChange={(e) => patchEvaluationMeta("sectionTitle", e.target.value)} />
                       <div className="three-col">
                         <div>
                           <Label>Model</Label>
                           <select value={evaluationForm.modelId} onChange={(e) => selectEvaluationModel(e.target.value)} style={S.input}>
-                            <option value="">à¹€à¸¥à¸·à¸­à¸ Model</option>
+                            <option value="">เลือก Model</option>
                             {bank.models.map((entry) => (
                               <option key={entry.id} value={entry.id}>
                                 {entry.modelCode} - {entry.modelName}
@@ -2096,7 +2096,7 @@ export default function App() {
                         <div>
                           <Label>Part</Label>
                           <select value={evaluationForm.partId} onChange={(e) => selectEvaluationPart(e.target.value)} style={S.input}>
-                            <option value="">à¹€à¸¥à¸·à¸­à¸ Part</option>
+                            <option value="">เลือก Part</option>
                             {evaluationPartOptions.map((entry) => (
                               <option key={entry.id} value={entry.id}>
                                 {entry.partCode} - {entry.partName}
@@ -2105,9 +2105,9 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™</Label>
+                          <Label>รหัสพนักงาน</Label>
                           <select value={evaluationForm.employeeCode} onChange={(e) => selectEvaluationEmployeeByCode(e.target.value)} style={S.input}>
-                            <option value="">à¹€à¸¥à¸·à¸­à¸à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™</option>
+                            <option value="">เลือกรหัสพนักงาน</option>
                             {activeEmployees.map((employee) => (
                               <option key={employee.id} value={employee.employeeCode}>
                                 {employee.employeeCode}
@@ -2116,9 +2116,9 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™</Label>
+                          <Label>ชื่อพนักงาน</Label>
                           <select value={evaluationForm.employeeName} onChange={(e) => selectEvaluationEmployeeByName(e.target.value)} style={S.input}>
-                            <option value="">à¹€à¸¥à¸·à¸­à¸à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™</option>
+                            <option value="">เลือกชื่อพนักงาน</option>
                             {activeEmployees.map((employee) => (
                               <option key={employee.id} value={employee.fullName}>
                                 {employee.fullName}
@@ -2127,20 +2127,20 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>à¸œà¸¹à¹‰à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</Label>
+                          <Label>ผู้ประเมิน</Label>
                           <Input value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} />
                         </div>
                       </div>
                       <div className="evaluation-summary-strip">
-                        <div className="mini-note">Part à¸—à¸µà¹ˆà¹€à¸¥à¸·à¸­à¸: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
-                        <div className="mini-note">à¸„à¸°à¹à¸™à¸™à¸ªà¸­à¸šà¸¥à¹ˆà¸²à¸ªà¸¸à¸”: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¥à¸ªà¸­à¸šà¸‚à¸­à¸‡ Part à¸™à¸µà¹‰"}</strong></div>
+                        <div className="mini-note">Part ที่เลือก: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
+                        <div className="mini-note">คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "ยังไม่มีผลสอบของ Part นี้"}</strong></div>
                       </div>
                       {evaluationError ? <div className="alert-error">{evaluationError}</div> : null}
                       <div className="button-row">
-                        <Button onClick={saveEvaluation}>à¸šà¸±à¸™à¸—à¸¶à¸à¸œà¸¥à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</Button>
-                        <Button variant="outline" onClick={resetEvaluation}>à¸£à¸µà¹€à¸‹à¹‡à¸•à¸Ÿà¸­à¸£à¹Œà¸¡</Button>
+                        <Button onClick={saveEvaluation}>บันทึกผลประเมิน</Button>
+                        <Button variant="outline" onClick={resetEvaluation}>รีเซ็ตฟอร์ม</Button>
                         <Button variant="outline" onClick={exportEvaluationCsv}>Export CSV</Button>
-                        <Button variant="outline" onClick={() => window.print()}>à¸žà¸´à¸¡à¸žà¹Œà¸Ÿà¸­à¸£à¹Œà¸¡</Button>
+                        <Button variant="outline" onClick={() => window.print()}>พิมพ์ฟอร์ม</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -2151,22 +2151,22 @@ export default function App() {
                     <div className="evaluation-sheet">
                       <div className="evaluation-sheet-title">{evaluationForm.sectionTitle}</div>
                       <div className="evaluation-sheet-meta">
-                        <span>à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
-                        <span>à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™: <strong>{evaluationForm.employeeName || "-"}</strong></span>
+                        <span>รหัสพนักงาน: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
+                        <span>ชื่อพนักงาน: <strong>{evaluationForm.employeeName || "-"}</strong></span>
                         <span>Model/Part: <strong>{evaluationModel && evaluationPart ? `${evaluationModel.modelCode} / ${evaluationPart.partCode}` : "-"}</strong></span>
-                        <span>à¸œà¸¹à¹‰à¸›à¸£à¸°à¹€à¸¡à¸´à¸™: <strong>{evaluationForm.evaluator || "-"}</strong></span>
-                        <span>à¸„à¸°à¹à¸™à¸™à¸ªà¸­à¸šà¸¥à¹ˆà¸²à¸ªà¸¸à¸”: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
+                        <span>ผู้ประเมิน: <strong>{evaluationForm.evaluator || "-"}</strong></span>
+                        <span>คะแนนสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
                       </div>
                       <table className="evaluation-table">
                         <thead>
                           <tr>
-                            <th rowSpan="2" className="col-no">à¸—à¸µà¹ˆ<br />No</th>
-                            <th rowSpan="2" className="col-item">à¸«à¸±à¸§à¸‚à¹‰à¸­<br />Item</th>
-                            <th colSpan={scoreLevels.length}>à¸£à¸°à¸”à¸±à¸šà¸à¸²à¸£à¹ƒà¸«à¹‰à¸„à¸°à¹à¸™à¸™<br />Score Level</th>
-                            <th rowSpan="2" className="col-method">à¸§à¸´à¸˜à¸µà¸à¸²à¸£</th>
-                            <th rowSpan="2" className="col-score">à¸„à¸°à¹à¸™à¸™<br />Score (A)</th>
-                            <th rowSpan="2" className="col-weight">à¸™à¹‰à¸³à¸«à¸™à¸±à¸<br />Weight (B)</th>
-                            <th rowSpan="2" className="col-total">à¸„à¸°à¹à¸™à¸™à¸—à¸µà¹ˆà¹„à¸”à¹‰<br />(A) x (B)</th>
+                            <th rowSpan="2" className="col-no">ที่<br />No</th>
+                            <th rowSpan="2" className="col-item">หัวข้อ<br />Item</th>
+                            <th colSpan={scoreLevels.length}>ระดับการให้คะแนน<br />Score Level</th>
+                            <th rowSpan="2" className="col-method">วิธีการ</th>
+                            <th rowSpan="2" className="col-score">คะแนน<br />Score (A)</th>
+                            <th rowSpan="2" className="col-weight">น้ำหนัก<br />Weight (B)</th>
+                            <th rowSpan="2" className="col-total">คะแนนที่ได้<br />(A) x (B)</th>
                           </tr>
                           <tr>
                             {scoreLevels.map((level) => <th key={level} className="col-level">{level}</th>)}
@@ -2217,11 +2217,11 @@ export default function App() {
                         </tbody>
                         <tfoot>
                           <tr>
-                            <td colSpan={scoreLevels.length + 4}>à¸£à¸§à¸¡à¸„à¸°à¹à¸™à¸™</td>
+                            <td colSpan={scoreLevels.length + 4}>รวมคะแนน</td>
                             <td>{evaluationTotal}</td>
                           </tr>
                           <tr>
-                            <td colSpan={scoreLevels.length + 4}>à¸„à¸°à¹à¸™à¸™à¹€à¸•à¹‡à¸¡à¸ªà¸¹à¸‡à¸ªà¸¸à¸”</td>
+                            <td colSpan={scoreLevels.length + 4}>คะแนนเต็มสูงสุด</td>
                             <td>{evaluationMax}</td>
                           </tr>
                         </tfoot>
@@ -2234,33 +2234,33 @@ export default function App() {
                   <CardHeader>
                     <div className="table-header-row">
                       <div>
-                        <h3>à¸›à¸£à¸°à¸§à¸±à¸•à¸´à¸œà¸¥à¸›à¸£à¸°à¹€à¸¡à¸´à¸™à¸¢à¹‰à¸­à¸™à¸«à¸¥à¸±à¸‡</h3>
-                        <p>à¸œà¸¹à¸à¸à¸±à¸šà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹à¸¥à¸° Part à¹€à¸”à¸µà¸¢à¸§à¸à¸±à¸šà¸œà¸¥à¸ªà¸­à¸š à¹€à¸žà¸·à¹ˆà¸­à¸¢à¹‰à¸­à¸™à¸”à¸¹à¹„à¸”à¹‰à¸ à¸²à¸¢à¸«à¸¥à¸±à¸‡</p>
+                        <h3>ประวัติผลประเมินย้อนหลัง</h3>
+                        <p>ผูกกับพนักงานและ Part เดียวกับผลสอบ เพื่อย้อนดูได้ภายหลัง</p>
                       </div>
                       <div className="mini-note">
-                        {evaluationStatus === "loading" ? "à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸”..." : `à¸•à¸£à¸‡à¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚ ${filteredEvaluationHistory.length} à¸ˆà¸²à¸ ${evaluationHistory.length} à¸£à¸²à¸¢à¸à¸²à¸£`}
+                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `ตรงเงื่อนไข ${filteredEvaluationHistory.length} จาก ${evaluationHistory.length} รายการ`}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="dashboard-filters">
                       <div>
-                        <Label>à¸„à¹‰à¸™à¸«à¸²</Label>
-                        <Input value={evaluationSearch} onChange={(e) => setEvaluationSearch(e.target.value)} placeholder="à¸Šà¸·à¹ˆà¸­ / à¸£à¸«à¸±à¸ª / Model / Part / à¸œà¸¹à¹‰à¸›à¸£à¸°à¹€à¸¡à¸´à¸™" />
+                        <Label>ค้นหา</Label>
+                        <Input value={evaluationSearch} onChange={(e) => setEvaluationSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part / ผู้ประเมิน" />
                       </div>
                       <div>
                         <Label>Part</Label>
                         <select value={evaluationPartFilter} onChange={(e) => setEvaluationPartFilter(e.target.value)} style={S.input}>
-                          <option value="ALL">à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</option>
+                          <option value="ALL">ทั้งหมด</option>
                           {evaluationPartFilterOptions.map((entry) => (
                             <option key={entry.key} value={entry.key}>{entry.label}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <Label>à¸œà¸¹à¹‰à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</Label>
+                        <Label>ผู้ประเมิน</Label>
                         <select value={evaluationEvaluatorFilter} onChange={(e) => setEvaluationEvaluatorFilter(e.target.value)} style={S.input}>
-                          <option value="ALL">à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</option>
+                          <option value="ALL">ทั้งหมด</option>
                           {evaluationEvaluatorOptions.map((entry) => (
                             <option key={entry} value={entry}>{entry}</option>
                           ))}
@@ -2268,18 +2268,18 @@ export default function App() {
                       </div>
                     </div>
                     {filteredEvaluationHistory.length === 0 ? (
-                      <div className="empty-state">à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¥à¸›à¸£à¸°à¹€à¸¡à¸´à¸™à¹ƒà¸™à¸£à¸°à¸šà¸š</div>
+                      <div className="empty-state">ยังไม่มีผลประเมินในระบบ</div>
                     ) : (
                       <div className="dashboard-table-wrap">
                         <table className="dashboard-table">
                           <thead>
                             <tr>
-                              <th>à¹€à¸§à¸¥à¸²</th>
-                              <th>à¸žà¸™à¸±à¸à¸‡à¸²à¸™</th>
+                              <th>เวลา</th>
+                              <th>พนักงาน</th>
                               <th>Model / Part</th>
-                              <th>à¸„à¸°à¹à¸™à¸™à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</th>
-                              <th>à¸„à¸°à¹à¸™à¸™à¸ªà¸­à¸šà¸¥à¹ˆà¸²à¸ªà¸¸à¸”</th>
-                              <th>à¸œà¸¹à¹‰à¸›à¸£à¸°à¹€à¸¡à¸´à¸™</th>
+                              <th>คะแนนประเมิน</th>
+                              <th>คะแนนสอบล่าสุด</th>
+                              <th>ผู้ประเมิน</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2311,8 +2311,8 @@ export default function App() {
                     <div className="section-heading">
                       <Users size={18} />
                       <div>
-                        <h3>à¸ˆà¸±à¸”à¸à¸²à¸£à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸žà¸™à¸±à¸à¸‡à¸²à¸™</h3>
-                        <p>à¸ªà¸£à¹‰à¸²à¸‡à¸šà¸±à¸à¸Šà¸µà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¸à¸³à¸«à¸™à¸”à¸ªà¸´à¸—à¸˜à¸´à¹Œ à¹à¸¥à¸°à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸à¸²à¸£à¹€à¸‚à¹‰à¸²à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸ˆà¸²à¸à¸à¸²à¸™à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸à¸¥à¸²à¸‡</p>
+                        <h3>จัดการข้อมูลพนักงาน</h3>
+                        <p>สร้างบัญชีผู้ใช้งาน กำหนดสิทธิ์ และตั้งค่าการเข้าใช้งานจากฐานข้อมูลกลาง</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -2320,32 +2320,32 @@ export default function App() {
                     <div className="form-stack">
                       <div className="two-col">
                         <div>
-                          <Label>à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™</Label>
+                          <Label>รหัสพนักงาน</Label>
                           <Input value={employeeForm.employeeCode} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, employeeCode: e.target.value }))} />
                         </div>
                         <div>
-                          <Label>à¸ªà¸´à¸—à¸˜à¸´à¹Œ</Label>
+                          <Label>สิทธิ์</Label>
                           <select value={employeeForm.role} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, role: e.target.value }))} style={S.input}>
                             <option value="USER">USER</option>
                             <option value="ADMIN">ADMIN</option>
                           </select>
                         </div>
                       </div>
-                      <div className="mini-note">à¸£à¸°à¸šà¸šà¸ˆà¸°à¹ƒà¸Šà¹‰à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹€à¸›à¹‡à¸™à¸£à¸«à¸±à¸ªà¸¥à¹‡à¸­à¸à¸­à¸´à¸™à¹‚à¸”à¸¢à¸­à¸±à¸•à¹‚à¸™à¸¡à¸±à¸•à¸´</div>
-                      <Label>à¸Šà¸·à¹ˆà¸­-à¸™à¸²à¸¡à¸ªà¸à¸¸à¸¥</Label>
+                      <div className="mini-note">ระบบจะใช้รหัสพนักงานเป็นรหัสล็อกอินโดยอัตโนมัติ</div>
+                      <Label>ชื่อ-นามสกุล</Label>
                       <Input value={employeeForm.fullName} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, fullName: e.target.value }))} />
                       <div className="two-col">
                         <div>
-                          <Label>à¹à¸œà¸™à¸</Label>
+                          <Label>แผนก</Label>
                           <Input value={employeeForm.department} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, department: e.target.value }))} />
                         </div>
                         <div>
-                          <Label>à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡</Label>
+                          <Label>ตำแหน่ง</Label>
                           <Input value={employeeForm.position} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, position: e.target.value }))} />
                         </div>
                       </div>
                       <div>
-                        <Label>à¸ªà¸–à¸²à¸™à¸°</Label>
+                        <Label>สถานะ</Label>
                         <select value={employeeForm.isActive ? "ACTIVE" : "INACTIVE"} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, isActive: e.target.value === "ACTIVE" }))} style={S.input}>
                           <option value="ACTIVE">ACTIVE</option>
                           <option value="INACTIVE">INACTIVE</option>
@@ -2353,8 +2353,8 @@ export default function App() {
                       </div>
                       {employeeError ? <div className="alert-error">{employeeError}</div> : null}
                       <div className="button-row">
-                        <Button onClick={saveEmployee}>{editingEmployeeId ? "à¸šà¸±à¸™à¸—à¸¶à¸à¸à¸²à¸£à¹à¸à¹‰à¹„à¸‚" : "à¹€à¸žà¸´à¹ˆà¸¡à¸žà¸™à¸±à¸à¸‡à¸²à¸™"}</Button>
-                        <Button variant="outline" onClick={resetEmployeeForm}>à¸¥à¹‰à¸²à¸‡à¸Ÿà¸­à¸£à¹Œà¸¡</Button>
+                        <Button onClick={saveEmployee}>{editingEmployeeId ? "บันทึกการแก้ไข" : "เพิ่มพนักงาน"}</Button>
+                        <Button variant="outline" onClick={resetEmployeeForm}>ล้างฟอร์ม</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -2364,25 +2364,25 @@ export default function App() {
                   <CardHeader>
                     <div className="table-header-row">
                       <div>
-                        <h3>à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™</h3>
-                        <p>à¸ˆà¸³à¸™à¸§à¸™à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸” {employees.length} à¸„à¸™ {employeeStatus === "loading" ? "(à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸”...)" : ""}</p>
+                        <h3>รายชื่อพนักงาน</h3>
+                        <p>จำนวนทั้งหมด {employees.length} คน {employeeStatus === "loading" ? "(กำลังโหลด...)" : ""}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {employees.length === 0 ? (
-                      <div className="empty-state">à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸žà¸™à¸±à¸à¸‡à¸²à¸™à¹ƒà¸™à¸£à¸°à¸šà¸š</div>
+                      <div className="empty-state">ยังไม่มีรายชื่อพนักงานในระบบ</div>
                     ) : (
                       <div className="dashboard-table-wrap">
                         <table className="dashboard-table">
                           <thead>
                             <tr>
-                              <th>à¸Šà¸·à¹ˆà¸­</th>
-                              <th>à¸£à¸«à¸±à¸ªà¸žà¸™à¸±à¸à¸‡à¸²à¸™</th>
-                              <th>à¹à¸œà¸™à¸/à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡</th>
-                              <th>à¸ªà¸´à¸—à¸˜à¸´à¹Œ</th>
-                              <th>à¸ªà¸–à¸²à¸™à¸°</th>
-                              <th>à¸ˆà¸±à¸”à¸à¸²à¸£</th>
+                              <th>ชื่อ</th>
+                              <th>รหัสพนักงาน</th>
+                              <th>แผนก/ตำแหน่ง</th>
+                              <th>สิทธิ์</th>
+                              <th>สถานะ</th>
+                              <th>จัดการ</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2395,8 +2395,8 @@ export default function App() {
                                 <td>{employee.isActive ? "ACTIVE" : "INACTIVE"}</td>
                                 <td>
                                   <div className="button-row">
-                                    <Button variant="outline" onClick={() => startEditEmployee(employee)}>à¹à¸à¹‰à¹„à¸‚</Button>
-                                    <Button variant="destructive" onClick={() => removeEmployee(employee)} disabled={employee.username === "ADMIN1234"}>à¸¥à¸š</Button>
+                                    <Button variant="outline" onClick={() => startEditEmployee(employee)}>แก้ไข</Button>
+                                    <Button variant="destructive" onClick={() => removeEmployee(employee)} disabled={employee.username === "ADMIN1234"}>ลบ</Button>
                                   </div>
                                 </td>
                               </tr>
@@ -2413,9 +2413,9 @@ export default function App() {
 
           {isAdmin ? <TabsContent value="employee-results"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Search employee</Label><Input value={employeeResultsSearch} onChange={(e) => setEmployeeResultsSearch(e.target.value)} placeholder="Employee name or code" /></div><div><Label>Latest status</Label><select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}><option value="ALL">All</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>Matched employees</Label><Input value={employeeResultSummaries.length} readOnly /></div><div><Label>Export</Label><Button variant="outline" onClick={exportSelectedEmployeeResultsCsv} disabled={!selectedEmployeeResults.length}>Export employee CSV</Button></div></div></CardContent></Card><div className="employee-results-layout"><Card><CardHeader><div className="section-heading"><Users size={18} /><div><h3>Employees with exam history</h3><p>Select an employee to view recent attempts and score trends.</p></div></div></CardHeader><CardContent className="employee-result-list">{employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | Latest {entry.latestModelPart || "-"}</div></div><div className="employee-result-side"><span className={`status-pill status-${String(entry.latestStatus || "").toLowerCase()}`.trim()}>{entry.latestStatus}</span><strong>{entry.avgPct}%</strong></div></button>)}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Employee exam summary</h3><p>See attempt count, pass count, and the detailed exam list for the selected person.</p></div></div></CardHeader><CardContent>{selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view detailed attempts.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div></div>}</CardContent></Card></div></div></TabsContent> : null}
 
-          {isAdmin ? <TabsContent value="dashboard"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Model</Label><select value={dashboardModelFilter} onChange={(e) => { setDashboardModelFilter(e.target.value); setDashboardPartFilter("ALL"); }} style={S.input}><option value="ALL">à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</option>{dashboardModelOptions.map((m) => <option key={m.modelCode} value={m.modelCode}>{m.modelCode} - {m.modelName}</option>)}</select></div><div><Label>Part</Label><select value={dashboardPartFilter} onChange={(e) => setDashboardPartFilter(e.target.value)} style={S.input}><option value="ALL">à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</option>{dashboardPartOptions.map((p) => <option key={p.key} value={p.key}>{p.modelCode}/{p.partCode} - {p.partName}</option>)}</select></div><div><Label>à¸ªà¸–à¸²à¸™à¸°</Label><select value={dashboardStatusFilter} onChange={(e) => setDashboardStatusFilter(e.target.value)} style={S.input}><option value="ALL">à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>à¸„à¹‰à¸™à¸«à¸²</Label><Input value={dashboardSearch} onChange={(e) => setDashboardSearch(e.target.value)} placeholder="à¸Šà¸·à¹ˆà¸­ / à¸£à¸«à¸±à¸ª / Model / Part" /></div></div></CardContent></Card><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">à¸ˆà¸³à¸™à¸§à¸™à¸„à¸£à¸±à¹‰à¸‡à¸ªà¸­à¸šà¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”</div><div className="metric-value">{dashboardSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">à¸ˆà¸³à¸™à¸§à¸™à¸—à¸µà¹ˆà¸œà¹ˆà¸²à¸™</div><div className="metric-value">{dashboardSummary.passed}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">à¸„à¸°à¹à¸™à¸™à¹€à¸‰à¸¥à¸µà¹ˆà¸¢à¸£à¸§à¸¡</div><div className="metric-value">{dashboardSummary.avgPct}%</div></CardContent></Card></div><Card><CardHeader><div className="table-header-row"><div><h3>à¸ªà¸£à¸¸à¸›à¸£à¸²à¸¢ Model / Part</h3><p>à¸”à¸¹à¸ˆà¸³à¸™à¸§à¸™à¸„à¸£à¸±à¹‰à¸‡ à¸­à¸±à¸•à¸£à¸²à¸œà¹ˆà¸²à¸™ à¹à¸¥à¸°à¸„à¸°à¹à¸™à¸™à¹€à¸‰à¸¥à¸µà¹ˆà¸¢à¹à¸¢à¸à¸•à¸²à¸¡à¸ªà¸²à¸¢à¸à¸²à¸£à¸ªà¸­à¸š</p></div><div className="button-row"><Button variant="outline" onClick={exportDashboardSummaryCsv}>Export Summary CSV</Button><Button variant="outline" onClick={exportDashboardHistoryCsv}>Export History CSV</Button><Button variant="outline" onClick={() => { if (window.confirm("à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸¥à¹‰à¸²à¸‡à¸œà¸¥à¸ªà¸­à¸šà¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ")) setResultHistory([]); }}>à¸¥à¹‰à¸²à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ Dashboard</Button></div></div></CardHeader><CardContent>{byModelPart.length === 0 ? <div className="empty-state">à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¥à¸ªà¸­à¸šà¹ƒà¸™à¸£à¸°à¸šà¸š</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Model</th><th>Part</th><th>à¸ˆà¸³à¸™à¸§à¸™à¸„à¸£à¸±à¹‰à¸‡</th><th>à¸œà¹ˆà¸²à¸™</th><th>à¸­à¸±à¸•à¸£à¸²à¸œà¹ˆà¸²à¸™</th><th>à¸„à¸°à¹à¸™à¸™à¹€à¸‰à¸¥à¸µà¹ˆà¸¢</th></tr></thead><tbody>{byModelPart.map((row, idx) => <tr key={`${row.modelCode}-${row.partCode}-${idx}`}><td>{row.modelCode} - {row.modelName}</td><td>{row.partCode} - {row.partName}</td><td>{row.attempts}</td><td>{row.passed}</td><td>{row.passRate}%</td><td>{row.avgPct}%</td></tr>)}</tbody></table></div>}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>à¸œà¸¥à¸ªà¸­à¸šà¸¥à¹ˆà¸²à¸ªà¸¸à¸”</h3><p>à¹à¸ªà¸”à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸¥à¹ˆà¸²à¸ªà¸¸à¸” 20 à¸£à¸²à¸¢à¸à¸²à¸£à¸•à¸²à¸¡à¸•à¸±à¸§à¸à¸£à¸­à¸‡à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™</p></div></div></CardHeader><CardContent>{filteredHistory.length === 0 ? <div className="empty-state">à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸œà¸¥à¸ªà¸­à¸šà¹ƒà¸™à¸£à¸°à¸šà¸š</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>à¹€à¸§à¸¥à¸²</th><th>à¸žà¸™à¸±à¸à¸‡à¸²à¸™</th><th>Model/Part</th><th>à¸„à¸°à¹à¸™à¸™</th><th>à¸ªà¸–à¸²à¸™à¸°</th></tr></thead><tbody>{filteredHistory.slice(0, 20).map((r) => <tr key={r.id}><td>{new Date(r.submittedAt).toLocaleString()}</td><td>{r.candidateName} ({r.candidateCode})</td><td>{r.modelCode}/{r.partCode}</td><td>{r.score}/{r.fullScore}</td><td>{r.status}</td></tr>)}</tbody></table></div>}</CardContent></Card></div></TabsContent> : null}
+          {isAdmin ? <TabsContent value="dashboard"><div className="dashboard-layout"><Card><CardContent><div className="dashboard-filters"><div><Label>Model</Label><select value={dashboardModelFilter} onChange={(e) => { setDashboardModelFilter(e.target.value); setDashboardPartFilter("ALL"); }} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardModelOptions.map((m) => <option key={m.modelCode} value={m.modelCode}>{m.modelCode} - {m.modelName}</option>)}</select></div><div><Label>Part</Label><select value={dashboardPartFilter} onChange={(e) => setDashboardPartFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option>{dashboardPartOptions.map((p) => <option key={p.key} value={p.key}>{p.modelCode}/{p.partCode} - {p.partName}</option>)}</select></div><div><Label>สถานะ</Label><select value={dashboardStatusFilter} onChange={(e) => setDashboardStatusFilter(e.target.value)} style={S.input}><option value="ALL">ทั้งหมด</option><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div><div><Label>ค้นหา</Label><Input value={dashboardSearch} onChange={(e) => setDashboardSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part" /></div></div></CardContent></Card><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">จำนวนครั้งสอบทั้งหมด</div><div className="metric-value">{dashboardSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">จำนวนที่ผ่าน</div><div className="metric-value">{dashboardSummary.passed}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">คะแนนเฉลี่ยรวม</div><div className="metric-value">{dashboardSummary.avgPct}%</div></CardContent></Card></div><Card><CardHeader><div className="table-header-row"><div><h3>สรุปราย Model / Part</h3><p>ดูจำนวนครั้ง อัตราผ่าน และคะแนนเฉลี่ยแยกตามสายการสอบ</p></div><div className="button-row"><Button variant="outline" onClick={exportDashboardSummaryCsv}>Export Summary CSV</Button><Button variant="outline" onClick={exportDashboardHistoryCsv}>Export History CSV</Button><Button variant="outline" onClick={() => { if (window.confirm("ต้องการล้างผลสอบทั้งหมดหรือไม่")) setResultHistory([]); }}>ล้างข้อมูล Dashboard</Button></div></div></CardHeader><CardContent>{byModelPart.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Model</th><th>Part</th><th>จำนวนครั้ง</th><th>ผ่าน</th><th>อัตราผ่าน</th><th>คะแนนเฉลี่ย</th></tr></thead><tbody>{byModelPart.map((row, idx) => <tr key={`${row.modelCode}-${row.partCode}-${idx}`}><td>{row.modelCode} - {row.modelName}</td><td>{row.partCode} - {row.partName}</td><td>{row.attempts}</td><td>{row.passed}</td><td>{row.passRate}%</td><td>{row.avgPct}%</td></tr>)}</tbody></table></div>}</CardContent></Card><Card><CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>ผลสอบล่าสุด</h3><p>แสดงข้อมูลล่าสุด 20 รายการตามตัวกรองปัจจุบัน</p></div></div></CardHeader><CardContent>{filteredHistory.length === 0 ? <div className="empty-state">ยังไม่มีผลสอบในระบบ</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>เวลา</th><th>พนักงาน</th><th>Model/Part</th><th>คะแนน</th><th>สถานะ</th></tr></thead><tbody>{filteredHistory.slice(0, 20).map((r) => <tr key={r.id}><td>{new Date(r.submittedAt).toLocaleString()}</td><td>{r.candidateName} ({r.candidateCode})</td><td>{r.modelCode}/{r.partCode}</td><td>{r.score}/{r.fullScore}</td><td>{r.status}</td></tr>)}</tbody></table></div>}</CardContent></Card></div></TabsContent> : null}
 
-          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>à¸ªà¸³à¸£à¸­à¸‡à¹‚à¸„à¸£à¸‡à¸ªà¸£à¹‰à¸²à¸‡à¸„à¸¥à¸±à¸‡à¸‚à¹‰à¸­à¸ªà¸­à¸šà¹€à¸žà¸·à¹ˆà¸­à¸¢à¹‰à¸²à¸¢à¸«à¸£à¸·à¸­à¹€à¸à¹‡à¸šà¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> à¸”à¸²à¸§à¸™à¹Œà¹‚à¸«à¸¥à¸” JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>à¸§à¸²à¸‡à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡à¸«à¸£à¸·à¸­à¹€à¸¥à¸·à¸­à¸à¹„à¸Ÿà¸¥à¹Œ JSON à¹à¸¥à¹‰à¸§à¸£à¸°à¸šà¸šà¸ˆà¸°à¸ˆà¸±à¸”à¸£à¸¹à¸›à¹à¸šà¸šà¹ƒà¸«à¹‰à¹€à¸‚à¹‰à¸²à¸à¸±à¸š UI à¸­à¸±à¸•à¹‚à¸™à¸¡à¸±à¸•à¸´</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><label className="upload-button"><FileJson size={16} /> à¹€à¸¥à¸·à¸­à¸à¹„à¸Ÿà¸¥à¹Œ JSON<input type="file" accept=".json,application/json" hidden onChange={(e) => importJSONFile(e.target.files?.[0])} /></label><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>à¸¥à¹‰à¸²à¸‡à¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡</Button></div></CardContent></Card></div></TabsContent> : null}
+          {isAdmin ? <TabsContent value="importexport"><div className="io-grid"><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Export JSON (Model/Part)</h3><p>สำรองโครงสร้างคลังข้อสอบเพื่อย้ายหรือเก็บเวอร์ชัน</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={JSON.stringify(bank, null, 2)} readOnly className="mono-textarea" /><Button onClick={exportJSON}><FileJson size={16} /> ดาวน์โหลด JSON</Button></CardContent></Card><Card><CardHeader><div className="section-heading"><FileJson size={18} /><div><h3>Import JSON</h3><p>วางข้อความหรือเลือกไฟล์ JSON แล้วระบบจะจัดรูปแบบให้เข้ากับ UI อัตโนมัติ</p></div></div></CardHeader><CardContent className="io-card-content"><Textarea rows={18} value={importText} onChange={(e) => setImportText(e.target.value)} className="mono-textarea" /><label className="upload-button"><FileJson size={16} /> เลือกไฟล์ JSON<input type="file" accept=".json,application/json" hidden onChange={(e) => importJSONFile(e.target.files?.[0])} /></label><div className="button-row"><Button onClick={importJSON}>Import JSON</Button><Button variant="outline" onClick={() => setImportText("")}>ล้างข้อความ</Button></div></CardContent></Card></div></TabsContent> : null}
         </Tabs>
       </div>
     </div>
