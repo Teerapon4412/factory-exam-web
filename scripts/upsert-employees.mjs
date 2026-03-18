@@ -20,6 +20,18 @@ if (!Array.isArray(source)) {
 }
 
 const existing = await listEmployees();
+const existingNonAdmin = existing.filter((employee) => employee.role !== "ADMIN");
+
+if (existingNonAdmin.length > 0) {
+  console.log(JSON.stringify({
+    skipped: true,
+    reason: "employees already exist",
+    existingEmployees: existing.length,
+    existingNonAdmin: existingNonAdmin.length,
+  }, null, 2));
+  process.exit(0);
+}
+
 const byCode = new Map(existing.map((employee) => [employee.employeeCode, employee]));
 
 let created = 0;
@@ -58,4 +70,4 @@ for (const row of source) {
   updated += 1;
 }
 
-console.log(JSON.stringify({ created, updated, skipped, total: source.length }, null, 2));
+console.log(JSON.stringify({ skipped: false, created, updated, skippedRows: skipped, total: source.length }, null, 2));
