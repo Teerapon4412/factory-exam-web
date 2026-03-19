@@ -713,6 +713,17 @@ select:focus {
   gap: 8px;
 }
 
+.employee-learning-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -732,6 +743,21 @@ select:focus {
 .status-fail {
   background: rgba(254, 226, 226, 0.95);
   color: #991b1b;
+}
+
+.status-warning {
+  background: rgba(254, 243, 199, 0.95);
+  color: #92400e;
+}
+
+.status-neutral {
+  background: rgba(226, 232, 240, 0.95);
+  color: #334155;
+}
+
+.metric-value--status {
+  display: flex;
+  align-items: center;
 }
 
 .evaluation-layout {
@@ -876,6 +902,11 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
+  .employee-learning-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .sticky-card {
     position: static;
   }
@@ -1003,4 +1034,3 @@ select:focus {
     grid-template-columns: 1fr;
   }
 }
-

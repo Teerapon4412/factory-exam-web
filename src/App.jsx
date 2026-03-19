@@ -322,6 +322,20 @@ const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
   score: 0,
 }));
 
+const learningStatusMeta = {
+  NOT_STARTED: { label: "ยังไม่สอบ", className: "status-neutral" },
+  EXAM_NOT_PASSED: { label: "สอบไม่ผ่าน", className: "status-fail" },
+  WAITING_EVALUATION: { label: "รอประเมิน", className: "status-warning" },
+  COMPLETED: { label: "ผ่านครบ", className: "status-pass" },
+};
+
+const getLearningStatusSummary = ({ attempts = 0, passed = 0, passedParts = 0, evaluatedParts = 0 }) => {
+  if (!attempts) return { key: "NOT_STARTED", ...learningStatusMeta.NOT_STARTED };
+  if (!passed) return { key: "EXAM_NOT_PASSED", ...learningStatusMeta.EXAM_NOT_PASSED };
+  if (passedParts > evaluatedParts) return { key: "WAITING_EVALUATION", ...learningStatusMeta.WAITING_EVALUATION };
+  return { key: "COMPLETED", ...learningStatusMeta.COMPLETED };
+};
+
 const createEvaluationDraft = () => ({
   sectionTitle: "ส่วนที่ 1 : การปฏิบัติงาน และ ความร่วมมือ",
   modelId: "",
@@ -918,6 +932,14 @@ export default function App() {
 
   const employeeResultOptions = useMemo(() => {
     const map = new Map();
+    employees.forEach((employee) => {
+      const code = employee.employeeCode || "";
+      if (!code) return;
+      map.set(code, {
+        candidateCode: code,
+        candidateName: employee.fullName || employee.displayName || code,
+      });
+    });
     resultHistory.forEach((entry) => {
       const code = entry.candidateCode || entry.employeeCode || "";
       if (!code || map.has(code)) return;
@@ -926,11 +948,31 @@ export default function App() {
         candidateName: entry.candidateName || entry.employeeName || code,
       });
     });
-    return Array.from(map.values()).sort((a, b) => a.candidateName.localeCompare(b.candidateName));
-  }, [resultHistory]);
+    return Array.from(map.values()).sort((a, b) => a.candidateName.localeCompare(b.candidateName, "th"));
+  }, [employees, resultHistory]);
 
   const employeeResultSummaries = useMemo(() => {
     const map = new Map();
+
+    employees.forEach((employee) => {
+      const code = employee.employeeCode || "";
+      if (!code) return;
+      map.set(code, {
+        candidateCode: code,
+        candidateName: employee.fullName || employee.displayName || code,
+        attempts: 0,
+        passed: 0,
+        scorePctSum: 0,
+        latestSubmittedAt: "",
+        latestStatus: "-",
+        latestModelPart: "-",
+        passedParts: 0,
+        evaluatedParts: 0,
+        department: employee.department || "",
+        position: employee.position || "",
+      });
+    });
+
     resultHistory.forEach((entry) => {
       const key = entry.candidateCode || entry.employeeCode || entry.id;
       const prev = map.get(key) || {
@@ -939,40 +981,90 @@ export default function App() {
         attempts: 0,
         passed: 0,
         scorePctSum: 0,
-        latestSubmittedAt: entry.submittedAt,
-        latestStatus: entry.status,
-        latestModelPart: [entry.modelCode, entry.partCode].filter(Boolean).join("/"),
+        latestSubmittedAt: "",
+        latestStatus: "-",
+        latestModelPart: "-",
+        passedParts: 0,
+        evaluatedParts: 0,
+        department: "",
+        position: "",
       };
       prev.attempts += 1;
       prev.passed += entry.status === "PASS" ? 1 : 0;
       prev.scorePctSum += entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0;
-      if (new Date(entry.submittedAt).getTime() > new Date(prev.latestSubmittedAt).getTime()) {
+      if (!prev.latestSubmittedAt || new Date(entry.submittedAt).getTime() > new Date(prev.latestSubmittedAt).getTime()) {
         prev.latestSubmittedAt = entry.submittedAt;
         prev.latestStatus = entry.status;
-        prev.latestModelPart = [entry.modelCode, entry.partCode].filter(Boolean).join("/");
+        prev.latestModelPart = [entry.modelCode, entry.partCode].filter(Boolean).join("/") || "-";
         prev.candidateName = entry.candidateName || entry.employeeName || prev.candidateName;
       }
       map.set(key, prev);
     });
+
+    const passedPartsByEmployee = new Map();
+    resultHistory
+      .filter((entry) => entry.status === "PASS")
+      .forEach((entry) => {
+        const code = entry.candidateCode || entry.employeeCode || "";
+        if (!code) return;
+        const partKey = entry.partId || [entry.modelCode, entry.partCode].join("__");
+        if (!passedPartsByEmployee.has(code)) passedPartsByEmployee.set(code, new Set());
+        passedPartsByEmployee.get(code).add(partKey);
+      });
+
+    const evaluatedPartsByEmployee = new Map();
+    evaluationHistory.forEach((entry) => {
+      const code = entry.employeeCode || "";
+      if (!code) return;
+      const partKey = entry.partId || [entry.modelCode, entry.partCode].join("__");
+      if (!evaluatedPartsByEmployee.has(code)) evaluatedPartsByEmployee.set(code, new Set());
+      evaluatedPartsByEmployee.get(code).add(partKey);
+    });
+
     return Array.from(map.values())
-      .map((entry) => ({
-        ...entry,
-        avgPct: entry.attempts ? Math.round(entry.scorePctSum / entry.attempts) : 0,
-        passRate: entry.attempts ? Math.round((entry.passed / entry.attempts) * 100) : 0,
-      }))
+      .map((entry) => {
+        const passedParts = passedPartsByEmployee.get(entry.candidateCode)?.size || 0;
+        const evaluatedParts = evaluatedPartsByEmployee.get(entry.candidateCode)?.size || 0;
+        const learningStatus = getLearningStatusSummary({
+          attempts: entry.attempts,
+          passed: entry.passed,
+          passedParts,
+          evaluatedParts,
+        });
+        return {
+          ...entry,
+          passedParts,
+          evaluatedParts,
+          avgPct: entry.attempts ? Math.round(entry.scorePctSum / entry.attempts) : 0,
+          passRate: entry.attempts ? Math.round((entry.passed / entry.attempts) * 100) : 0,
+          learningStatusKey: learningStatus.key,
+          learningStatusLabel: learningStatus.label,
+          learningStatusClassName: learningStatus.className,
+        };
+      })
       .filter((entry) => {
         if (employeeResultsEmployeeFilter !== "ALL" && entry.candidateCode !== employeeResultsEmployeeFilter) return false;
-        if (employeeResultsStatusFilter !== "ALL" && entry.latestStatus !== employeeResultsStatusFilter) return false;
+        if (employeeResultsStatusFilter !== "ALL" && entry.learningStatusKey !== employeeResultsStatusFilter) return false;
         return true;
       })
-      .sort((a, b) => new Date(b.latestSubmittedAt).getTime() - new Date(a.latestSubmittedAt).getTime());
-  }, [resultHistory, employeeResultsEmployeeFilter, employeeResultsStatusFilter]);
+      .sort((a, b) => {
+        const aTime = a.latestSubmittedAt ? new Date(a.latestSubmittedAt).getTime() : 0;
+        const bTime = b.latestSubmittedAt ? new Date(b.latestSubmittedAt).getTime() : 0;
+        if (bTime !== aTime) return bTime - aTime;
+        return a.candidateName.localeCompare(b.candidateName, "th");
+      });
+  }, [employees, resultHistory, evaluationHistory, employeeResultsEmployeeFilter, employeeResultsStatusFilter]);
 
   const selectedEmployeeResults = useMemo(
     () => resultHistory
       .filter((entry) => (entry.candidateCode || entry.employeeCode) === selectedEmployeeResultCode)
       .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()),
     [resultHistory, selectedEmployeeResultCode],
+  );
+
+  const selectedEmployeeSummary = useMemo(
+    () => employeeResultSummaries.find((entry) => entry.candidateCode === selectedEmployeeResultCode) || null,
+    [employeeResultSummaries, selectedEmployeeResultCode],
   );
 
   const selectedEmployeePartComparison = useMemo(() => {
@@ -987,7 +1079,7 @@ export default function App() {
     const evaluationByPart = new Map();
     evaluationHistory
       .filter((entry) => entry.employeeCode === selectedEmployeeResultCode)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
       .forEach((entry) => {
         const key = entry.partId || [entry.modelCode, entry.partCode].join("__");
         if (!evaluationByPart.has(key)) evaluationByPart.set(key, entry);
@@ -997,6 +1089,12 @@ export default function App() {
     return Array.from(keys).map((key) => {
       const exam = examByPart.get(key) || null;
       const evaluation = evaluationByPart.get(key) || null;
+      const learningStatus = getLearningStatusSummary({
+        attempts: exam ? 1 : 0,
+        passed: exam?.status === "PASS" ? 1 : 0,
+        passedParts: exam?.status === "PASS" ? 1 : 0,
+        evaluatedParts: evaluation ? 1 : 0,
+      });
       return {
         key,
         modelCode: exam?.modelCode || evaluation?.modelCode || "-",
@@ -1008,9 +1106,11 @@ export default function App() {
         evaluationScore: evaluation?.totalScore ?? null,
         evaluationMaxScore: evaluation?.maxScore ?? null,
         evaluator: evaluation?.evaluator || "-",
-        comparedAt: evaluation?.createdAt || exam?.submittedAt || "",
+        comparedAt: evaluation?.updatedAt || evaluation?.createdAt || exam?.submittedAt || "",
+        learningStatusLabel: learningStatus.label,
+        learningStatusClassName: learningStatus.className,
       };
-    }).sort((a, b) => a.partCode.localeCompare(b.partCode));
+    }).sort((a, b) => a.partCode.localeCompare(b.partCode, "th"));
   }, [selectedEmployeeResultCode, selectedEmployeeResults, evaluationHistory]);
 
   useEffect(() => {
@@ -1838,7 +1938,7 @@ export default function App() {
             <div className="hero-stats">
               <div className="hero-stat"><span>Employees</span><strong>{employeeResultSummaries.length}</strong></div>
               <div className="hero-stat"><span>Total attempts</span><strong>{resultHistory.length}</strong></div>
-              <div className="hero-stat"><span>Latest pass</span><strong>{employeeResultSummaries.filter((entry) => entry.latestStatus === "PASS").length}</strong></div>
+              <div className="hero-stat"><span>ผ่านครบ</span><strong>{employeeResultSummaries.filter((entry) => entry.learningStatusKey === "COMPLETED").length}</strong></div>
               <div className="hero-stat"><span>Average score</span><strong>{employeeResultSummaries.length ? Math.round(employeeResultSummaries.reduce((sum, entry) => sum + entry.avgPct, 0) / employeeResultSummaries.length) : 0}%</strong></div>
             </div>
           </motion.section>
@@ -1859,11 +1959,13 @@ export default function App() {
                     </select>
                   </div>
                   <div>
-                    <Label>Latest status</Label>
+                    <Label>Learning status</Label>
                     <select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}>
-                      <option value="ALL">All</option>
-                      <option value="PASS">PASS</option>
-                      <option value="FAIL">FAIL</option>
+                      <option value="ALL">ทั้งหมด</option>
+                      <option value="NOT_STARTED">ยังไม่สอบ</option>
+                      <option value="EXAM_NOT_PASSED">สอบไม่ผ่าน</option>
+                      <option value="WAITING_EVALUATION">รอประเมิน</option>
+                      <option value="COMPLETED">ผ่านครบ</option>
                     </select>
                   </div>
                   <div>
@@ -1882,14 +1984,14 @@ export default function App() {
               <Card>
                 <CardHeader><div className="section-heading"><Users size={18} /><div><h3>Employees with scores</h3><p>Select a name to open that employee's score summary.</p></div></div></CardHeader>
                 <CardContent className="employee-result-list">
-                  {employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | Latest {entry.latestModelPart || "-"}</div></div><div className="employee-result-side"><span className={`status-pill status-${String(entry.latestStatus || "").toLowerCase()}`.trim()}>{entry.latestStatus}</span><strong>{entry.avgPct}%</strong></div></button>)}
+                  {employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | {entry.latestModelPart !== "-" ? `Latest ${entry.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div></div><div className="employee-result-side"><span className={`status-pill ${entry.learningStatusClassName}`.trim()}>{entry.learningStatusLabel}</span><strong>{entry.avgPct}%</strong><div className="employee-result-meta">ผ่าน {entry.passedParts} Part | ประเมิน {entry.evaluatedParts} Part</div></div></button>)}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Score details</h3><p>Shows attempts, pass count, average score, and detailed exam records.</p></div></div></CardHeader>
                 <CardContent>
-                  {selectedEmployeeResults.length === 0 ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeResults.length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed</div><div className="metric-value">{selectedEmployeeResults.filter((entry) => entry.status === "PASS").length}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{Math.round(selectedEmployeeResults.reduce((sum, entry) => sum + (entry.fullScore ? (entry.score / entry.fullScore) * 100 : 0), 0) / selectedEmployeeResults.length)}%</div></CardContent></Card></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div><Card><CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>Exam vs evaluation by part</h3><p>Compare each part's latest exam score with the latest evaluation score for the same employee.</p></div></div></CardHeader><CardContent>{selectedEmployeePartComparison.length === 0 ? <div className="empty-state">No exam/evaluation comparison data for this employee yet.</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Part</th><th>Exam score</th><th>Exam status</th><th>Evaluation score</th><th>Evaluator</th><th>Latest record</th></tr></thead><tbody>{selectedEmployeePartComparison.map((entry) => <tr key={entry.key}><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.examFullScore != null ? `${entry.examScore}/${entry.examFullScore}` : "-"}</td><td><span className={`status-pill status-${String(entry.examStatus || "").toLowerCase()}`.trim()}>{entry.examStatus}</span></td><td>{entry.evaluationMaxScore != null ? `${entry.evaluationScore}/${entry.evaluationMaxScore}` : "-"}</td><td>{entry.evaluator}</td><td>{entry.comparedAt ? new Date(entry.comparedAt).toLocaleString() : "-"}</td></tr>)}</tbody></table></div>}</CardContent></Card></div>}
+                  {!selectedEmployeeSummary ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Learning status</div><div className="metric-value metric-value--status"><span className={`status-pill ${selectedEmployeeSummary.learningStatusClassName}`.trim()}>{selectedEmployeeSummary.learningStatusLabel}</span></div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed parts</div><div className="metric-value">{selectedEmployeeSummary.passedParts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Evaluated parts</div><div className="metric-value">{selectedEmployeeSummary.evaluatedParts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{selectedEmployeeSummary.avgPct}%</div></CardContent></Card></div><div className="employee-learning-summary"><div><strong>{selectedEmployeeSummary.candidateName}</strong><div className="employee-result-meta">{selectedEmployeeSummary.candidateCode} | {selectedEmployeeSummary.department || "-"} / {selectedEmployeeSummary.position || "-"}</div></div><div className="employee-result-meta">{selectedEmployeeSummary.latestModelPart !== "-" ? `ล่าสุด ${selectedEmployeeSummary.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.length === 0 ? <tr><td colSpan={4}>ยังไม่มีประวัติการสอบ</td></tr> : selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div><Card><CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>Exam vs evaluation by part</h3><p>Compare each part's latest exam score with the latest evaluation score for the same employee.</p></div></div></CardHeader><CardContent>{selectedEmployeePartComparison.length === 0 ? <div className="empty-state">No exam/evaluation comparison data for this employee yet.</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Part</th><th>Learning status</th><th>Exam score</th><th>Exam status</th><th>Evaluation score</th><th>Evaluator</th><th>Latest record</th></tr></thead><tbody>{selectedEmployeePartComparison.map((entry) => <tr key={entry.key}><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td><span className={`status-pill ${entry.learningStatusClassName}`.trim()}>{entry.learningStatusLabel}</span></td><td>{entry.examFullScore != null ? `${entry.examScore}/${entry.examFullScore}` : "-"}</td><td><span className={`status-pill status-${String(entry.examStatus || "").toLowerCase()}`.trim()}>{entry.examStatus}</span></td><td>{entry.evaluationMaxScore != null ? `${entry.evaluationScore}/${entry.evaluationMaxScore}` : "-"}</td><td>{entry.evaluator}</td><td>{entry.comparedAt ? new Date(entry.comparedAt).toLocaleString() : "-"}</td></tr>)}</tbody></table></div>}</CardContent></Card></div>}
                 </CardContent>
               </Card>
             </div>
