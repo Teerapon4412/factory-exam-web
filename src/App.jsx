@@ -796,6 +796,8 @@ export default function App() {
     return model.parts[currentIndex + 1];
   }, [model, part]);
 
+  const mobileMockQuestions = useMemo(() => previewQs.slice(0, Math.min(previewQs.length, 3)), [previewQs]);
+
   const dashboardModelOptions = useMemo(() => {
     const map = new Map();
     resultHistory.forEach((r) => { if (!map.has(r.modelCode)) map.set(r.modelCode, r.modelName); });
@@ -1901,6 +1903,13 @@ export default function App() {
               </CardContent>
             </Card>
 
+            <Card className="portal-card">
+              <CardContent className="portal-card-content">
+                <div className="section-heading"><BookOpen size={20} /><div><h3>Mobile exam mockup</h3><p>ดูตัวอย่างหน้าสอบบนมือถือแนว Google Forms ก่อนปรับของจริงทั้งระบบ</p></div></div>
+                <Button variant="outline" onClick={() => setEntryPoint("mobile-demo")}>เปิดตัวอย่างมือถือ</Button>
+              </CardContent>
+            </Card>
+
             {isAdmin ? (
               <Card className="portal-card">
                 <CardContent className="portal-card-content">
@@ -2000,6 +2009,101 @@ export default function App() {
       </div>
     );
   }
+
+  if (entryPoint === "mobile-demo") {
+    return (
+      <div className="app-shell mobile-demo-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container mobile-demo-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel mobile-demo-hero">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>Mobile Demo</Badge><Badge outline>Google Forms Style</Badge></div>
+                <div className="hero-session">
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> Back</Button>
+                  <Button variant="outline" onClick={() => setEntryPoint("exam")}><Eye size={16} /> ไปหน้าสอบจริง</Button>
+                </div>
+              </div>
+              <h1>ตัวอย่างหน้าสอบบนมือถือ</h1>
+              <p>เดโมนี้ทำไว้ให้ดูทิศทาง UI ก่อนปรับหน้าสอบจริง โดยเน้นการอ่านง่าย การ์ดชัด ปุ่มใหญ่ และโครงหน้าแบบ Google Forms</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>Model</span><strong>{model.modelCode}</strong></div>
+              <div className="hero-stat"><span>Part</span><strong>{part.partCode}</strong></div>
+              <div className="hero-stat"><span>Questions</span><strong>{mobileMockQuestions.length}</strong></div>
+              <div className="hero-stat"><span>Progress</span><strong>{progress}%</strong></div>
+            </div>
+          </motion.section>
+
+          <div className="mobile-demo-stage">
+            <div className="mobile-phone-frame">
+              <div className="mobile-phone-notch" />
+              <div className="mobile-form-shell">
+                <div className="mobile-form-header">
+                  <div className="mobile-form-strip" />
+                  <div className="mobile-form-card">
+                    <div className="hero-badges"><Badge>{model.modelCode}</Badge><Badge outline>{part.partCode}</Badge></div>
+                    <h2>{bank.title}</h2>
+                    <p>{model.modelName} / {part.partName}</p>
+                    <div className="mobile-progress-copy">
+                      <span>{candidateName || session.displayName || "ชื่อพนักงานตัวอย่าง"}</span>
+                      <strong>{answered}/{part.questions.length} answered</strong>
+                    </div>
+                    <Progress value={progress} />
+                  </div>
+                </div>
+
+                <div className="mobile-form-card mobile-candidate-card">
+                  <div className="mobile-field-label">Employee</div>
+                  <strong>{candidateName || session.displayName || "ตัวอย่าง พนักงาน"}</strong>
+                  <div className="mobile-field-meta">รหัสพนักงาน {candidateCode || session.employeeCode || "-"}</div>
+                  <div className="mobile-field-meta">สถานะ {isExamLocked ? "ผ่านแล้ว" : submitted ? "ส่งแล้ว" : "กำลังทำข้อสอบ"}</div>
+                </div>
+
+                <div className="mobile-question-stack">
+                  {mobileMockQuestions.map((q, i) => (
+                    <div key={q.id} className="mobile-form-card mobile-question-card">
+                      <div className="mobile-question-meta">
+                        <span>ข้อ {i + 1}</span>
+                        <strong>{q.score} คะแนน</strong>
+                      </div>
+                      <h3>{q.questionText}</h3>
+                      {q.imageUrl ? <img src={q.imageUrl} alt={`mobile-question-${i + 1}`} className="question-image" /> : null}
+                      <div className="mobile-choice-list">
+                        {["A", "B", "C", "D"].map((key) => {
+                          const selected = answers[q.id] === key;
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              className={`mobile-choice-button ${selected ? "is-selected" : ""}`.trim()}
+                              onClick={() => !submitted && !isExamLocked && setAnswers((prev) => ({ ...prev, [q.id]: key }))}
+                            >
+                              <span className="mobile-choice-dot" />
+                              <span><strong>{key}.</strong> {q.choices[key]}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mobile-bottom-bar">
+                  <Button variant="outline" onClick={reset} disabled={isExamLocked}>ล้างคำตอบ</Button>
+                  {nextPart ? <Button variant="outline" onClick={goToNextPart}>Part ถัดไป</Button> : null}
+                  <Button onClick={submit} disabled={isExamLocked}>ส่งคำตอบ</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (entryPoint === "news") {
     return (
       <div className="app-shell">
