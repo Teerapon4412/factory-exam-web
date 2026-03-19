@@ -682,6 +682,27 @@ select:focus {
   gap: 12px;
 }
 
+.employee-result-list {
+  max-height: min(70vh, 960px);
+  overflow-y: auto;
+  padding-right: 6px;
+  align-content: start;
+}
+
+.employee-result-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.employee-result-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+}
+
+.employee-result-list::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.4);
+  border-radius: 999px;
+}
+
 .employee-result-row {
   width: 100%;
   text-align: left;
@@ -905,6 +926,12 @@ select:focus {
   .employee-learning-summary {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .employee-result-list {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .sticky-card {
