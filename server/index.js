@@ -131,6 +131,10 @@ app.post("/api/results", requireAuth, async (req, res, next) => {
     };
     res.status(201).json(await appendResult(entry));
   } catch (error) {
+    if (error instanceof Error && error.message === "PART_ALREADY_PASSED") {
+      res.status(409).json({ error: "You already passed this part. Retakes are locked." });
+      return;
+    }
     next(error);
   }
 });

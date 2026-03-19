@@ -295,10 +295,11 @@ export async function loadState() {
 
 export async function saveState(state) {
   const db = await getDb();
+  const current = await loadState();
   const safeState = {
-    bank: hasBankContent(state.bank) ? state.bank : defaultState.bank,
-    results: Array.isArray(state.results) ? state.results : defaultState.results,
-    news: Array.isArray(state.news) ? state.news : defaultState.news,
+    bank: hasBankContent(state.bank) ? state.bank : current.bank,
+    results: Array.isArray(state.results) ? state.results : current.results,
+    news: Array.isArray(state.news) ? state.news : current.news,
   };
 
   db.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?")
@@ -309,6 +310,14 @@ export async function saveState(state) {
 
 export async function appendResult(result) {
   const current = await loadState();
+  const candidateCode = String(result?.candidateCode || "").trim();
+  const partId = String(result?.partId || "").trim();
+
+  if (candidateCode && partId) {
+    const alreadyPassed = (Array.isArray(current.results) ? current.results : []).some((entry) => entry.candidateCode === candidateCode && entry.partId === partId && entry.status === "PASS");
+    if (alreadyPassed) throw new Error("PART_ALREADY_PASSED");
+  }
+
   const next = {
     ...current,
     results: [result, ...(Array.isArray(current.results) ? current.results : [])].slice(0, 1000),

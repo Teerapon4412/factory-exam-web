@@ -695,7 +695,7 @@ export default function App() {
         const res = await fetch(`${API_BASE}/state`, {
           method: "PUT",
           headers: authHeaders(session, { "Content-Type": "application/json" }),
-          body: JSON.stringify({ bank, results: resultHistory }),
+          body: JSON.stringify({ bank }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         lastSyncedBankRef.current = JSON.stringify(bank);
@@ -709,7 +709,7 @@ export default function App() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [bank, resultHistory, dataReady, isAdmin, session]);
+  }, [bank, dataReady, isAdmin, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || isAdmin || !["portal", "news"].includes(entryPoint)) return;
@@ -1462,7 +1462,7 @@ export default function App() {
 
   const submit = async () => {
     if (submitted) return;
-    if (answered < part.questions.length) return setSubmitError(`กรุณาตอบให้ครบก่อนส่ง (${answered}/${part.questions.length})`);
+    if (answered < part.questions.length) return setSubmitError(`Please answer every question before submitting (${answered}/${part.questions.length})`);
     setSubmitError("");
     setSubmitted(true);
     const entry = { id: uid(), submittedAt: new Date().toISOString(), candidateName: candidateName || "-", candidateCode: candidateCode || "-", modelId: model.id, modelCode: model.modelCode, modelName: model.modelName, partId: part.id, partCode: part.partCode, partName: part.partName, score: result.score, fullScore: scoreFull, passScore: part.passScore, correct: result.correct, questionCount: part.questions.length, status: result.status };
@@ -1479,7 +1479,13 @@ export default function App() {
       if (Array.isArray(data)) setResultHistory(data);
     } catch (error) {
       console.error(error);
-      setSyncStatus("offline");
+      setSubmitted(false);
+      setResultHistory((prev) => prev.filter((item) => item.id !== entry.id));
+      const message = error instanceof Error ? error.message : "Submission failed. Please try again.";
+      setSubmitError(message);
+      if (!String(message).includes("Retakes are locked")) {
+        setSyncStatus("offline");
+      }
     }
   };
 
@@ -1525,7 +1531,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
         headers: authHeaders(session, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ bank, results: resultHistory }),
+        body: JSON.stringify({ bank }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       alert("บันทึกคลังข้อสอบลงฐานข้อมูลเรียบร้อยแล้ว");
