@@ -53,6 +53,7 @@ const evaluationAssignedEvaluators = [
 ];
 
 const FIXED_QUESTION_SCORE = 5;
+const FIXED_PASS_SCORE = 35;
 
 const S = {
   card: {
@@ -223,7 +224,7 @@ const emptyPart = (i = 1, starter = false) => ({
   partCode: `Part${String(i).padStart(2, "0")}`,
   partName: `Part ${i}`,
   subtitle: "ระบบข้อสอบออนไลน์พนักงาน",
-  passScore: 35,
+  passScore: FIXED_PASS_SCORE,
   randomizeQuestions: false,
   showResultImmediately: true,
   questions: starter ? starterQs() : [emptyQ(1)],
@@ -280,7 +281,7 @@ const sanitizeBank = (rawBank) => {
             partCode: part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`,
             partName: part.partName || `Part ${partIndex + 1}`,
             subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
-            passScore: Number(part.passScore ?? 35),
+            passScore: FIXED_PASS_SCORE,
             randomizeQuestions: Boolean(part.randomizeQuestions),
             showResultImmediately: part.showResultImmediately !== false,
             questions,
@@ -409,7 +410,7 @@ function normalize(raw) {
           partCode: p.partCode || `Part${String(pi + 1).padStart(2, "0")}`,
           partName: p.partName || `Part ${pi + 1}`,
           subtitle: p.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
-          passScore: Number(p.passScore ?? 35),
+          passScore: FIXED_PASS_SCORE,
           randomizeQuestions: Boolean(p.randomizeQuestions),
           showResultImmediately: p.showResultImmediately !== false,
           questions: reorder(
@@ -434,7 +435,7 @@ function normalize(raw) {
       partCode: raw.partCode || "Part01",
       partName: raw.partName || "Part 1",
       subtitle: raw.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
-      passScore: Number(raw.passScore ?? 35),
+      passScore: FIXED_PASS_SCORE,
       randomizeQuestions: Boolean(raw.randomizeQuestions),
       showResultImmediately: raw.showResultImmediately !== false,
       questions: reorder(raw.questions.map((q, i) => ({
@@ -2170,7 +2171,7 @@ export default function App() {
                       <Label>Part Code</Label><Input value={part.partCode} onChange={(e) => patchPart("partCode", e.target.value)} />
                       <Label>Part Name</Label><Input value={part.partName} onChange={(e) => patchPart("partName", e.target.value)} />
                       <Label>คำอธิบาย</Label><Input value={part.subtitle} onChange={(e) => patchPart("subtitle", e.target.value)} />
-                      <div className="two-col"><div><Label>Pass Score</Label><Input type="number" value={part.passScore} onChange={(e) => patchPart("passScore", Number(e.target.value))} /></div><div><Label>Full Score</Label><Input type="number" value={scoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
+                      <div className="two-col"><div><Label>Pass Score</Label><Input value={`${FIXED_PASS_SCORE}/${scoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>Full Score</Label><Input type="number" value={scoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
                       <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={part.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !part.randomizeQuestions)}>{part.randomizeQuestions ? "ON" : "OFF"}</Button></div>
                       <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={part.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !part.showResultImmediately)}>{part.showResultImmediately ? "ON" : "OFF"}</Button></div>
                       <div className="question-list">{part.questions.map((q, i) => <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}><span className="question-chip-no">ข้อ {i + 1}</span><strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong><small>{q.score} คะแนน</small></button>)}</div>
