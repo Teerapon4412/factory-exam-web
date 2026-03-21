@@ -52,6 +52,8 @@ const evaluationAssignedEvaluators = [
   "203009 นางณาตยา ปรีถวิล",
 ];
 
+const FIXED_QUESTION_SCORE = 5;
+
 const S = {
   card: {
     borderRadius: 24,
@@ -189,7 +191,7 @@ const emptyQ = (i = 1) => ({
   imageUrl: "",
   choices: { A: "", B: "", C: "", D: "" },
   correctAnswer: "A",
-  score: 2,
+  score: FIXED_QUESTION_SCORE,
 });
 
 const starterQs = () => [
@@ -259,6 +261,7 @@ const sanitizeBank = (rawBank) => {
                 ...emptyQ(qIndex + 1),
                 ...q,
                 id: q.id || uid(),
+                score: FIXED_QUESTION_SCORE,
                 choices: {
                   A: q.choices?.A || "",
                   B: q.choices?.B || "",
@@ -2189,7 +2192,7 @@ export default function App() {
                         </button>
                       </div>
                     ) : null}
-                    {!question ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : <div className="editor-layout"><div className="button-row"><Button variant="outline" onClick={() => moveQ(-1)}>ขึ้น</Button><Button variant="outline" onClick={() => moveQ(1)}>ลง</Button><Button variant="outline" onClick={dupQ}>คัดลอก</Button><Button variant="destructive" onClick={delQ}><Trash2 size={16} /> ลบ</Button></div><Label>คำถาม</Label><Textarea rows={4} value={question.questionText} onChange={(e) => patchQ(question.id, { questionText: e.target.value })} /><div className="two-col"><div><Label>คะแนน</Label><Input type="number" value={question.score} onChange={(e) => patchQ(question.id, { score: Number(e.target.value) })} /></div><div><Label>คำตอบที่ถูก</Label><select value={question.correctAnswer} onChange={(e) => patchQ(question.id, { correctAnswer: e.target.value })} style={S.input}><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div><Label>ลิงก์รูปภาพ</Label><Input value={question.imageUrl} onChange={(e) => patchQ(question.id, { imageUrl: e.target.value })} /><label className="upload-button"><ImagePlus size={16} /> เลือกรูป<input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0])} /></label>{question.imageUrl ? <img src={question.imageUrl} alt="question" className="question-image" /> : null}<div className="choice-grid">{["A", "B", "C", "D"].map((key) => <Card key={key} className="choice-card"><CardContent><Label>ตัวเลือก {key}</Label><Textarea rows={3} value={question.choices[key]} onChange={(e) => patchChoice(question.id, key, e.target.value)} /><Button variant="outline" onClick={() => patchQ(question.id, { correctAnswer: key })}>ตั้งเป็นคำตอบที่ถูก</Button></CardContent></Card>)}</div></div>}
+                    {!question ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : <div className="editor-layout"><div className="button-row"><Button variant="outline" onClick={() => moveQ(-1)}>ขึ้น</Button><Button variant="outline" onClick={() => moveQ(1)}>ลง</Button><Button variant="outline" onClick={dupQ}>คัดลอก</Button><Button variant="destructive" onClick={delQ}><Trash2 size={16} /> ลบ</Button></div><Label>คำถาม</Label><Textarea rows={4} value={question.questionText} onChange={(e) => patchQ(question.id, { questionText: e.target.value })} /><div className="two-col"><div><Label>คะแนน</Label><Input type="number" value={FIXED_QUESTION_SCORE} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>คำตอบที่ถูก</Label><select value={question.correctAnswer} onChange={(e) => patchQ(question.id, { correctAnswer: e.target.value })} style={S.input}><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div><Label>ลิงก์รูปภาพ</Label><Input value={question.imageUrl} onChange={(e) => patchQ(question.id, { imageUrl: e.target.value })} /><label className="upload-button"><ImagePlus size={16} /> เลือกรูป<input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0])} /></label>{question.imageUrl ? <img src={question.imageUrl} alt="question" className="question-image" /> : null}<div className="choice-grid">{["A", "B", "C", "D"].map((key) => <Card key={key} className="choice-card"><CardContent><Label>ตัวเลือก {key}</Label><Textarea rows={3} value={question.choices[key]} onChange={(e) => patchChoice(question.id, key, e.target.value)} /><Button variant="outline" onClick={() => patchQ(question.id, { correctAnswer: key })}>ตั้งเป็นคำตอบที่ถูก</Button></CardContent></Card>)}</div></div>}
                   </CardContent>
                 </Card>
               </div>
