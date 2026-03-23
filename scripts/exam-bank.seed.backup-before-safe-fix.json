@@ -1,0 +1,947 @@
+{
+  "title": "Factory Online Exam",
+  "models": [
+    {
+      "id": "jqeoo7wh",
+      "modelCode": "RG01",
+      "modelName": "PART 1",
+      "parts": [
+        {
+          "id": "nqxkn2ng",
+          "partCode": "RG 01",
+          "partName": "INST Panel UPR Base Grade (REG) LHD RG01 ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "xv9m6ul4",
+              "questionNo": 1,
+              "questionText": "1.) จากรูปภาพที่ 1 บริเวณจุดใดบ้างที่เป็นรันเนอร์เกทที่ต้องทำการตัดทั้งหมด\n",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCY9oXa_xn2Jn0UzpYMGFCMAS3Ad2JpWWIwjGf0KKffXrQOBOzktP6BLaUqBWp8cVVgAXwZMEDd_2GaeUNoXPbWSw7PN2n8d6PMTdvb-ZOPzo0LMH84aum5Vpf_dsZCk-0JfZpbOnaXQr__n-herWivTE75GmUIA1WVic7SjPzYSlLdI3zuUMc2OFYpjbdZjRc7re7Cm0y7goY=w297?key=A7tQ8nVa8Ktk_AjRThQv_8hd",
+              "choices": {
+                "A": "จุด 5, 6, 7, 8",
+                "B": "จุด 1, 2, 3, 4",
+                "C": "จุด 5, 8, 7",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "D",
+              "score": 2
+            },
+            {
+              "id": "dzakzzoc",
+              "questionNo": 2,
+              "questionText": "2.) งาน  INST Panel UPR Base Grade (REG) LHD RG01  ใช้เม็ดพลาสติกใดในการผลิต\n",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP H960T K701",
+                "B": " ABS 3001MF2",
+                "C": "PP X509T K701",
+                "D": "TPO TT875NT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "i78btwd9",
+              "questionNo": 3,
+              "questionText": "C\u0019 1 A#\u0004 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "20 ชิ้น",
+                "B": "30 ชิ้น",
+                "C": "40 ชิ้น",
+                "D": "50 ชิ้น"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            },
+            {
+              "id": "hbil2ntx",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน INST PANEL UPR REG LHD (W-FCW) RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.742 - 1.780  kg.",
+                "B": "1.800 - 1.890   kg.",
+                "C": "1.962 - 1.994   kg.",
+                "D": "2.022 - 2.060   kg."
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "kk79nmqk",
+              "questionNo": 5,
+              "questionText": "น้ำหนักชิ้นงาน INST Panel UPR Base Grade LHD (W/O-FCW) RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.962 - 1.994   kg.",
+                "B": "1.838 - 1.878  kg.",
+                "C": "2.022 - 2.060   kg.",
+                "D": "1.800 - 1.890   kg."
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "d8zxp5x8",
+              "questionNo": 6,
+              "questionText": "\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 \u00173\u00012#\u001c%4\u0015\u00175H@\u0004#7H-\u0007\t5\u0014-0D# ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "MC 19",
+                "B": "Mc 7",
+                "C": "MC 18",
+                "D": "MC 15"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "ud8754sx",
+              "questionNo": 7,
+              "questionText": "ในการตัดรันเนอร์เกทของ INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คีม",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "มือหักเกท",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "ymfn921s",
+              "questionNo": 8,
+              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ปากกาเมจิก",
+                "B": "สติ๊กเกอร์",
+                "C": "เหล็กแหลม",
+                "D": "ดินสอมาร์ค"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "9kgljtbj",
+          "partCode": "RG01",
+          "partName": "INST Panel LWR Base RHD RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "5vjpgm4q",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 บริเวณจุดใดบ้างที่เป็นรันเนอร์เกทที่ต้องทำการตัดทั้งหมด\n",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVC9U051EaMP0gZ47bOtId0rGZ0MMqg2ZZ1312L9a2I2VJNxbel2_WwtMNFyT058kb-EUG5Lg2YlEeQAj45OhxKFRApJlmU947n6Sg6Ke3ZO793ILkwAOqJCyaq4RV_tZk_6NRcnmJZ0PI8gUtNygcAe3pFoya37sbWvJ31899zrvp-z7BSnFgXwSZSOA_w_5DPwmTCqWFHPZgCO=w458?key=khoewtqIQA3cG5pu0dWWql3b",
+              "choices": {
+                "A": "จุด 5, 8, 7",
+                "B": "จุด 1, 2, 3, 4, 5, 6",
+                "C": "จุด 5, 6, 7, 8",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "D",
+              "score": 2
+            },
+            {
+              "id": "wumqfsl8",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน INST Panel LWR Base RHD RG01 ใช้เม็ดพลาสติกใดในการผลิต\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "ABS 3001MF2",
+                "B": "PP X509T K701",
+                "C": "P H960T K701",
+                "D": " PP RJ920T K701"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "96bs3iv8",
+              "questionNo": 3,
+              "questionText": "C\u0019 1 A#\u0004 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 INST PANEL LWR BASE RHD RG01 D\u0014I\u00015H\n4I\u0019 ?\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "15 ชิ้น",
+                "B": "20 ชิ้น",
+                "C": "12 ชิ้น",
+                "D": "24 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "il6kj1np",
+              "questionNo": 4,
+              "questionText": "ข้อไหนจับคู่ถูกต้องในการประกอบชิ้นงาน INST PANEL LWR BASE LHD RG01 ให้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "Cup Holder",
+                "B": "Grommet",
+                "C": "Bumper Rubber",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "D",
+              "score": 2
+            },
+            {
+              "id": "brylwi64",
+              "questionNo": 5,
+              "questionText": " ข้อใดเป็นน้ำหนัก  INST PANEL LWR BASE RHD RG01 ที่ถูกต้อง\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.630 - 1.680   kg.",
+                "B": "1.620 - 1.690  kg.",
+                "C": " 1.630 - 1.696  kg.",
+                "D": "1.620 - 1.680   kg."
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "kuxxfc5i",
+              "questionNo": 6,
+              "questionText": "ข้อใดกล่าวได้ถูกต้องเกี่ยวกับชิ้นงาน INST PANEL LWR BASE RHD RG01 ",
+              "imageUrl": "",
+              "choices": {
+                "A": "ชิ้นงาน INST PANEL LWR BASE RHD RG01 ฉีดมาแล้วขายได้เลย ไม่ต้องทำการประกอบอะไรเพิ่ม",
+                "B": "ชิ้นงาน INST PANEL LWR BASE  RHD RG01 มีการใช้ MUCELL",
+                "C": "ชิ้นงาน INST PANEL LWR BASE RHD RG01 มีการใช้ AGI GAS",
+                "D": " ชิ้นงาน INST PANEL LWR BASE RHD RG01 ไม่มีการใช้ Valve Gate"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "9yvkkqjo",
+              "questionNo": 7,
+              "questionText": "ชิ้นงาน INST PANEL LWR BASE RHD RG01 เป็นงานของลูกค้าใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "NMT",
+                "B": "IMCT",
+                "C": "GM",
+                "D": "AAT"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            },
+            {
+              "id": "wgg6m6n2",
+              "questionNo": 8,
+              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  INST PANEL LWR BASE RHD RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ปากกาเมจิก",
+                "B": "เหล็กแหลม",
+                "C": "สติ๊กเกอร์",
+                "D": " ดินสอมาร์ค"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "r9k85d2l",
+          "partCode": "RG01",
+          "partName": "PANEL INST UPR PAD RHD SOFT RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "gugrtaj7",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 เกทรันเนอร์ Pokayoke บริเวณใดคือจุดที่ต้องตัดเกทรันเนอร์ออก",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBCIya6i8S4r9-057l6vaZOn3axLuXWFM6oZofZqoCnXwxE6jwJ62VXZ68ir7bY3fumQIGXY0Ko-c-C3Se46nHyeo_TBVj60HDyOAdz_9Jty8ffNWiGjrbBcU64YTgPxsgmHBv3hi_KON2IVI9pZ0UH2XbJvOYvin9J?key=ooC9RzcCqKwBYD7MfN8ngmXy",
+              "choices": {
+                "A": " จุด  3",
+                "B": " จุด  2",
+                "C": " จุด  1",
+                "D": " จุด  4"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "a0btu0t9",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน PANEL INST UPR PAD RHD SOFT RG01 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " ASA S210B",
+                "B": "TPO TT875NT",
+                "C": "PP H960T K701",
+                "D": " PP X509T K701"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "4odx31h3",
+              "questionNo": 3,
+              "questionText": "C\u0019 1 A#\u0004 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 PANEL INST UPR PAD RHD SOFT RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "10 ชิ้น",
+                "B": "31 ชิ้น",
+                "C": "20 ชิ้น",
+                "D": "30 ชิ้น"
+              },
+              "correctAnswer": "D",
+              "score": 2
+            },
+            {
+              "id": "l8moa7gv",
+              "questionNo": 4,
+              "questionText": " น้ำหนักชิ้นงาน PANEL INST UPR PAD RHD SOFT RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "0.951 - 0.991   kg.",
+                "B": "1.000 - 1.030   kg.",
+                "C": "1.100 - 1.130   kg.",
+                "D": "0.980 - 0.990   kg."
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "6ozqhycf",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  PANEL INST UPR PAD SOFT HARD RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "มีดตัดแต่งชิ้นงาน",
+                "B": "คัทเตอร์",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "e6zggesw",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน PANEL INST UPR PAD RHD SOFT RG01 เป็นงานของลูกค้าใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "IMCT",
+                "B": "AAT",
+                "C": "GM",
+                "D": "NMT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "ux7dfgd5",
+              "questionNo": 7,
+              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  PANEL INST UPR PAD RHD SOFT \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "เหล็กแหลม",
+                "B": "ปากกาเมจิก",
+                "C": "สติ๊กเกอร์",
+                "D": "ดินสอมาร์ค"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "fj53q59o",
+              "questionNo": 8,
+              "questionText": "แม่พิมพ์ของ PANEL INST UPR PAD RHD SOFT RG01 ใช้น้ำหล่อเย็นชนิดใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำเย็น",
+                "B": "น้ำมัน",
+                "C": "น้ำร้อน",
+                "D": "น้ำธรรมดา"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "7u1bchoy",
+          "partCode": "RG01",
+          "partName": "INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "kr1p79kv",
+              "questionNo": 1,
+              "questionText": "",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVClH0b6Mw8KKww7lXT-ips7FatlB2WBAzITkvehqCMYZFElcmHbZJcHdEyMmgpDFvCpu-cxIc_-jR6nFgS9ytY7E0G6iPSmHUiwXEia_wQ_xYlWsxAhBFnyoZ-9jAj4NvXL38Z4jxYiXuiFOIHbi7XckdAjKShjc8PQig?key=1h59RaIK5CSp193yyI0hy4Jt",
+              "choices": {
+                "A": "จุด 1, 2, 3, 4",
+                "B": "จุด 5, 8, 7",
+                "C": "จุด 5, 6, 7, 8",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "93nujafs",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน INST Panel UPR Base LHD RG01 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP H960T K701",
+                "B": "ABS 3001MF2",
+                "C": "PP X509T K701",
+                "D": "TPO TT875NT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "w81ub2io",
+              "questionNo": 3,
+              "questionText": "ใน 1 แรค สามารถบรรจุชิ้นงาน INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) RG01 ได้กี่ชิ้น",
+              "imageUrl": "",
+              "choices": {
+                "A": "30 ชิ้น",
+                "B": "20 ชิ้น",
+                "C": "35 ชิ้น",
+                "D": "27 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "m5j3rmwl",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน INST PANEL UPR BASE LHD (W-FCW) และ (WO-FCW) RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "W-FCW = 1.822 - 1.862 kg. / WO-FCW = 1.838 - 1.878 kg.",
+                "B": "W-FCW = 1.810 - 1.890 kg. / WO-FCW = 1.850 - 1.890 kg.",
+                "C": "W-FCW = 1.811 - 1.855 kg. / WO-FCW = 1.842 - 1.872 kg.",
+                "D": "W-FCW = 1.830 - 1.920 kg. / WO-FCW = 1.870 - 1.950 kg."
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "y2p91wbb",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คัทเตอร์",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "e4lqniaq",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) RG01 เป็นงานของลูกค้าใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "IMCT",
+                "B": "AAT",
+                "C": "GM",
+                "D": "NMT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "vxcbxt8q",
+              "questionNo": 7,
+              "questionText": "ด้านหลังชิ้นงาน  INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) RG01 ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ",
+              "imageUrl": "",
+              "choices": {
+                "A": "เหล็กแหลม",
+                "B": "ดินสอมาร์ค",
+                "C": "สติ๊กเกอร์",
+                "D": "ปากกาเมจิก"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "19d2qsqk",
+              "questionNo": 8,
+              "questionText": "จากรูปภาพ ชิ้นงาน INST PANEL UPR BASE LHD RG01 เป็นรุ่นอะไร",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCipaHUO3F035KWWtMz6gn4pYMztpEBZbfu8IW7tu3TSQ9JFo5OzNnCYMvP24eUTb7zHJoWKibQYSCw11HW99vOrTixSvP0Om4dx0Ae7N_Nw2qWZhXVPnyUEtjFxcKaGaHeLjPkhSAK7gc5VvGwn-onb8av_0y6vyAg?key=1h59RaIK5CSp193yyI0hy4Jt",
+              "choices": {
+                "A": "W - FCW",
+                "B": "RG 04",
+                "C": "WO - FCW",
+                "D": "ไม่มีข้อถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "ps79hm6p",
+              "questionNo": 9,
+              "questionText": "ด้านหน้าของชิ้นงาน บริเวณใดที่ต้องระวังปัญหารอยก๊าซเป็นพิเศษ จงวงกลมภาพด้านล่าง",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCvN81o0qnjmATgy9dk03G7daR0Wccd17QEmqd0GMIRGrPwpMN115ccO57BoQOEpfSvFpzgr0xTM67MYJwXhFdjpjBV5f1OHTej-LKWQ0V_rrtESHNHnmxFYyYW05fLmLUI5opraeFfC1Ju87XO1jtZRpsikZTt7zRkSw?key=1h59RaIK5CSp193yyI0hy4Jt",
+              "choices": {
+                "A": "1 และ 3",
+                "B": " 1 ..2..3",
+                "C": "ไม่มีข้อถูก",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            },
+            {
+              "id": "muizircx",
+              "questionNo": 10,
+              "questionText": "ด้านหลังของชิ้นงาน บริเวณใดที่ต้องระวังปัญหาชิ้นงานด้วนเป็นพิเศษ จงวงกลมภาพด้านล่าง",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBkU1kuQaYVGK_P90apMhexcDRzNofFhcy8BClEw-x9ioHZ_wk30tVGsMnRQFFcFm6IraROCn1-AVI2wGEI9bisrdmqhod4XYhwHb4iNNw_I9TnasZy3bQB_snqJpwLYcKHhs2zh5au3oKBFCV02i0ry_riyhI7rYKC8w?key=1h59RaIK5CSp193yyI0hy4Jt",
+              "choices": {
+                "A": "1",
+                "B": "3",
+                "C": "2",
+                "D": "4"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "yvyakzwn",
+          "partCode": "RG01",
+          "partName": "FRT DR MNL RH/LH RG01  ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "l7qxc94j",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 ตรงวงกลมสีแดง ควรระวัง ปัญหาใด",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVDnrATA6B93jkTrseIVSLa1_b1GAN_ySlG8fxiZ_Ai-399ctS_G_m1HL9mS85Zk_vUK8LQowDcd-1LjTSGwpOZCTcwRQtIKIk9ulUebZIn1_7smggLqto-S6A-s1w6zKxyBJOYPAbTSW7C7uFFmPypKpwDLkFTS2Rlj?key=SD26BkSa7JijtytgchRb13eo",
+              "choices": {
+                "A": "Shot shot (ฉีดไม่เต็ม)",
+                "B": "Flow mark (รอยการไหล)",
+                "C": "Fiber (รอยเส้นใย)",
+                "D": " Black dot (จุดดำ)"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "ns5lqaeo",
+              "questionNo": 2,
+              "questionText": "งาน FRT DR MNL RH/LH RG01  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "ASA S210B N817",
+                "B": "PP H960T K701",
+                "C": "PP RJ920T K701",
+                "D": "PP RJ920T N052"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "8bjwgfz5",
+              "questionNo": 3,
+              "questionText": "C\u0019\u00012#\u00151\u0014@\u0001\u0017\n4I\u0019\u00072\u0019 FRT DR MNL RG01 *2!2#\u0016\u00151\u0014@\u0002I2@\u00197I-\n4I\u0019\u00072\u0019D\u0014ID!H@\u00014\u0019@\u0017H2D# ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด",
+                "B": "0.02 mm.",
+                "C": "0.2 cm.",
+                "D": "0.2 mm."
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "nr4jtwp2",
+              "questionNo": 4,
+              "questionText": "Container *3+#1\u001aC*H\u00072\u0019 FRT DR MNL RG01 !5 Code 'H2-0D#A%0 1 container C*H\u00072\u0019D\u0014I\u00015H\n4I\u0019  ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "PK190038/12 ชิ้น",
+                "B": "PK190039/12 ชิ้น",
+                "C": "PK190039/15 ชิ้น",
+                "D": "PK190038/15 ชิ้น"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            },
+            {
+              "id": "9nyqlnc2",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  FRT DR MNL RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คีม",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "กรรไกร",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "t4c4vhwi",
+              "questionNo": 6,
+              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  FRT DR MNL RG01 \u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "สติ๊กเกอร์",
+                "B": "เหล็กแหลม Spriker",
+                "C": "ปากกาเมจิก",
+                "D": "ดินสอมาร์ค"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "kfdlxxgu",
+              "questionNo": 7,
+              "questionText": "#0\u001a\u001a\u0019I3 2\"C\u0019A!H\u001e4!\u001eL\u0002-\u0007  FRT DR MNL RG01 \u0015I-\u0007C\nI\u0019I3\n\u00194\u0014C\u0014 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำเย็น",
+                "B": "น้ำธรรมดา",
+                "C": "น้ำร้อน",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "78r9w8sw",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  FRT DR MNL RG01 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน FRT DR MNL RG01 ทำการผลิตที่เครื่องฉีด 18",
+                "B": "งาน FRT DR MNL RG01 ไม่ได้ใช้ตู้ Hot Runner/Hot Chip",
+                "C": "งาน FRT DR MNL RG01 ไม่ได้ใช้ Valve Gate",
+                "D": " งาน FRT DR MNL RG01 ฉีดงานออกมา 2 cavity"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "bk0cesoo",
+          "partCode": "RG01",
+          "partName": "Air Bag Chute PAB LHD SOFT RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "expcc2lk",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 บริเวณจุดใดไม่ใช่รันเนอร์เกท",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVAzp9SD024fcY0jeH_n5MFBUgS430tf9UJ7dmftGQ8b8nhfypl9RkWdI-OyQN8fSI3ZjQAviGBPX3f0SNxVIT5oBU0mt-03zLjWLQKt10nf2XFVjT0kAIJ1vlAVcr8w91tfjaF92Ihl0Hu6KlJmOtC-cDd6LDe0gpjq?key=f9Rz0Nrm47aFAixe2srI9aKM",
+              "choices": {
+                "A": " จุด 1, 3",
+                "B": "จุด 4",
+                "C": "จุด  2",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "1ypo19qh",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน Air Bag Chute PAB LHD SOFT RG01 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "TPO TT875NT",
+                "B": "ABS 3001MF2",
+                "C": "ASA S210B",
+                "D": "PP X509T K701"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "6fw8b4i7",
+              "questionNo": 3,
+              "questionText": "C\u0019 1 \u0001%H-\u0007 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 Air Bag Chute PAB LHD SOFT RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "15 ชิ้น",
+                "B": "18 ชิ้น",
+                "C": "19 ชิ้น",
+                "D": "17 ชิ้น"
+              },
+              "correctAnswer": "B",
+              "score": 2
+            },
+            {
+              "id": "8925m9es",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน Air Bag Chute PAB LHD SOFT RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "  0.318 - 0.328   kg.",
+                "B": "  0.310 - 0.328   kg.",
+                "C": "  0.318 - 0.350   kg.",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "56gcrifu",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Air Bag Chute PAB LHD SOFT RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "มีดตัดแต่งชิ้นงาน",
+                "B": "คัทเตอร์",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            },
+            {
+              "id": "idqms1cq",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน Air Bag Chute PAB LHD SOFT RG01 เป็นงานของลูกค้าใด",
+              "imageUrl": "",
+              "choices": {
+                "A": " IMCT",
+                "B": "NMT",
+                "C": "GM",
+                "D": "AAT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "4h9crtii",
+              "questionNo": 7,
+              "questionText": " \u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  Air Bag Chute PAB LHD SOFT RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "สติ๊กเกอร์",
+                "B": "ปากกาเมจิก",
+                "C": "เหล็กแหลม",
+                "D": "ดินสอมาร์ค"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "8if5btp8",
+              "questionNo": 8,
+              "questionText": "ด้านหลังของชิ้นงาน บริเวณใดที่ต้องระวังชิ้นงานด้วน หรือมีครีบเป็นพิเศษ จงวงกลมในภาพด้านล่าง",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCGSzw6x6G5yrqhEklG3d4KjeKzUzUXTVsZNb2DK_Zd3SW40wLfaswpC6tsBg-qy5ZtRsHvkPSAq1aVnjSy7Ase_oNPZgO1JtIRr6RDZHoYNiTder-zjKObNmnMjfU332RDLtvcMcamAlVvS_rS8_wRoFAjxmdsKlirRg?key=f9Rz0Nrm47aFAixe2srI9aKM",
+              "choices": {
+                "A": "1 กับ 4",
+                "B": "1 กับ 3",
+                "C": "4 กับ 2",
+                "D": " 3 กับ 4"
+              },
+              "correctAnswer": "C",
+              "score": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kovs8fdb",
+      "modelCode": "RG01",
+      "modelName": "PART 2",
+      "parts": [
+        {
+          "id": "vasax9q2",
+          "partCode": "RG01",
+          "partName": "Air Bag Chute PAB RHD HARD RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "nhaev0xm",
+              "questionNo": 1,
+              "questionText": " จากรูปภาพที่ 1 บริเวณจุดใดไม่ใช่รันเนอร์เกท",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBstSX73qD21lUtGwoaTxsKjzBAqLGh6HxRIwj2r2OR2ZrfIbuC1Ybjh0vobAymMdlTpPQpOETOJqVGbeTZ6r9WINNAIyLnTPR96fjOyChx1ABXlGilhiPzah76nkwayNdtIYCzY94BI5iFU1jdyADk1Jg1rV7VGPccfg?key=jCOiGmuo8KwIJAZc_Cb05gyF",
+              "choices": {
+                "A": " จุด 1, 3",
+                "B": "จุด 4",
+                "C": "จุด  2",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "eov9kovh",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน Air Bag Chute PAB RHD HARD RG01 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "TPO TT875NT",
+                "B": "ASA S210B",
+                "C": "ABS 3001MF2",
+                "D": "PP X509T K701"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "tz3f1396",
+              "questionNo": 3,
+              "questionText": "C\u0019 1 \u0001%H-\u0007 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 Air Bag Chute PAB RHD HARD RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "18 ชิ้น",
+                "B": "17 ชิ้น",
+                "C": "15 ชิ้น",
+                "D": "30 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "vmvcm6jy",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน Air Bag Chute PAB RHD HARD RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "0.308 - 0.348   kg.",
+                "B": "0.397 - 0.447   kg.",
+                "C": " 0.325 - 0.335   kg.",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "hujrisds",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Air Bag Chute PAB RHD HARD RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คีม",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คัทเตอร์",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "eimsl7e3",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน Air Bag Chute PAB RHD HARD RG01 เป็นงานของลูกค้าใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "IMCT",
+                "B": "AAT",
+                "C": "GM",
+                "D": "NMT"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "w9c5czfi",
+              "questionNo": 7,
+              "questionText": "บริเวณใดของ Air Bag Chute PAB RHD HARD RG01 ที่ต้องระวังรอยจุดดำ และรอยเม็ดผสม",
+              "imageUrl": "",
+              "choices": {
+                "A": " ด้านหน้าชิ้นงาน",
+                "B": "ด้านหลังชิ้นงาน",
+                "C": "ด้านข้างชิ้นงาน",
+                "D": "ทุกด้านของชิ้นงาน"
+              },
+              "correctAnswer": "D",
+              "score": 2
+            },
+            {
+              "id": "mdr0437f",
+              "questionNo": 8,
+              "questionText": "ด้านหลังของชิ้นงาน บริเวณใดที่ต้องระวังชิ้นงานด้วน หรือมีครีบเป็นพิเศษ จงวงกลมในภาพด้านล่าง",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVDZizTgo8BjbY7LHdlaOM81hxi8nY129_JFlR2Yx73GFXei879oFp7zGewzRSnsoX4kKFFRoB1F-vRF08NPdrV3LTEA9V1yE3r3iQ7fQe85BHMcKFUQ9hrfyzZfFctT0NRWhqpzLNH-r13cMnpYbn2XirfdWcqSdT-a?key=jCOiGmuo8KwIJAZc_Cb05gyF",
+              "choices": {
+                "A": "4 กับ 2",
+                "B": "1 กับ 3",
+                "C": "1 กับ 4",
+                "D": "3 กับ 4"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            }
+          ]
+        },
+        {
+          "id": "5zbfra40",
+          "partCode": "RG01",
+          "partName": "PANEL INST UPR PAD RHD SOFT RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 14,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "dkm959y8",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 เกทรันเนอร์ Pokayoke บริเวณใดคือจุดที่ต้องตัดเกทรันเนอร์ออก",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCV7g0-YJaD4pAVQbcF7n9Gt8vXVu_aTNFcsPHdn8w0O7qKdBvuysPuYK2e87VdTse44fBZqqxzrjbRnziXma6Es48cWyWsCxanTpgL8srjkL6wMNqQRxkPkmBD0So-MnI9Sw9ZnMb7isJjcrOCOxXWODtjX_BV0Zx7pw?key=mYrYxjXEgm3iWfdJMq4py035",
+              "choices": {
+                "A": "จุด  3",
+                "B": "จุด  2",
+                "C": "จุด  1",
+                "D": "จุด  4"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            },
+            {
+              "id": "5p2i7wjk",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน PANEL INST UPR PAD LHD SOFT RG01 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP H960T K701",
+                "B": "ASA S210B",
+                "C": "TPO TT875NT",
+                "D": "PP X509T K701"
+              },
+              "correctAnswer": "A",
+              "score": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
