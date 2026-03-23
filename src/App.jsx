@@ -309,60 +309,6 @@ const repairQuestionContent = (question) => {
   };
 };
 
-const mergeQuestionsWithFallback = (questions = [], fallbackQuestions = []) => {
-  const merged = [...questions];
-  const seen = new Set(questions.map((question) => question.id));
-  fallbackQuestions.forEach((question) => {
-    if (seen.has(question.id)) return;
-    merged.push(question);
-  });
-  return merged;
-};
-
-const mergePartsWithFallback = (parts = [], fallbackParts = []) => {
-  const partMap = new Map(parts.map((part) => [part.id || `${part.partCode}__${part.partName}`, part]));
-  fallbackParts.forEach((fallbackPart) => {
-    const fallbackKey = fallbackPart.id || `${fallbackPart.partCode}__${fallbackPart.partName}`;
-    const currentPart = partMap.get(fallbackKey)
-      || parts.find((part) => part.partCode === fallbackPart.partCode && part.partName === fallbackPart.partName)
-      || null;
-    if (!currentPart) {
-      partMap.set(fallbackKey, fallbackPart);
-      return;
-    }
-    partMap.set(fallbackKey, {
-      ...fallbackPart,
-      ...currentPart,
-      questions: mergeQuestionsWithFallback(currentPart.questions || [], fallbackPart.questions || []),
-    });
-  });
-  return Array.from(partMap.values());
-};
-
-const mergeBankWithFallback = (bank, fallbackBank) => {
-  if (!Array.isArray(bank?.models) || !Array.isArray(fallbackBank?.models)) return bank;
-  const modelMap = new Map(bank.models.map((model) => [model.id || `${model.modelCode}__${model.modelName}`, model]));
-  fallbackBank.models.forEach((fallbackModel) => {
-    const fallbackKey = fallbackModel.id || `${fallbackModel.modelCode}__${fallbackModel.modelName}`;
-    const currentModel = modelMap.get(fallbackKey)
-      || bank.models.find((model) => model.modelCode === fallbackModel.modelCode && model.modelName === fallbackModel.modelName)
-      || null;
-    if (!currentModel) {
-      modelMap.set(fallbackKey, fallbackModel);
-      return;
-    }
-    modelMap.set(fallbackKey, {
-      ...fallbackModel,
-      ...currentModel,
-      parts: mergePartsWithFallback(currentModel.parts || [], fallbackModel.parts || []),
-    });
-  });
-  return {
-    ...bank,
-    models: Array.from(modelMap.values()),
-  };
-};
-
 const sanitizeBank = (rawBank) => {
   const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : emptyStarterBank();
   const models = normalizedBank.models
@@ -422,7 +368,6 @@ const sanitizeBank = (rawBank) => {
 };
 
 const fallbackStarterBank = sanitizeBank(fallbackExamBankSeed);
-const normalizeWithFallback = (rawBank) => mergeBankWithFallback(sanitizeBank(rawBank), fallbackStarterBank);
 const starterBank = () => JSON.parse(JSON.stringify(fallbackStarterBank));
 
 const scoreLevels = [1, 2, 3, 4];
@@ -515,7 +460,7 @@ const downloadCsv = (filename, headers, rows) => {
 
 function normalize(raw) {
   if (Array.isArray(raw?.models) && raw.models.length) {
-    return normalizeWithFallback({
+    return sanitizeBank({
       title: raw.title || "Factory Online Exam",
       models: raw.models.map((m, mi) => ({
         id: m.id || uid(),
@@ -561,7 +506,7 @@ function normalize(raw) {
         choices: { A: q.choices?.A || "", B: q.choices?.B || "", C: q.choices?.C || "", D: q.choices?.D || "" },
       }))),
     }];
-    return normalizeWithFallback(b);
+    return sanitizeBank(b);
   }
 
   return starterBank();

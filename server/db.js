@@ -85,63 +85,9 @@ function repairQuestionContent(question) {
   };
 }
 
-function mergeQuestionsWithFallback(questions = [], fallbackQuestions = []) {
-  const merged = [...questions];
-  const seen = new Set(questions.map((question) => question.id));
-  fallbackQuestions.forEach((question) => {
-    if (seen.has(question.id)) return;
-    merged.push(question);
-  });
-  return merged;
-}
-
-function mergePartsWithFallback(parts = [], fallbackParts = []) {
-  const partMap = new Map(parts.map((part) => [part.id || `${part.partCode}__${part.partName}`, part]));
-  fallbackParts.forEach((fallbackPart) => {
-    const fallbackKey = fallbackPart.id || `${fallbackPart.partCode}__${fallbackPart.partName}`;
-    const currentPart = partMap.get(fallbackKey)
-      || parts.find((part) => part.partCode === fallbackPart.partCode && part.partName === fallbackPart.partName)
-      || null;
-    if (!currentPart) {
-      partMap.set(fallbackKey, fallbackPart);
-      return;
-    }
-    partMap.set(fallbackKey, {
-      ...fallbackPart,
-      ...currentPart,
-      questions: mergeQuestionsWithFallback(currentPart.questions || [], fallbackPart.questions || []),
-    });
-  });
-  return Array.from(partMap.values());
-}
-
-function mergeBankWithFallback(bank, fallbackBank) {
-  if (!Array.isArray(bank?.models) || !Array.isArray(fallbackBank?.models)) return bank;
-  const modelMap = new Map(bank.models.map((model) => [model.id || `${model.modelCode}__${model.modelName}`, model]));
-  fallbackBank.models.forEach((fallbackModel) => {
-    const fallbackKey = fallbackModel.id || `${fallbackModel.modelCode}__${fallbackModel.modelName}`;
-    const currentModel = modelMap.get(fallbackKey)
-      || bank.models.find((model) => model.modelCode === fallbackModel.modelCode && model.modelName === fallbackModel.modelName)
-      || null;
-    if (!currentModel) {
-      modelMap.set(fallbackKey, fallbackModel);
-      return;
-    }
-    modelMap.set(fallbackKey, {
-      ...fallbackModel,
-      ...currentModel,
-      parts: mergePartsWithFallback(currentModel.parts || [], fallbackModel.parts || []),
-    });
-  });
-  return {
-    ...bank,
-    models: Array.from(modelMap.values()),
-  };
-}
-
 function repairBankContent(bank) {
   if (!Array.isArray(bank?.models)) return bank;
-  const repaired = {
+  return {
     ...bank,
     models: bank.models.map((model) => ({
       ...model,
@@ -155,7 +101,6 @@ function repairBankContent(bank) {
         : [],
     })),
   };
-  return mergeBankWithFallback(repaired, defaultState.bank);
 }
 
 const defaultState = {
