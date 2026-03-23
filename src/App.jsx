@@ -573,6 +573,7 @@ export default function App() {
   const [builderServerUpdate, setBuilderServerUpdate] = useState(false);
   const [pendingBuilderBank, setPendingBuilderBank] = useState(null);
   const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
+  const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
 
   const isAdmin = session?.role === "ADMIN";
@@ -589,6 +590,10 @@ export default function App() {
       // Ignore storage restrictions in locked-down browsers.
     }
   }, [evaluationForm]);
+
+  useEffect(() => {
+    setBuilderSaveMessage({ type: "", text: "" });
+  }, [bank, modelId, partId]);
 
   useEffect(() => {
     if (!session) {
@@ -1662,7 +1667,7 @@ export default function App() {
       alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
     }
   };
-  const saveLocal = async () => {  const reloadBuilderFromServer = () => {
+  const reloadBuilderFromServer = () => {
     if (!pendingBuilderBank) return;
     setBank(pendingBuilderBank);
     setModelId(pendingBuilderBank.models[0]?.id || null);
@@ -1674,7 +1679,9 @@ export default function App() {
     setSyncStatus("synced");
   };
 
+  const saveLocal = async () => {
     try {
+      setBuilderSaveMessage({ type: "", text: "" });
       setSyncStatus("saving");
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
@@ -1682,12 +1689,12 @@ export default function App() {
         body: JSON.stringify({ bank }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      alert("บันทึกคลังข้อสอบลงฐานข้อมูลเรียบร้อยแล้ว");
+      setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
       setSyncStatus("synced");
     } catch (error) {
       console.error(error);
       setSyncStatus("offline");
-      alert("บันทึกลงฐานข้อมูลไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อเซิร์ฟเวอร์");
+      setBuilderSaveMessage({ type: "error", text: "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
     }
   };
 
@@ -2356,6 +2363,11 @@ export default function App() {
                               <Save size={16} /> ยืนยันการบันทึกข้อมูล
                             </div>
                             <p className="mini-note">กดปุ่มนี้หลังแก้ไขข้อสอบข้อสุดท้าย เพื่อบันทึกคลังข้อสอบลง Server ทันที</p>
+                            {builderSaveMessage.text ? (
+                              <div className={builderSaveMessage.type === "error" ? "alert-error" : "alert-success"} style={{ marginTop: 10 }}>
+                                {builderSaveMessage.text}
+                              </div>
+                            ) : null}
                           </div>
                           <Button
                             onClick={saveLocal}
