@@ -625,6 +625,17 @@ select:focus {
   flex-wrap: wrap;
 }
 
+.builder-save-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 248, 242, 0.72);
+}
+
 .question-chip {
   width: 100%;
   text-align: left;

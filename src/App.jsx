@@ -2350,6 +2350,20 @@ export default function App() {
                             );
                           })}
                         </div>
+                        <div className="builder-save-footer">
+                          <div>
+                            <div className="result-label">
+                              <Save size={16} /> ยืนยันการบันทึกข้อมูล
+                            </div>
+                            <p className="mini-note">กดปุ่มนี้หลังแก้ไขข้อสอบข้อสุดท้าย เพื่อบันทึกคลังข้อสอบลง Server ทันที</p>
+                          </div>
+                          <Button
+                            onClick={saveLocal}
+                            disabled={syncStatus === "saving"}
+                          >
+                            <Save size={16} /> {syncStatus === "saving" ? "กำลังบันทึก..." : "บันทึกข้อมูลลง Server"}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
