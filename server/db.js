@@ -24,6 +24,85 @@ function hasBankContent(bank) {
   return Array.isArray(bank?.models) && bank.models.some((model) => Array.isArray(model?.parts) && model.parts.some((part) => Array.isArray(part?.questions) && part.questions.length));
 }
 
+const cleanQuestionLookup = (() => {
+  const lookup = new Map();
+  (fallbackExamBankSeed?.models || []).forEach((model) => {
+    (model.parts || []).forEach((part) => {
+      (part.questions || []).forEach((question) => {
+        if (!question?.id) return;
+        lookup.set(question.id, {
+          questionText: question.questionText || "",
+          imageUrl: question.imageUrl || "",
+          choices: {
+            A: question.choices?.A || "",
+            B: question.choices?.B || "",
+            C: question.choices?.C || "",
+            D: question.choices?.D || "",
+          },
+        });
+      });
+    });
+  });
+  return lookup;
+})();
+
+function hasThaiText(value) {
+  return /[ก-๙]/.test(String(value || ""));
+}
+
+function suspiciousCharRatio(value) {
+  const text = String(value || "");
+  if (!text.trim()) return 0;
+  const matches = text.match(/[^A-Za-z0-9ก-๙\s.,;:!?()\-_/[\]'"+=&]/g) || [];
+  return matches.length / text.length;
+}
+
+function shouldRepairText(currentValue, cleanValue) {
+  const current = String(currentValue || "").trim();
+  const clean = String(cleanValue || "").trim();
+  if (!clean) return false;
+  if (!current) return true;
+  if (current === clean) return false;
+  if (hasThaiText(clean) && !hasThaiText(current)) return true;
+  if (/[�□]/.test(current)) return true;
+  if (/[%#@]/.test(current) && !hasThaiText(current)) return true;
+  return suspiciousCharRatio(current) >= 0.2;
+}
+
+function repairQuestionContent(question) {
+  const clean = cleanQuestionLookup.get(question?.id);
+  if (!clean) return question;
+  return {
+    ...question,
+    questionText: shouldRepairText(question?.questionText, clean.questionText) ? clean.questionText : question?.questionText,
+    imageUrl: question?.imageUrl || clean.imageUrl,
+    choices: {
+      A: shouldRepairText(question?.choices?.A, clean.choices.A) ? clean.choices.A : (question?.choices?.A || ""),
+      B: shouldRepairText(question?.choices?.B, clean.choices.B) ? clean.choices.B : (question?.choices?.B || ""),
+      C: shouldRepairText(question?.choices?.C, clean.choices.C) ? clean.choices.C : (question?.choices?.C || ""),
+      D: shouldRepairText(question?.choices?.D, clean.choices.D) ? clean.choices.D : (question?.choices?.D || ""),
+    },
+  };
+}
+
+function repairBankContent(bank) {
+  if (!Array.isArray(bank?.models)) return bank;
+  return {
+    ...bank,
+    models: bank.models.map((model) => ({
+      ...model,
+      parts: Array.isArray(model?.parts)
+        ? model.parts.map((part) => ({
+            ...part,
+            questions: Array.isArray(part?.questions)
+              ? part.questions.map(repairQuestionContent)
+              : [],
+          }))
+        : [],
+    })),
+  };
+}
+
 const defaultState = {
   bank: createFallbackBank(),
   results: [],
@@ -283,8 +362,9 @@ export async function loadState() {
 
   try {
     const parsed = JSON.parse(row.value);
+    const repairedBank = hasBankContent(parsed.bank) ? repairBankContent(parsed.bank) : defaultState.bank;
     return {
-      bank: hasBankContent(parsed.bank) ? parsed.bank : defaultState.bank,
+      bank: repairedBank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
       news: Array.isArray(parsed.news) ? parsed.news : defaultState.news,
     };
@@ -297,7 +377,7 @@ export async function saveState(state) {
   const db = await getDb();
   const current = await loadState();
   const safeState = {
-    bank: hasBankContent(state.bank) ? state.bank : current.bank,
+    bank: hasBankContent(state.bank) ? repairBankContent(state.bank) : current.bank,
     results: Array.isArray(state.results) ? state.results : current.results,
     news: Array.isArray(state.news) ? state.news : current.news,
   };
