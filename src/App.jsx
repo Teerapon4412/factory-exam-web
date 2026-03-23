@@ -572,6 +572,8 @@ export default function App() {
   const [evaluationEvaluatorFilter, setEvaluationEvaluatorFilter] = useState("ALL");
   const [builderServerUpdate, setBuilderServerUpdate] = useState(false);
   const [pendingBuilderBank, setPendingBuilderBank] = useState(null);
+  const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
+  const builderQuestionRefs = useRef({});
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -757,6 +759,24 @@ export default function App() {
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
   const question = useMemo(() => part?.questions.find((q) => q.id === qId) || part?.questions[0] || null, [part, qId]);
+  const filteredBuilderQuestions = useMemo(() => {
+    const keyword = builderQuestionSearch.trim().toLowerCase();
+    if (!part?.questions?.length) return [];
+    if (!keyword) return part.questions;
+    return part.questions.filter((entry, index) => {
+      const haystack = [
+        `ข้อ ${index + 1}`,
+        entry.questionText,
+        entry.choices?.A,
+        entry.choices?.B,
+        entry.choices?.C,
+        entry.choices?.D,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(keyword);
+    });
+  }, [part, builderQuestionSearch]);
 
   useEffect(() => {
     if (model && model.id !== modelId) {
@@ -768,6 +788,13 @@ export default function App() {
   useEffect(() => { if (part && part.id !== partId) setPartId(part.id); }, [part, partId]);
   useEffect(() => { if (question && question.id !== qId) setQId(question.id); }, [question, qId]);
   useEffect(() => { setAnswers({}); setSubmitted(false); setSubmitError(""); }, [modelId, partId]);
+  useEffect(() => {
+    if (!qId) return;
+    const timer = setTimeout(() => {
+      builderQuestionRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [qId]);
 
   const scoreFull = full(part?.questions || []);
   const answered = Object.keys(answers).length;
@@ -1440,7 +1467,7 @@ export default function App() {
   const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, [f]: v } : m)) }));
   const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, [f]: v } : p)) })) }));
   const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== partId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
-  const patchChoice = (id, key, value) => patchQ(id, { choices: { ...question.choices, [key]: value } });
+  const patchChoice = (id, key, value, sourceChoices) => patchQ(id, { choices: { ...(sourceChoices || {}), [key]: value } });
 
   const addModel = () => {
     const n = emptyModel(bank.models.length + 1, false);
@@ -1464,6 +1491,7 @@ export default function App() {
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
     setPartId(n.id);
     setQId(n.questions[0].id);
+    setBuilderQuestionSearch("");
   };
 
   const removePart = () => {
@@ -1477,33 +1505,47 @@ export default function App() {
     const n = emptyQ(part.questions.length + 1);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
     setQId(n.id);
+    setBuilderQuestionSearch("");
   };
 
-  const dupQ = () => {
-    const n = { ...question, id: uid(), questionNo: part.questions.length + 1 };
+  const dupQ = (sourceQuestion = question) => {
+    if (!sourceQuestion) return;
+    const n = { ...sourceQuestion, id: uid(), questionNo: part.questions.length + 1 };
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
     setQId(n.id);
+    setBuilderQuestionSearch("");
   };
 
-  const delQ = () => {
-    const remaining = reorder(part.questions.filter((q) => q.id !== question.id));
+  const delQ = (questionId = question?.id) => {
+    if (!questionId) return;
+    const remaining = reorder(part.questions.filter((q) => q.id !== questionId));
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: remaining } : p)) })) }));
     setQId(remaining[0]?.id || null);
   };
 
-  const moveQ = (d) => {
-    const i = part.questions.findIndex((q) => q.id === question.id);
+  const moveQ = (d, questionId = question?.id) => {
+    if (!questionId) return;
+    const i = part.questions.findIndex((q) => q.id === questionId);
     const ni = i + d;
     if (ni < 0 || ni >= part.questions.length) return;
     const arr = [...part.questions];
     [arr[i], arr[ni]] = [arr[ni], arr[i]];
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder(arr) } : p)) })) }));
+    setQId(questionId);
   };
 
-  const uploadImg = (file) => {
+  const jumpQuestion = (direction) => {
+    if (!part?.questions?.length || !question) return;
+    const currentIndex = part.questions.findIndex((entry) => entry.id === question.id);
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= part.questions.length) return;
+    setQId(part.questions[nextIndex].id);
+  };
+
+  const uploadImg = (file, questionId = question?.id) => {
     if (!file) return;
     const r = new FileReader();
-    r.onload = (e) => patchQ(question.id, { imageUrl: String(e.target?.result || "") });
+    r.onload = (e) => patchQ(questionId, { imageUrl: String(e.target?.result || "") });
     r.readAsDataURL(file);
   };
 
@@ -2176,7 +2218,43 @@ export default function App() {
                       <div className="two-col"><div><Label>Pass Score</Label><Input value={`${FIXED_PASS_SCORE}/${scoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>Full Score</Label><Input type="number" value={scoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
                       <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={part.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !part.randomizeQuestions)}>{part.randomizeQuestions ? "ON" : "OFF"}</Button></div>
                       <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={part.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !part.showResultImmediately)}>{part.showResultImmediately ? "ON" : "OFF"}</Button></div>
-                      <div className="question-list">{part.questions.map((q, i) => <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}><span className="question-chip-no">ข้อ {i + 1}</span><strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong><small>{q.score} คะแนน</small></button>)}</div>
+                      <div className="builder-question-tools">
+                        <div>
+                          <Label>ค้นหาข้อสอบ</Label>
+                          <Input
+                            value={builderQuestionSearch}
+                            onChange={(e) => setBuilderQuestionSearch(e.target.value)}
+                            placeholder="พิมพ์เลขข้อหรือคำบางส่วนของคำถาม"
+                          />
+                        </div>
+                        <div>
+                          <Label>ไปที่ข้อ</Label>
+                          <select value={question?.id || ""} onChange={(e) => setQId(e.target.value)} style={S.input}>
+                            {(part?.questions || []).map((q, i) => (
+                              <option key={q.id} value={q.id}>
+                                ข้อ {i + 1} - {(q.questionText || "ยังไม่ได้กรอกคำถาม").slice(0, 60)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="question-list-meta">
+                        <span>ทั้งหมด {part.questions.length} ข้อ</span>
+                        <span>แสดง {filteredBuilderQuestions.length} ข้อ</span>
+                        <span>กำลังแก้ข้อ {question?.questionNo || "-"}</span>
+                      </div>
+                      <div className="question-list">
+                        {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q, i) => {
+                          const actualIndex = part.questions.findIndex((entry) => entry.id === q.id);
+                          return (
+                            <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}>
+                              <span className="question-chip-no">ข้อ {actualIndex + 1}</span>
+                              <strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong>
+                              <small>{q.score} คะแนน</small>
+                            </button>
+                          );
+                        }) : <div className="empty-state">ไม่พบข้อสอบตามคำค้นหา</div>}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -2195,7 +2273,85 @@ export default function App() {
                         </button>
                       </div>
                     ) : null}
-                    {!question ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : <div className="editor-layout"><div className="button-row"><Button variant="outline" onClick={() => moveQ(-1)}>ขึ้น</Button><Button variant="outline" onClick={() => moveQ(1)}>ลง</Button><Button variant="outline" onClick={dupQ}>คัดลอก</Button><Button variant="destructive" onClick={delQ}><Trash2 size={16} /> ลบ</Button></div><Label>คำถาม</Label><Textarea rows={4} value={question.questionText} onChange={(e) => patchQ(question.id, { questionText: e.target.value })} /><div className="two-col"><div><Label>คะแนน</Label><Input type="number" value={FIXED_QUESTION_SCORE} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>คำตอบที่ถูก</Label><select value={question.correctAnswer} onChange={(e) => patchQ(question.id, { correctAnswer: e.target.value })} style={S.input}><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div></div><Label>ลิงก์รูปภาพ</Label><Input value={question.imageUrl} onChange={(e) => patchQ(question.id, { imageUrl: e.target.value })} /><label className="upload-button"><ImagePlus size={16} /> เลือกรูป<input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0])} /></label>{question.imageUrl ? <img src={question.imageUrl} alt="question" className="question-image" /> : null}<div className="choice-grid">{["A", "B", "C", "D"].map((key) => <Card key={key} className="choice-card"><CardContent><Label>ตัวเลือก {key}</Label><Textarea rows={3} value={question.choices[key]} onChange={(e) => patchChoice(question.id, key, e.target.value)} /><Button variant="outline" onClick={() => patchQ(question.id, { correctAnswer: key })}>ตั้งเป็นคำตอบที่ถูก</Button></CardContent></Card>)}</div></div>}
+                    {!part?.questions?.length ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : (
+                      <div className="editor-layout">
+                        <div className="button-row">
+                          <Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button>
+                          <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={part.questions.findIndex((entry) => entry.id === question?.id) <= 0}>เลื่อนไปข้อก่อนหน้า</Button>
+                          <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={part.questions.findIndex((entry) => entry.id === question?.id) >= part.questions.length - 1}>เลื่อนไปข้อถัดไป</Button>
+                        </div>
+                        <div className="builder-question-stack">
+                          {filteredBuilderQuestions.map((editingQuestion, visibleIndex) => {
+                            const actualIndex = part.questions.findIndex((entry) => entry.id === editingQuestion.id);
+                            const active = editingQuestion.id === question?.id;
+                            return (
+                              <div
+                                key={editingQuestion.id}
+                                ref={(node) => {
+                                  if (node) builderQuestionRefs.current[editingQuestion.id] = node;
+                                }}
+                                className={`builder-question-panel ${active ? "is-active" : ""}`}
+                              >
+                                <div className="builder-question-panel-header">
+                                  <div>
+                                    <div className="question-chip-no">ข้อ {actualIndex + 1}</div>
+                                    <strong>{editingQuestion.questionText || `ข้อใหม่ ${visibleIndex + 1}`}</strong>
+                                  </div>
+                                  <div className="button-row">
+                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); moveQ(-1, editingQuestion.id); }} disabled={actualIndex <= 0}>ขึ้น</Button>
+                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); moveQ(1, editingQuestion.id); }} disabled={actualIndex >= part.questions.length - 1}>ลง</Button>
+                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); dupQ(editingQuestion); }}>คัดลอก</Button>
+                                    <Button variant="destructive" onClick={() => { setQId(editingQuestion.id); delQ(editingQuestion.id); }}><Trash2 size={16} /> ลบ</Button>
+                                  </div>
+                                </div>
+                                <Label>คำถาม</Label>
+                                <Textarea rows={4} value={editingQuestion.questionText} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { questionText: e.target.value }); }} />
+                                <div className="two-col">
+                                  <div>
+                                    <Label>คะแนน</Label>
+                                    <Input type="number" value={FIXED_QUESTION_SCORE} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
+                                  </div>
+                                  <div>
+                                    <Label>คำตอบที่ถูก</Label>
+                                    <select value={editingQuestion.correctAnswer} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: e.target.value }); }} style={S.input}>
+                                      <option value="A">A</option>
+                                      <option value="B">B</option>
+                                      <option value="C">C</option>
+                                      <option value="D">D</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <Label>ลิงก์รูปภาพ</Label>
+                                <Input value={editingQuestion.imageUrl} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { imageUrl: e.target.value }); }} />
+                                <label className="upload-button">
+                                  <ImagePlus size={16} /> เลือกรูป
+                                  <input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0], editingQuestion.id)} />
+                                </label>
+                                {editingQuestion.imageUrl ? <img src={editingQuestion.imageUrl} alt="question" className="question-image" /> : null}
+                                <div className="choice-grid">
+                                  {["A", "B", "C", "D"].map((key) => (
+                                    <Card key={key} className="choice-card">
+                                      <CardContent>
+                                        <Label>ตัวเลือก {key}</Label>
+                                        <Textarea
+                                          rows={3}
+                                          value={editingQuestion.choices[key]}
+                                          onChange={(e) => {
+                                            setQId(editingQuestion.id);
+                                            patchChoice(editingQuestion.id, key, e.target.value, editingQuestion.choices);
+                                          }}
+                                        />
+                                        <Button variant="outline" onClick={() => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: key }); }}>ตั้งเป็นคำตอบที่ถูก</Button>
+                                      </CardContent>
+                                    </Card>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
