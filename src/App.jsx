@@ -249,66 +249,6 @@ const hasQuestionContent = (q) => {
   return Boolean(text || imageUrl || choices.some(Boolean));
 };
 
-const cleanQuestionLookup = (() => {
-  const lookup = new Map();
-  (fallbackExamBankSeed?.models || []).forEach((model) => {
-    (model.parts || []).forEach((part) => {
-      (part.questions || []).forEach((question) => {
-        if (!question?.id) return;
-        lookup.set(question.id, {
-          questionText: question.questionText || "",
-          imageUrl: question.imageUrl || "",
-          choices: {
-            A: question.choices?.A || "",
-            B: question.choices?.B || "",
-            C: question.choices?.C || "",
-            D: question.choices?.D || "",
-          },
-        });
-      });
-    });
-  });
-  return lookup;
-})();
-
-const hasThaiText = (value) => /[ก-๙]/.test(String(value || ""));
-const suspiciousGlyphPattern = /[�□]/;
-const suspiciousTextPattern = /[%#@]/;
-const suspiciousCharRatio = (value) => {
-  const text = String(value || "");
-  if (!text.trim()) return 0;
-  const matches = text.match(/[^A-Za-z0-9ก-๙\s.,;:!?()\-_/[\]'"+=&]/g) || [];
-  return matches.length / text.length;
-};
-
-const shouldRepairText = (currentValue, cleanValue) => {
-  const current = String(currentValue || "").trim();
-  const clean = String(cleanValue || "").trim();
-  if (!clean) return false;
-  if (!current) return true;
-  if (current === clean) return false;
-  if (hasThaiText(clean) && !hasThaiText(current)) return true;
-  if (suspiciousGlyphPattern.test(current)) return true;
-  if (suspiciousTextPattern.test(current) && !hasThaiText(current)) return true;
-  return suspiciousCharRatio(current) >= 0.2;
-};
-
-const repairQuestionContent = (question) => {
-  const clean = cleanQuestionLookup.get(question.id);
-  if (!clean) return question;
-  return {
-    ...question,
-    questionText: shouldRepairText(question.questionText, clean.questionText) ? clean.questionText : question.questionText,
-    imageUrl: question.imageUrl || clean.imageUrl,
-    choices: {
-      A: shouldRepairText(question.choices?.A, clean.choices.A) ? clean.choices.A : (question.choices?.A || ""),
-      B: shouldRepairText(question.choices?.B, clean.choices.B) ? clean.choices.B : (question.choices?.B || ""),
-      C: shouldRepairText(question.choices?.C, clean.choices.C) ? clean.choices.C : (question.choices?.C || ""),
-      D: shouldRepairText(question.choices?.D, clean.choices.D) ? clean.choices.D : (question.choices?.D || ""),
-    },
-  };
-};
-
 const sanitizeBank = (rawBank) => {
   const normalizedBank = rawBank && Array.isArray(rawBank.models) ? rawBank : emptyStarterBank();
   const models = normalizedBank.models
@@ -329,8 +269,7 @@ const sanitizeBank = (rawBank) => {
                   C: q.choices?.C || "",
                   D: q.choices?.D || "",
                 },
-              }))
-              .map(repairQuestionContent),
+              })),
           );
 
           if (!questions.length) return null;
