@@ -1151,6 +1151,31 @@ export default function App() {
     }).sort((a, b) => a.partCode.localeCompare(b.partCode, "th"));
   }, [selectedEmployeeResultCode, selectedEmployeeResults, evaluationHistory]);
 
+  const selectedEmployeeAttemptChart = useMemo(() => (
+    selectedEmployeeResults
+      .slice()
+      .sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
+      .slice(-8)
+      .map((entry, index) => ({
+        id: entry.id || `${entry.partId || entry.partCode}-${index}`,
+        label: entry.partCode || `ครั้งที่ ${index + 1}`,
+        pct: entry.fullScore ? Math.round((entry.score / entry.fullScore) * 100) : 0,
+        raw: `${entry.score}/${entry.fullScore}`,
+        status: entry.status,
+      }))
+  ), [selectedEmployeeResults]);
+
+  const selectedEmployeePartChart = useMemo(() => (
+    selectedEmployeePartComparison.map((entry) => ({
+      key: entry.key,
+      label: `${entry.partCode} - ${entry.partName}`,
+      examPct: entry.examFullScore ? Math.round((entry.examScore / entry.examFullScore) * 100) : 0,
+      evaluationPct: entry.evaluationMaxScore ? Math.round((entry.evaluationScore / entry.evaluationMaxScore) * 100) : 0,
+      combinedPct: entry.combinedFullScore ? Math.round((entry.combinedScore / entry.combinedFullScore) * 100) : 0,
+      combinedRaw: entry.combinedFullScore ? `${entry.combinedScore}/${entry.combinedFullScore}` : "-",
+    }))
+  ), [selectedEmployeePartComparison]);
+
   useEffect(() => {
     if (!employeeResultSummaries.length) {
       setSelectedEmployeeResultCode("");
@@ -2046,7 +2071,103 @@ export default function App() {
               <Card>
                 <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>Score details</h3><p>Shows attempts, pass count, average score, and detailed exam records.</p></div></div></CardHeader>
                 <CardContent>
-                  {!selectedEmployeeSummary ? <div className="empty-state">Select an employee from the list to view details.</div> : <div className="detail-stack"><div className="dashboard-stats"><Card className="metric-card"><CardContent><div className="metric-label">Learning status</div><div className="metric-value metric-value--status"><span className={`status-pill ${selectedEmployeeSummary.learningStatusClassName}`.trim()}>{selectedEmployeeSummary.learningStatusLabel}</span></div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeSummary.attempts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Passed parts</div><div className="metric-value">{selectedEmployeeSummary.passedParts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Evaluated parts</div><div className="metric-value">{selectedEmployeeSummary.evaluatedParts}</div></CardContent></Card><Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{selectedEmployeeSummary.avgPct}%</div></CardContent></Card></div><div className="employee-learning-summary"><div><strong>{selectedEmployeeSummary.candidateName}</strong><div className="employee-result-meta">{selectedEmployeeSummary.candidateCode} | {selectedEmployeeSummary.department || "-"} / {selectedEmployeeSummary.position || "-"}</div></div><div className="employee-result-meta">{selectedEmployeeSummary.latestModelPart !== "-" ? `ล่าสุด ${selectedEmployeeSummary.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div></div><div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead><tbody>{selectedEmployeeResults.length === 0 ? <tr><td colSpan={4}>ยังไม่มีประวัติการสอบ</td></tr> : selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}</tbody></table></div><Card><CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>Exam vs evaluation by part</h3><p>Compare each part's latest exam score with the latest evaluation score for the same employee.</p></div></div></CardHeader><CardContent>{selectedEmployeePartComparison.length === 0 ? <div className="empty-state">No exam/evaluation comparison data for this employee yet.</div> : <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>Part</th><th>Learning status</th><th>Exam score</th><th>Exam status</th><th>Evaluation score</th><th>ผลรวม</th><th>Evaluator</th><th>Latest record</th></tr></thead><tbody>{selectedEmployeePartComparison.map((entry) => <tr key={entry.key}><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td><span className={`status-pill ${entry.learningStatusClassName}`.trim()}>{entry.learningStatusLabel}</span></td><td>{entry.examFullScore != null ? `${entry.examScore}/${entry.examFullScore}` : "-"}</td><td><span className={`status-pill status-${String(entry.examStatus || "").toLowerCase()}`.trim()}>{entry.examStatus}</span></td><td>{entry.evaluationMaxScore != null ? `${entry.evaluationScore}/${entry.evaluationMaxScore}` : "-"}</td><td>{entry.combinedFullScore ? `${entry.combinedScore}/${entry.combinedFullScore}` : "-"}</td><td>{entry.evaluator}</td><td>{entry.comparedAt ? new Date(entry.comparedAt).toLocaleString() : "-"}</td></tr>)}</tbody></table></div>}</CardContent></Card></div>}
+                  {!selectedEmployeeSummary ? (
+                    <div className="empty-state">Select an employee from the list to view details.</div>
+                  ) : (
+                    <div className="detail-stack">
+                      <div className="dashboard-stats">
+                        <Card className="metric-card"><CardContent><div className="metric-label">Learning status</div><div className="metric-value metric-value--status"><span className={`status-pill ${selectedEmployeeSummary.learningStatusClassName}`.trim()}>{selectedEmployeeSummary.learningStatusLabel}</span></div></CardContent></Card>
+                        <Card className="metric-card"><CardContent><div className="metric-label">Attempts</div><div className="metric-value">{selectedEmployeeSummary.attempts}</div></CardContent></Card>
+                        <Card className="metric-card"><CardContent><div className="metric-label">Passed parts</div><div className="metric-value">{selectedEmployeeSummary.passedParts}</div></CardContent></Card>
+                        <Card className="metric-card"><CardContent><div className="metric-label">Evaluated parts</div><div className="metric-value">{selectedEmployeeSummary.evaluatedParts}</div></CardContent></Card>
+                        <Card className="metric-card"><CardContent><div className="metric-label">Average score</div><div className="metric-value">{selectedEmployeeSummary.avgPct}%</div></CardContent></Card>
+                      </div>
+
+                      <div className="employee-learning-summary">
+                        <div>
+                          <strong>{selectedEmployeeSummary.candidateName}</strong>
+                          <div className="employee-result-meta">{selectedEmployeeSummary.candidateCode} | {selectedEmployeeSummary.department || "-"} / {selectedEmployeeSummary.position || "-"}</div>
+                        </div>
+                        <div className="employee-result-meta">{selectedEmployeeSummary.latestModelPart !== "-" ? `ล่าสุด ${selectedEmployeeSummary.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div>
+                      </div>
+
+                      <div className="score-chart-grid">
+                        <Card>
+                          <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>กราฟผลสอบย้อนหลัง</h3><p>แสดงเปอร์เซ็นต์ผลสอบล่าสุดของพนักงานคนนี้สูงสุด 8 ครั้ง</p></div></div></CardHeader>
+                          <CardContent>
+                            {selectedEmployeeAttemptChart.length === 0 ? (
+                              <div className="empty-state">ยังไม่มีประวัติผลสอบสำหรับแสดงกราฟ</div>
+                            ) : (
+                              <div className="attempt-chart">
+                                {selectedEmployeeAttemptChart.map((entry) => (
+                                  <div key={entry.id} className="attempt-chart-item">
+                                    <div className="attempt-chart-bar-wrap">
+                                      <div className={`attempt-chart-bar status-${String(entry.status || "").toLowerCase()}`.trim()} style={{ height: `${Math.max(entry.pct, 8)}%` }} />
+                                    </div>
+                                    <strong>{entry.pct}%</strong>
+                                    <span>{entry.label}</span>
+                                    <small>{entry.raw}</small>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>กราฟคะแนนราย Part</h3><p>เทียบเปอร์เซ็นต์คะแนนสอบ ประเมิน และผลรวมของแต่ละ Part</p></div></div></CardHeader>
+                          <CardContent>
+                            {selectedEmployeePartChart.length === 0 ? (
+                              <div className="empty-state">ยังไม่มีข้อมูล Part สำหรับแสดงกราฟ</div>
+                            ) : (
+                              <div className="part-chart-list">
+                                {selectedEmployeePartChart.map((entry) => (
+                                  <div key={entry.key} className="part-chart-item">
+                                    <div className="part-chart-header">
+                                      <strong>{entry.label}</strong>
+                                      <span>{entry.combinedRaw}</span>
+                                    </div>
+                                    <div className="part-chart-bars">
+                                      <div className="part-chart-row"><span>Exam</span><div className="part-chart-track"><div className="part-chart-fill is-exam" style={{ width: `${entry.examPct}%` }} /></div><strong>{entry.examPct}%</strong></div>
+                                      <div className="part-chart-row"><span>Eval</span><div className="part-chart-track"><div className="part-chart-fill is-eval" style={{ width: `${entry.evaluationPct}%` }} /></div><strong>{entry.evaluationPct}%</strong></div>
+                                      <div className="part-chart-row"><span>Total</span><div className="part-chart-track"><div className="part-chart-fill is-total" style={{ width: `${entry.combinedPct}%` }} /></div><strong>{entry.combinedPct}%</strong></div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="dashboard-table-wrap">
+                        <table className="dashboard-table">
+                          <thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead>
+                          <tbody>
+                            {selectedEmployeeResults.length === 0 ? <tr><td colSpan={4}>ยังไม่มีประวัติการสอบ</td></tr> : selectedEmployeeResults.map((entry) => <tr key={entry.id}><td>{new Date(entry.submittedAt).toLocaleString()}</td><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td>{entry.score}/{entry.fullScore}</td><td><span className={`status-pill status-${String(entry.status || "").toLowerCase()}`.trim()}>{entry.status}</span></td></tr>)}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <Card>
+                        <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>Exam vs evaluation by part</h3><p>Compare each part's latest exam score with the latest evaluation score for the same employee.</p></div></div></CardHeader>
+                        <CardContent>
+                          {selectedEmployeePartComparison.length === 0 ? (
+                            <div className="empty-state">No exam/evaluation comparison data for this employee yet.</div>
+                          ) : (
+                            <div className="dashboard-table-wrap">
+                              <table className="dashboard-table">
+                                <thead><tr><th>Part</th><th>Learning status</th><th>Exam score</th><th>Exam status</th><th>Evaluation score</th><th>ผลรวม</th><th>Evaluator</th><th>Latest record</th></tr></thead>
+                                <tbody>
+                                  {selectedEmployeePartComparison.map((entry) => <tr key={entry.key}><td>{entry.modelCode}/{entry.partCode} - {entry.partName}</td><td><span className={`status-pill ${entry.learningStatusClassName}`.trim()}>{entry.learningStatusLabel}</span></td><td>{entry.examFullScore != null ? `${entry.examScore}/${entry.examFullScore}` : "-"}</td><td><span className={`status-pill status-${String(entry.examStatus || "").toLowerCase()}`.trim()}>{entry.examStatus}</span></td><td>{entry.evaluationMaxScore != null ? `${entry.evaluationScore}/${entry.evaluationMaxScore}` : "-"}</td><td>{entry.combinedFullScore ? `${entry.combinedScore}/${entry.combinedFullScore}` : "-"}</td><td>{entry.evaluator}</td><td>{entry.comparedAt ? new Date(entry.comparedAt).toLocaleString() : "-"}</td></tr>)}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
