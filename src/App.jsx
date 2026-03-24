@@ -1176,6 +1176,24 @@ export default function App() {
     }))
   ), [selectedEmployeePartComparison]);
 
+  const selectedEmployeeAttemptTrend = useMemo(() => {
+    if (!selectedEmployeeAttemptChart.length) return { points: "", areaPoints: "", labels: [] };
+    const width = 560;
+    const height = 220;
+    const bottom = 190;
+    const left = 28;
+    const usableWidth = width - left * 2;
+    const step = selectedEmployeeAttemptChart.length > 1 ? usableWidth / (selectedEmployeeAttemptChart.length - 1) : 0;
+    const coords = selectedEmployeeAttemptChart.map((entry, index) => {
+      const x = left + step * index;
+      const y = bottom - (entry.pct / 100) * 150;
+      return { ...entry, x, y };
+    });
+    const points = coords.map((entry) => `${entry.x},${entry.y}`).join(" ");
+    const areaPoints = [`${left},${bottom}`, ...coords.map((entry) => `${entry.x},${entry.y}`), `${left + step * (coords.length - 1 || 0)},${bottom}`].join(" ");
+    return { points, areaPoints, labels: coords };
+  }, [selectedEmployeeAttemptChart]);
+
   useEffect(() => {
     if (!employeeResultSummaries.length) {
       setSelectedEmployeeResultCode("");
@@ -2222,36 +2240,63 @@ export default function App() {
 
                 <div className="score-chart-grid">
                   <Card>
-                    <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>กราฟผลสอบย้อนหลัง</h3><p>แสดงเปอร์เซ็นต์ผลสอบล่าสุดของพนักงานคนนี้สูงสุด 8 ครั้ง</p></div></div></CardHeader>
+                    <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>แนวโน้มผลสอบย้อนหลัง</h3><p>แสดงผลสอบล่าสุดสูงสุด 8 ครั้งในรูปแบบเส้นแนวโน้ม</p></div></div></CardHeader>
                     <CardContent>
                       {selectedEmployeeAttemptChart.length === 0 ? (
                         <div className="empty-state">ยังไม่มีประวัติผลสอบสำหรับแสดงกราฟ</div>
                       ) : (
-                        <div className="attempt-chart">
-                          {selectedEmployeeAttemptChart.map((entry) => (
-                            <div key={entry.id} className="attempt-chart-item">
-                              <div className="attempt-chart-bar-wrap">
-                                <div className={`attempt-chart-bar status-${String(entry.status || "").toLowerCase()}`.trim()} style={{ height: `${Math.max(entry.pct, 8)}%` }} />
+                        <div className="trend-chart-card">
+                          <div className="trend-chart-shell">
+                            <svg viewBox="0 0 560 220" className="trend-chart-svg" preserveAspectRatio="none" aria-label="Exam score trend">
+                              <defs>
+                                <linearGradient id="trendAreaFill" x1="0%" y1="0%" x2="0%" y2="100%">
+                                  <stop offset="0%" stopColor="rgba(14,165,233,0.35)" />
+                                  <stop offset="100%" stopColor="rgba(14,165,233,0.02)" />
+                                </linearGradient>
+                              </defs>
+                              {[0, 25, 50, 75, 100].map((tick) => {
+                                const y = 190 - (tick / 100) * 150;
+                                return (
+                                  <g key={tick}>
+                                    <line x1="28" y1={y} x2="532" y2={y} className="trend-grid-line" />
+                                    <text x="4" y={y + 4} className="trend-grid-text">{tick}</text>
+                                  </g>
+                                );
+                              })}
+                              <polygon points={selectedEmployeeAttemptTrend.areaPoints} className="trend-area" />
+                              <polyline points={selectedEmployeeAttemptTrend.points} className="trend-line" />
+                              {selectedEmployeeAttemptTrend.labels.map((entry) => (
+                                <g key={entry.id}>
+                                  <circle cx={entry.x} cy={entry.y} r="5.5" className={`trend-point trend-point-${String(entry.status || "").toLowerCase()}`.trim()} />
+                                </g>
+                              ))}
+                            </svg>
+                          </div>
+                          <div className="trend-chart-legend">
+                            {selectedEmployeeAttemptTrend.labels.map((entry) => (
+                              <div key={entry.id} className="trend-chart-legend-item">
+                                <div className={`trend-dot trend-dot-${String(entry.status || "").toLowerCase()}`.trim()} />
+                                <div>
+                                  <strong>{entry.pct}%</strong>
+                                  <span>{entry.label} • {entry.raw}</span>
+                                </div>
                               </div>
-                              <strong>{entry.pct}%</strong>
-                              <span>{entry.label}</span>
-                              <small>{entry.raw}</small>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>กราฟคะแนนราย Part</h3><p>เทียบเปอร์เซ็นต์คะแนนสอบ ประเมิน และผลรวมของแต่ละ Part</p></div></div></CardHeader>
+                    <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>เทียบคะแนนราย Part</h3><p>เปรียบเทียบคะแนนสอบ ประเมิน และคะแนนรวมของแต่ละ Part แบบแนวนอน</p></div></div></CardHeader>
                     <CardContent>
                       {selectedEmployeePartChart.length === 0 ? (
                         <div className="empty-state">ยังไม่มีข้อมูล Part สำหรับแสดงกราฟ</div>
                       ) : (
-                        <div className="part-chart-list">
+                        <div className="part-compare-list">
                           {selectedEmployeePartChart.map((entry) => (
-                            <div key={entry.key} className="part-chart-item">
+                            <div key={entry.key} className="part-compare-card">
                               <div className="part-chart-header">
                                 <strong>{entry.label}</strong>
                                 <span>{entry.combinedRaw}</span>
