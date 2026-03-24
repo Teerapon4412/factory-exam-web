@@ -1254,9 +1254,9 @@ export default function App() {
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin) return;
 
-    const shouldRefreshSharedData = ["portal", "news", "scores"].includes(entryPoint) || ["employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
-    const shouldRefreshEmployees = entryPoint === "scores" || ["employees", "evaluation", "employee-results"].includes(activeTab);
-    const shouldRefreshEvaluations = entryPoint === "scores" || ["evaluation", "employee-results"].includes(activeTab);
+    const shouldRefreshSharedData = ["portal", "news", "scores", "score-charts"].includes(entryPoint) || ["employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
+    const shouldRefreshEmployees = ["scores", "score-charts"].includes(entryPoint) || ["employees", "evaluation", "employee-results"].includes(activeTab);
+    const shouldRefreshEvaluations = ["scores", "score-charts"].includes(entryPoint) || ["evaluation", "employee-results"].includes(activeTab);
     if (!shouldRefreshSharedData && !shouldRefreshEmployees && !shouldRefreshEvaluations) return;
 
     let ignore = false;
@@ -1990,6 +1990,15 @@ export default function App() {
               </Card>
             ) : null}
 
+            {isAdmin ? (
+              <Card className="portal-card">
+                <CardContent className="portal-card-content">
+                  <div className="section-heading"><ClipboardCheck size={20} /><div><h3>Employee score charts</h3><p>Open the chart view for exam trends and exam-vs-evaluation comparisons by employee.</p></div></div>
+                  <Button onClick={() => setEntryPoint("score-charts")}>Open score charts</Button>
+                </CardContent>
+              </Card>
+            ) : null}
+
           </div>
         </div>
       </div>
@@ -2091,55 +2100,6 @@ export default function App() {
                         <div className="employee-result-meta">{selectedEmployeeSummary.latestModelPart !== "-" ? `ล่าสุด ${selectedEmployeeSummary.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div>
                       </div>
 
-                      <div className="score-chart-grid">
-                        <Card>
-                          <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>กราฟผลสอบย้อนหลัง</h3><p>แสดงเปอร์เซ็นต์ผลสอบล่าสุดของพนักงานคนนี้สูงสุด 8 ครั้ง</p></div></div></CardHeader>
-                          <CardContent>
-                            {selectedEmployeeAttemptChart.length === 0 ? (
-                              <div className="empty-state">ยังไม่มีประวัติผลสอบสำหรับแสดงกราฟ</div>
-                            ) : (
-                              <div className="attempt-chart">
-                                {selectedEmployeeAttemptChart.map((entry) => (
-                                  <div key={entry.id} className="attempt-chart-item">
-                                    <div className="attempt-chart-bar-wrap">
-                                      <div className={`attempt-chart-bar status-${String(entry.status || "").toLowerCase()}`.trim()} style={{ height: `${Math.max(entry.pct, 8)}%` }} />
-                                    </div>
-                                    <strong>{entry.pct}%</strong>
-                                    <span>{entry.label}</span>
-                                    <small>{entry.raw}</small>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>กราฟคะแนนราย Part</h3><p>เทียบเปอร์เซ็นต์คะแนนสอบ ประเมิน และผลรวมของแต่ละ Part</p></div></div></CardHeader>
-                          <CardContent>
-                            {selectedEmployeePartChart.length === 0 ? (
-                              <div className="empty-state">ยังไม่มีข้อมูล Part สำหรับแสดงกราฟ</div>
-                            ) : (
-                              <div className="part-chart-list">
-                                {selectedEmployeePartChart.map((entry) => (
-                                  <div key={entry.key} className="part-chart-item">
-                                    <div className="part-chart-header">
-                                      <strong>{entry.label}</strong>
-                                      <span>{entry.combinedRaw}</span>
-                                    </div>
-                                    <div className="part-chart-bars">
-                                      <div className="part-chart-row"><span>Exam</span><div className="part-chart-track"><div className="part-chart-fill is-exam" style={{ width: `${entry.examPct}%` }} /></div><strong>{entry.examPct}%</strong></div>
-                                      <div className="part-chart-row"><span>Eval</span><div className="part-chart-track"><div className="part-chart-fill is-eval" style={{ width: `${entry.evaluationPct}%` }} /></div><strong>{entry.evaluationPct}%</strong></div>
-                                      <div className="part-chart-row"><span>Total</span><div className="part-chart-track"><div className="part-chart-fill is-total" style={{ width: `${entry.combinedPct}%` }} /></div><strong>{entry.combinedPct}%</strong></div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-
                       <div className="dashboard-table-wrap">
                         <table className="dashboard-table">
                           <thead><tr><th>Time</th><th>Model/Part</th><th>Score</th><th>Status</th></tr></thead>
@@ -2171,6 +2131,145 @@ export default function App() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (entryPoint === "score-charts" && isAdmin) {
+    return (
+      <div className="app-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>Employee Charts</Badge><Badge outline>{selectedEmployeeSummary ? selectedEmployeeSummary.candidateName : "ยังไม่ได้เลือกพนักงาน"}</Badge></div>
+                <div className="hero-session">
+                  <Button variant="outline" onClick={() => setEntryPoint("scores")}><ArrowLeft size={16} /> กลับหน้าสรุป</Button>
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
+                </div>
+              </div>
+              <h1>Employee score charts</h1>
+              <p>ดูกราฟผลสอบย้อนหลัง และกราฟเปรียบเทียบคะแนนสอบกับคะแนนประเมินของพนักงานแต่ละคนแบบแยกหน้า</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>พนักงานที่เลือก</span><strong>{selectedEmployeeSummary?.candidateCode || "-"}</strong></div>
+              <div className="hero-stat"><span>Attempts</span><strong>{selectedEmployeeSummary?.attempts || 0}</strong></div>
+              <div className="hero-stat"><span>Average score</span><strong>{selectedEmployeeSummary?.avgPct || 0}%</strong></div>
+              <div className="hero-stat"><span>Part ที่มีข้อมูล</span><strong>{selectedEmployeePartChart.length}</strong></div>
+            </div>
+          </motion.section>
+
+          <div className="dashboard-layout">
+            <Card>
+              <CardContent>
+                <div className="dashboard-filters">
+                  <div>
+                    <Label>Employee name</Label>
+                    <select value={employeeResultsEmployeeFilter} onChange={(e) => setEmployeeResultsEmployeeFilter(e.target.value)} style={S.input}>
+                      <option value="ALL">All</option>
+                      {employeeResultOptions.map((entry) => (
+                        <option key={entry.candidateCode} value={entry.candidateCode}>
+                          {entry.candidateName} ({entry.candidateCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Learning status</Label>
+                    <select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}>
+                      <option value="ALL">ทั้งหมด</option>
+                      <option value="NOT_STARTED">ยังไม่สอบ</option>
+                      <option value="EXAM_NOT_PASSED">สอบไม่ผ่าน</option>
+                      <option value="WAITING_EVALUATION">รอประเมิน</option>
+                      <option value="COMPLETED">ผ่านครบ</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>พนักงานที่เปิดกราฟ</Label>
+                    <select value={selectedEmployeeResultCode} onChange={(e) => setSelectedEmployeeResultCode(e.target.value)} style={S.input}>
+                      {employeeResultSummaries.map((entry) => (
+                        <option key={entry.candidateCode} value={entry.candidateCode}>
+                          {entry.candidateName} ({entry.candidateCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>ข้อมูลกราฟ</Label>
+                    <Input value={selectedEmployeeSummary ? `${selectedEmployeeSummary.passedParts} ผ่าน / ${selectedEmployeeSummary.evaluatedParts} ประเมิน` : "-"} readOnly />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {!selectedEmployeeSummary ? (
+              <Card><CardContent className="empty-state">Select an employee to view charts.</CardContent></Card>
+            ) : (
+              <div className="detail-stack">
+                <div className="employee-learning-summary">
+                  <div>
+                    <strong>{selectedEmployeeSummary.candidateName}</strong>
+                    <div className="employee-result-meta">{selectedEmployeeSummary.candidateCode} | {selectedEmployeeSummary.department || "-"} / {selectedEmployeeSummary.position || "-"}</div>
+                  </div>
+                  <div className="employee-result-meta">{selectedEmployeeSummary.latestModelPart !== "-" ? `ล่าสุด ${selectedEmployeeSummary.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div>
+                </div>
+
+                <div className="score-chart-grid">
+                  <Card>
+                    <CardHeader><div className="section-heading"><BarChart3 size={18} /><div><h3>กราฟผลสอบย้อนหลัง</h3><p>แสดงเปอร์เซ็นต์ผลสอบล่าสุดของพนักงานคนนี้สูงสุด 8 ครั้ง</p></div></div></CardHeader>
+                    <CardContent>
+                      {selectedEmployeeAttemptChart.length === 0 ? (
+                        <div className="empty-state">ยังไม่มีประวัติผลสอบสำหรับแสดงกราฟ</div>
+                      ) : (
+                        <div className="attempt-chart">
+                          {selectedEmployeeAttemptChart.map((entry) => (
+                            <div key={entry.id} className="attempt-chart-item">
+                              <div className="attempt-chart-bar-wrap">
+                                <div className={`attempt-chart-bar status-${String(entry.status || "").toLowerCase()}`.trim()} style={{ height: `${Math.max(entry.pct, 8)}%` }} />
+                              </div>
+                              <strong>{entry.pct}%</strong>
+                              <span>{entry.label}</span>
+                              <small>{entry.raw}</small>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>กราฟคะแนนราย Part</h3><p>เทียบเปอร์เซ็นต์คะแนนสอบ ประเมิน และผลรวมของแต่ละ Part</p></div></div></CardHeader>
+                    <CardContent>
+                      {selectedEmployeePartChart.length === 0 ? (
+                        <div className="empty-state">ยังไม่มีข้อมูล Part สำหรับแสดงกราฟ</div>
+                      ) : (
+                        <div className="part-chart-list">
+                          {selectedEmployeePartChart.map((entry) => (
+                            <div key={entry.key} className="part-chart-item">
+                              <div className="part-chart-header">
+                                <strong>{entry.label}</strong>
+                                <span>{entry.combinedRaw}</span>
+                              </div>
+                              <div className="part-chart-bars">
+                                <div className="part-chart-row"><span>Exam</span><div className="part-chart-track"><div className="part-chart-fill is-exam" style={{ width: `${entry.examPct}%` }} /></div><strong>{entry.examPct}%</strong></div>
+                                <div className="part-chart-row"><span>Eval</span><div className="part-chart-track"><div className="part-chart-fill is-eval" style={{ width: `${entry.evaluationPct}%` }} /></div><strong>{entry.evaluationPct}%</strong></div>
+                                <div className="part-chart-row"><span>Total</span><div className="part-chart-track"><div className="part-chart-fill is-total" style={{ width: `${entry.combinedPct}%` }} /></div><strong>{entry.combinedPct}%</strong></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
