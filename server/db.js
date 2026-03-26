@@ -180,8 +180,213 @@ const adminSeed = {
 
 let dbInstance;
 
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 function nowIso() {
   return new Date().toISOString();
+}
+
+function parseBoolish(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") return value === "true" || value === "1";
+  return fallback;
+}
+
+function normalizeBankForStorage(bank) {
+  const source = hasBankContent(bank) ? clone(bank) : createFallbackBank();
+  return {
+    title: String(source.title || "Factory Online Exam"),
+    models: (source.models || []).map((model, modelIndex) => ({
+      id: String(model.id || crypto.randomUUID()),
+      modelCode: String(model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`),
+      modelName: String(model.modelName || `Model ${modelIndex + 1}`),
+      sortOrder: Number(model.sortOrder ?? modelIndex),
+      parts: (model.parts || []).map((part, partIndex) => ({
+        id: String(part.id || crypto.randomUUID()),
+        partCode: String(part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`),
+        partName: String(part.partName || `Part ${partIndex + 1}`),
+        subtitle: String(part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน"),
+        passScore: Number(part.passScore || 0),
+        randomizeQuestions: parseBoolish(part.randomizeQuestions, false),
+        showResultImmediately: parseBoolish(part.showResultImmediately, true),
+        sortOrder: Number(part.sortOrder ?? partIndex),
+        questions: (part.questions || []).map((question, questionIndex) => ({
+          id: String(question.id || crypto.randomUUID()),
+          questionNo: Number(question.questionNo || questionIndex + 1),
+          questionText: String(question.questionText || ""),
+          imageUrl: String(question.imageUrl || ""),
+          score: Number(question.score || 0),
+          correctAnswer: String(question.correctAnswer || "A"),
+          sortOrder: Number(question.sortOrder ?? questionIndex),
+          choices: {
+            A: String(question.choices?.A || ""),
+            B: String(question.choices?.B || ""),
+            C: String(question.choices?.C || ""),
+            D: String(question.choices?.D || ""),
+          },
+        })),
+      })),
+    })),
+  };
+}
+
+function readBankFromTables(db) {
+  const models = db.prepare(`
+    SELECT id, model_code, model_name, sort_order
+    FROM exam_models
+    ORDER BY sort_order ASC, created_at ASC
+  `).all();
+
+  if (!models.length) return createFallbackBank();
+
+  const parts = db.prepare(`
+    SELECT id, model_id, part_code, part_name, subtitle, pass_score, randomize_questions, show_result_immediately, sort_order
+    FROM exam_parts
+    ORDER BY sort_order ASC, created_at ASC
+  `).all();
+
+  const questions = db.prepare(`
+    SELECT id, part_id, question_no, question_text, image_url, score, correct_answer, sort_order
+    FROM exam_questions
+    ORDER BY sort_order ASC, created_at ASC
+  `).all();
+
+  const choices = db.prepare(`
+    SELECT question_id, choice_key, choice_text
+    FROM exam_choices
+    ORDER BY choice_key ASC
+  `).all();
+
+  const choicesByQuestionId = new Map();
+  for (const choice of choices) {
+    if (!choicesByQuestionId.has(choice.question_id)) {
+      choicesByQuestionId.set(choice.question_id, { A: "", B: "", C: "", D: "" });
+    }
+    choicesByQuestionId.get(choice.question_id)[choice.choice_key] = choice.choice_text || "";
+  }
+
+  const questionsByPartId = new Map();
+  for (const question of questions) {
+    if (!questionsByPartId.has(question.part_id)) questionsByPartId.set(question.part_id, []);
+    questionsByPartId.get(question.part_id).push({
+      id: question.id,
+      questionNo: Number(question.question_no || 0),
+      questionText: question.question_text || "",
+      imageUrl: question.image_url || "",
+      score: Number(question.score || 0),
+      correctAnswer: question.correct_answer || "A",
+      choices: choicesByQuestionId.get(question.id) || { A: "", B: "", C: "", D: "" },
+    });
+  }
+
+  const partsByModelId = new Map();
+  for (const part of parts) {
+    if (!partsByModelId.has(part.model_id)) partsByModelId.set(part.model_id, []);
+    partsByModelId.get(part.model_id).push({
+      id: part.id,
+      partCode: part.part_code || "",
+      partName: part.part_name || "",
+      subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
+      passScore: Number(part.pass_score || 0),
+      randomizeQuestions: Boolean(part.randomize_questions),
+      showResultImmediately: part.show_result_immediately == null ? true : Boolean(part.show_result_immediately),
+      questions: (questionsByPartId.get(part.id) || []).sort((a, b) => a.questionNo - b.questionNo),
+    });
+  }
+
+  return {
+    title: "Factory Online Exam",
+    models: models.map((model) => ({
+      id: model.id,
+      modelCode: model.model_code || "",
+      modelName: model.model_name || "",
+      parts: partsByModelId.get(model.id) || [],
+    })),
+  };
+}
+
+function writeBankToTables(db, rawBank) {
+  const bank = normalizeBankForStorage(rawBank);
+  const timestamp = nowIso();
+
+  db.exec("BEGIN IMMEDIATE TRANSACTION");
+  try {
+    db.prepare("DELETE FROM exam_choices").run();
+    db.prepare("DELETE FROM exam_questions").run();
+    db.prepare("DELETE FROM exam_parts").run();
+    db.prepare("DELETE FROM exam_models").run();
+
+    const insertModel = db.prepare(`
+      INSERT INTO exam_models (id, model_code, model_name, sort_order, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const insertPart = db.prepare(`
+      INSERT INTO exam_parts (
+        id, model_id, part_code, part_name, subtitle, pass_score, randomize_questions, show_result_immediately, sort_order, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const insertQuestion = db.prepare(`
+      INSERT INTO exam_questions (
+        id, part_id, question_no, question_text, image_url, score, correct_answer, sort_order, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const insertChoice = db.prepare(`
+      INSERT INTO exam_choices (id, question_id, choice_key, choice_text, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const model of bank.models) {
+      insertModel.run(model.id, model.modelCode, model.modelName, model.sortOrder, timestamp, timestamp);
+      for (const part of model.parts) {
+        insertPart.run(
+          part.id,
+          model.id,
+          part.partCode,
+          part.partName,
+          part.subtitle,
+          part.passScore,
+          part.randomizeQuestions ? 1 : 0,
+          part.showResultImmediately ? 1 : 0,
+          part.sortOrder,
+          timestamp,
+          timestamp,
+        );
+        for (const question of part.questions) {
+          insertQuestion.run(
+            question.id,
+            part.id,
+            question.questionNo,
+            question.questionText,
+            question.imageUrl,
+            question.score,
+            question.correctAnswer,
+            question.sortOrder,
+            timestamp,
+            timestamp,
+          );
+          for (const choiceKey of ["A", "B", "C", "D"]) {
+            insertChoice.run(
+              crypto.randomUUID(),
+              question.id,
+              choiceKey,
+              question.choices?.[choiceKey] || "",
+              timestamp,
+              timestamp,
+            );
+          }
+        }
+      }
+    }
+
+    db.exec("COMMIT");
+    return bank;
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 function hashPassword(password) {
@@ -311,6 +516,54 @@ function openDb() {
       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS exam_models (
+      id TEXT PRIMARY KEY,
+      model_code TEXT NOT NULL,
+      model_name TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS exam_parts (
+      id TEXT PRIMARY KEY,
+      model_id TEXT NOT NULL,
+      part_code TEXT NOT NULL,
+      part_name TEXT NOT NULL,
+      subtitle TEXT NOT NULL DEFAULT '',
+      pass_score REAL NOT NULL DEFAULT 0,
+      randomize_questions INTEGER NOT NULL DEFAULT 0,
+      show_result_immediately INTEGER NOT NULL DEFAULT 1,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (model_id) REFERENCES exam_models(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS exam_questions (
+      id TEXT PRIMARY KEY,
+      part_id TEXT NOT NULL,
+      question_no INTEGER NOT NULL DEFAULT 1,
+      question_text TEXT NOT NULL DEFAULT '',
+      image_url TEXT NOT NULL DEFAULT '',
+      score REAL NOT NULL DEFAULT 0,
+      correct_answer TEXT NOT NULL DEFAULT 'A',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (part_id) REFERENCES exam_parts(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS exam_choices (
+      id TEXT PRIMARY KEY,
+      question_id TEXT NOT NULL,
+      choice_key TEXT NOT NULL,
+      choice_text TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (question_id) REFERENCES exam_questions(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS news (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -372,6 +625,22 @@ function openDb() {
     }
   }
 
+  const examModelCountRow = db.prepare("SELECT COUNT(*) AS count FROM exam_models").get();
+  if (Number(examModelCountRow?.count || 0) === 0) {
+    const rawState = db.prepare("SELECT value FROM app_state WHERE key = ?").get("global_state");
+    if (rawState?.value) {
+      try {
+        const parsed = JSON.parse(rawState.value);
+        const legacyBank = hasBankContent(parsed?.bank) ? parsed.bank : defaultState.bank;
+        writeBankToTables(db, legacyBank);
+      } catch {
+        writeBankToTables(db, defaultState.bank);
+      }
+    } else {
+      writeBankToTables(db, defaultState.bank);
+    }
+  }
+
   const adminRow = db.prepare("SELECT id FROM employees WHERE username = ?").get(adminSeed.username);
   if (!adminRow) {
     const timestamp = nowIso();
@@ -417,11 +686,20 @@ export async function resetDbForTests() {
 export async function loadState() {
   const db = await getDb();
   const row = db.prepare("SELECT value FROM app_state WHERE key = ?").get("global_state");
-  if (!row) return defaultState;
+  const bankFromTables = readBankFromTables(db);
+  if (!row) {
+    return {
+      ...defaultState,
+      bank: hasBankContent(bankFromTables) ? bankFromTables : defaultState.bank,
+    };
+  }
 
   try {
     const parsed = JSON.parse(row.value);
-    const protectedBank = getProtectedBank(parsed.bank, defaultState.bank);
+    const protectedBank = getProtectedBank(bankFromTables, parsed.bank);
+    if (JSON.stringify(protectedBank) !== JSON.stringify(bankFromTables)) {
+      writeBankToTables(db, protectedBank);
+    }
     return {
       bank: protectedBank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
@@ -435,11 +713,14 @@ export async function loadState() {
 export async function saveState(state) {
   const db = await getDb();
   const current = await loadState();
+  const protectedBank = getProtectedBank(state.bank, current.bank);
   const safeState = {
-    bank: getProtectedBank(state.bank, current.bank),
+    bank: protectedBank,
     results: Array.isArray(state.results) ? state.results : current.results,
     news: Array.isArray(state.news) ? state.news : current.news,
   };
+
+  writeBankToTables(db, protectedBank);
 
   db.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?")
     .run(JSON.stringify(safeState), nowIso(), "global_state");
