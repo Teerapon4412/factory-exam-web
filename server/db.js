@@ -420,6 +420,7 @@ function employeePublicFields(row) {
     fullName: row.full_name,
     department: row.department,
     position: row.position,
+    photoUrl: row.photo_url || "",
     role: row.role,
     isActive: Boolean(row.is_active),
     createdAt: row.created_at,
@@ -478,6 +479,7 @@ function openDb() {
       full_name TEXT NOT NULL,
       department TEXT NOT NULL DEFAULT '',
       position TEXT NOT NULL DEFAULT '',
+      photo_url TEXT NOT NULL DEFAULT '',
       role TEXT NOT NULL DEFAULT 'USER',
       is_active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL,
@@ -564,6 +566,18 @@ function openDb() {
       FOREIGN KEY (question_id) REFERENCES exam_questions(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS skill_matrix_entries (
+      id TEXT PRIMARY KEY,
+      employee_id TEXT NOT NULL,
+      part_id TEXT NOT NULL,
+      score_pct INTEGER NOT NULL DEFAULT 0,
+      updated_by TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+      UNIQUE (employee_id, part_id)
+    );
+
     CREATE TABLE IF NOT EXISTS news (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -581,6 +595,11 @@ function openDb() {
   const newsColumns = db.prepare("PRAGMA table_info(news)").all();
   if (!newsColumns.some((column) => column.name === "published")) {
     db.exec("ALTER TABLE news ADD COLUMN published INTEGER NOT NULL DEFAULT 1");
+  }
+
+  const employeeColumns = db.prepare("PRAGMA table_info(employees)").all();
+  if (!employeeColumns.some((column) => column.name === "photo_url")) {
+    db.exec("ALTER TABLE employees ADD COLUMN photo_url TEXT NOT NULL DEFAULT ''");
   }
 
   const stateRow = db.prepare("SELECT key FROM app_state WHERE key = ?").get("global_state");
@@ -656,6 +675,7 @@ function openDb() {
       adminSeed.fullName,
       adminSeed.department,
       adminSeed.position,
+      "",
       adminSeed.role,
       1,
       timestamp,
@@ -749,7 +769,7 @@ export async function appendResult(result) {
 export async function listEmployees() {
   const db = await getDb();
   const rows = db.prepare(`
-    SELECT id, username, employee_code, full_name, department, position, role, is_active, created_at, updated_at
+    SELECT id, username, employee_code, full_name, department, position, photo_url, role, is_active, created_at, updated_at
     FROM employees
     ORDER BY role DESC, full_name COLLATE NOCASE ASC
   `).all();
@@ -864,6 +884,7 @@ export async function createEmployee(input) {
     fullName: String(input.fullName || "").trim(),
     department: String(input.department || "").trim(),
     position: String(input.position || "").trim(),
+    photoUrl: String(input.photoUrl || "").trim(),
     role: input.role === "ADMIN" ? "ADMIN" : "USER",
     isActive: input.isActive === false ? 0 : 1,
   };
@@ -873,10 +894,10 @@ export async function createEmployee(input) {
   }
 
   db.prepare(`
-    INSERT INTO employees (
-      id, username, employee_code, password_hash, full_name, department, position, role, is_active, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+      INSERT INTO employees (
+        id, username, employee_code, password_hash, full_name, department, position, photo_url, role, is_active, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
     employee.id,
     employee.username,
     employee.employeeCode,
@@ -884,6 +905,7 @@ export async function createEmployee(input) {
     employee.fullName,
     employee.department,
     employee.position,
+    employee.photoUrl,
     employee.role,
     employee.isActive,
     timestamp,
@@ -897,6 +919,7 @@ export async function createEmployee(input) {
     full_name: employee.fullName,
     department: employee.department,
     position: employee.position,
+    photo_url: employee.photoUrl,
     role: employee.role,
     is_active: employee.isActive,
     created_at: timestamp,
@@ -916,6 +939,7 @@ export async function updateEmployee(id, input) {
     fullName: String(input.fullName ?? current.full_name).trim(),
     department: String(input.department ?? current.department).trim(),
     position: String(input.position ?? current.position).trim(),
+    photoUrl: String(input.photoUrl ?? current.photo_url).trim(),
     role: input.role === "ADMIN" ? "ADMIN" : input.role === "USER" ? "USER" : current.role,
     isActive: typeof input.isActive === "boolean" ? (input.isActive ? 1 : 0) : current.is_active,
     passwordHash: current.password_hash,
@@ -928,7 +952,7 @@ export async function updateEmployee(id, input) {
   const updatedAt = nowIso();
   db.prepare(`
     UPDATE employees
-    SET username = ?, employee_code = ?, password_hash = ?, full_name = ?, department = ?, position = ?, role = ?, is_active = ?, updated_at = ?
+    SET username = ?, employee_code = ?, password_hash = ?, full_name = ?, department = ?, position = ?, photo_url = ?, role = ?, is_active = ?, updated_at = ?
     WHERE id = ?
   `).run(
     next.username,
@@ -937,6 +961,7 @@ export async function updateEmployee(id, input) {
     next.fullName,
     next.department,
     next.position,
+    next.photoUrl,
     next.role,
     next.isActive,
     updatedAt,
@@ -950,6 +975,7 @@ export async function updateEmployee(id, input) {
     full_name: next.fullName,
     department: next.department,
     position: next.position,
+    photo_url: next.photoUrl,
     role: next.role,
     is_active: next.isActive,
     created_at: current.created_at,
@@ -965,6 +991,83 @@ export async function deleteEmployee(id) {
 
   db.prepare("DELETE FROM sessions WHERE employee_id = ?").run(id);
   db.prepare("DELETE FROM employees WHERE id = ?").run(id);
+}
+
+function skillMatrixEntryPublicFields(row) {
+  return {
+    id: row.id,
+    employeeId: row.employee_id,
+    partId: row.part_id,
+    scorePct: Number(row.score_pct || 0),
+    updatedBy: row.updated_by || "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function listSkillMatrixEntries() {
+  const db = await getDb();
+  const rows = db.prepare(`
+    SELECT id, employee_id, part_id, score_pct, updated_by, created_at, updated_at
+    FROM skill_matrix_entries
+    ORDER BY updated_at DESC, created_at DESC
+  `).all();
+  return rows.map(skillMatrixEntryPublicFields);
+}
+
+export async function upsertSkillMatrixEntry(input) {
+  const db = await getDb();
+  const employeeId = String(input.employeeId || "").trim();
+  const partId = String(input.partId || "").trim();
+  const scorePct = Math.max(0, Math.min(100, Number(input.scorePct || 0)));
+  const updatedBy = String(input.updatedBy || "").trim();
+
+  if (!employeeId || !partId) throw new Error("REQUIRED_FIELDS");
+
+  const employee = db.prepare("SELECT id FROM employees WHERE id = ?").get(employeeId);
+  if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
+
+  const part = db.prepare("SELECT id FROM exam_parts WHERE id = ?").get(partId);
+  if (!part) throw new Error("PART_NOT_FOUND");
+
+  const current = db.prepare(`
+    SELECT id, employee_id, part_id, score_pct, updated_by, created_at, updated_at
+    FROM skill_matrix_entries
+    WHERE employee_id = ? AND part_id = ?
+  `).get(employeeId, partId);
+
+  if (!current) {
+    const timestamp = nowIso();
+    const id = crypto.randomUUID();
+    db.prepare(`
+      INSERT INTO skill_matrix_entries (id, employee_id, part_id, score_pct, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(id, employeeId, partId, scorePct, updatedBy, timestamp, timestamp);
+
+    return skillMatrixEntryPublicFields({
+      id,
+      employee_id: employeeId,
+      part_id: partId,
+      score_pct: scorePct,
+      updated_by: updatedBy,
+      created_at: timestamp,
+      updated_at: timestamp,
+    });
+  }
+
+  const updatedAt = nowIso();
+  db.prepare(`
+    UPDATE skill_matrix_entries
+    SET score_pct = ?, updated_by = ?, updated_at = ?
+    WHERE id = ?
+  `).run(scorePct, updatedBy, updatedAt, current.id);
+
+  return skillMatrixEntryPublicFields({
+    ...current,
+    score_pct: scorePct,
+    updated_by: updatedBy,
+    updated_at: updatedAt,
+  });
 }
 
 export async function authenticateEmployeeByCode(employeeCode) {
@@ -998,6 +1101,7 @@ export async function getSession(token) {
       e.full_name,
       e.department,
       e.position,
+      e.photo_url,
       e.role,
       e.is_active,
       e.created_at AS employee_created_at,
@@ -1024,6 +1128,7 @@ export async function getSession(token) {
       full_name: row.full_name,
       department: row.department,
       position: row.position,
+      photo_url: row.photo_url,
       role: row.role,
       is_active: row.is_active,
       created_at: row.employee_created_at,

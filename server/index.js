@@ -15,8 +15,10 @@ import {
   listEvaluations,
   listEmployees,
   listNews,
+  listSkillMatrixEntries,
   loadState,
   saveState,
+  upsertSkillMatrixEntry,
   createNews,
   updateEmployee,
   updateNews,
@@ -214,6 +216,32 @@ app.get("/api/employees", requireAuth, requireAdmin, async (_req, res, next) => 
   try {
     res.json(await listEmployees());
   } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/skill-matrix", requireAuth, requireAdmin, async (_req, res, next) => {
+  try {
+    res.json(await listSkillMatrixEntries());
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put("/api/skill-matrix", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const entry = await upsertSkillMatrixEntry({
+      ...(req.body ?? {}),
+      updatedBy: req.user?.fullName || req.user?.employeeCode || "",
+    });
+    res.json(entry);
+  } catch (error) {
+    if (error?.message === "REQUIRED_FIELDS") {
+      return res.status(400).json({ error: "Required fields are missing" });
+    }
+    if (error?.message === "EMPLOYEE_NOT_FOUND" || error?.message === "PART_NOT_FOUND") {
+      return res.status(404).json({ error: "Skill matrix target was not found" });
+    }
     next(error);
   }
 });

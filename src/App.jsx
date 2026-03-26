@@ -37,6 +37,7 @@ const emptyEmployeeForm = {
   fullName: "",
   department: "",
   position: "",
+  photoUrl: "",
   role: "USER",
   isActive: true,
 };
@@ -521,6 +522,9 @@ export default function App() {
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [employeeError, setEmployeeError] = useState("");
   const [employeeStatus, setEmployeeStatus] = useState("idle");
+  const [skillMatrixEntries, setSkillMatrixEntries] = useState([]);
+  const [skillMatrixStatus, setSkillMatrixStatus] = useState("idle");
+  const [skillMatrixError, setSkillMatrixError] = useState("");
   const [dashboardModelFilter, setDashboardModelFilter] = useState("ALL");
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
@@ -1151,6 +1155,25 @@ export default function App() {
     }).sort((a, b) => a.partCode.localeCompare(b.partCode, "th"));
   }, [selectedEmployeeResultCode, selectedEmployeeResults, evaluationHistory]);
 
+  const skillMatrixParts = useMemo(
+    () => bank.models.flatMap((entry) => entry.parts.map((partEntry) => ({
+      id: partEntry.id,
+      modelCode: entry.modelCode,
+      modelName: entry.modelName,
+      partCode: partEntry.partCode,
+      partName: partEntry.partName,
+    }))),
+    [bank.models],
+  );
+
+  const skillMatrixEntryMap = useMemo(() => {
+    const map = new Map();
+    skillMatrixEntries.forEach((entry) => {
+      map.set(`${entry.employeeId}::${entry.partId}`, entry);
+    });
+    return map;
+  }, [skillMatrixEntries]);
+
   const selectedEmployeeAttemptChart = useMemo(() => (
     selectedEmployeeResults
       .slice()
@@ -1270,12 +1293,45 @@ export default function App() {
   }, [isAdmin, session]);
 
   useEffect(() => {
+    let ignore = false;
+
+    const fetchSkillMatrix = async () => {
+      if (!session?.token || !isAdmin) {
+        setSkillMatrixEntries([]);
+        return;
+      }
+
+      try {
+        setSkillMatrixStatus("loading");
+        const res = await fetch(`${API_BASE}/skill-matrix`, {
+          headers: authHeaders(session),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (ignore) return;
+        setSkillMatrixEntries(Array.isArray(data) ? data : []);
+        setSkillMatrixStatus("ready");
+      } catch (error) {
+        console.error(error);
+        if (!ignore) {
+          setSkillMatrixStatus("error");
+          setSkillMatrixError("โหลดข้อมูล Skill Matrix ไม่สำเร็จ");
+        }
+      }
+    };
+
+    fetchSkillMatrix();
+    return () => { ignore = true; };
+  }, [isAdmin, session]);
+
+  useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin) return;
 
-    const shouldRefreshSharedData = ["portal", "news", "scores", "score-charts"].includes(entryPoint) || ["employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
-    const shouldRefreshEmployees = ["scores", "score-charts"].includes(entryPoint) || ["employees", "evaluation", "employee-results"].includes(activeTab);
+    const shouldRefreshSharedData = ["portal", "news", "scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
+    const shouldRefreshEmployees = ["scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["employees", "evaluation", "employee-results"].includes(activeTab);
     const shouldRefreshEvaluations = ["scores", "score-charts"].includes(entryPoint) || ["evaluation", "employee-results"].includes(activeTab);
-    if (!shouldRefreshSharedData && !shouldRefreshEmployees && !shouldRefreshEvaluations) return;
+    const shouldRefreshSkillMatrix = entryPoint === "skill-matrix";
+    if (!shouldRefreshSharedData && !shouldRefreshEmployees && !shouldRefreshEvaluations && !shouldRefreshSkillMatrix) return;
 
     let ignore = false;
 
@@ -1301,6 +1357,15 @@ export default function App() {
           if (!evaluationsRes.ok) throw new Error(`HTTP ${evaluationsRes.status}`);
           const evaluationsData = await evaluationsRes.json();
           if (!ignore) setEvaluationHistory(Array.isArray(evaluationsData) ? evaluationsData : []);
+        }
+
+        if (shouldRefreshSkillMatrix) {
+          const skillMatrixRes = await fetch(`${API_BASE}/skill-matrix`, {
+            headers: authHeaders(session),
+          });
+          if (!skillMatrixRes.ok) throw new Error(`HTTP ${skillMatrixRes.status}`);
+          const skillMatrixData = await skillMatrixRes.json();
+          if (!ignore) setSkillMatrixEntries(Array.isArray(skillMatrixData) ? skillMatrixData : []);
         }
       } catch (error) {
         console.error(error);
@@ -1361,6 +1426,7 @@ export default function App() {
       fullName: employee.fullName || "",
       department: employee.department || "",
       position: employee.position || "",
+      photoUrl: employee.photoUrl || "",
       role: employee.role || "USER",
       isActive: employee.isActive !== false,
     });
@@ -1373,6 +1439,7 @@ export default function App() {
       fullName: employeeForm.fullName.trim(),
       department: employeeForm.department.trim(),
       position: employeeForm.position.trim(),
+      photoUrl: employeeForm.photoUrl.trim(),
       role: employeeForm.role,
       isActive: Boolean(employeeForm.isActive),
     };
@@ -1540,6 +1607,15 @@ export default function App() {
     setPartId(n.id);
     setQId(n.questions[0].id);
     setBuilderQuestionSearch("");
+  };
+
+  const uploadEmployeePhoto = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setEmployeeForm((prev) => ({ ...prev, photoUrl: String(e.target?.result || "") }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const removePart = () => {
@@ -1926,6 +2002,40 @@ export default function App() {
     }
   };
 
+  const cycleSkillScore = async (employeeId, partId) => {
+    const currentEntry = skillMatrixEntryMap.get(`${employeeId}::${partId}`);
+    const levels = [0, 25, 50, 75, 100];
+    const currentIndex = levels.indexOf(Number(currentEntry?.scorePct || 0));
+    const nextScorePct = levels[(currentIndex + 1 + levels.length) % levels.length];
+
+    try {
+      setSkillMatrixStatus("saving");
+      setSkillMatrixError("");
+      const res = await fetch(`${API_BASE}/skill-matrix`, {
+        method: "PUT",
+        headers: authHeaders(session, { "Content-Type": "application/json" }),
+        body: JSON.stringify({ employeeId, partId, scorePct: nextScorePct }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setSkillMatrixEntries((prev) => {
+        const next = [...prev];
+        const index = next.findIndex((entry) => entry.employeeId === employeeId && entry.partId === partId);
+        if (index >= 0) {
+          next[index] = data;
+        } else {
+          next.push(data);
+        }
+        return next;
+      });
+      setSkillMatrixStatus("ready");
+    } catch (error) {
+      console.error(error);
+      setSkillMatrixStatus("error");
+      setSkillMatrixError(error.message || "บันทึก Skill Matrix ไม่สำเร็จ");
+    }
+  };
+
   if (!session) {
     return (
       <div className="app-shell login-shell">
@@ -2017,7 +2127,124 @@ export default function App() {
               </Card>
             ) : null}
 
+            {isAdmin ? (
+              <Card className="portal-card">
+                <CardContent className="portal-card-content">
+                  <div className="section-heading"><ClipboardCheck size={20} /><div><h3>Skill Matrix</h3><p>ดูทักษะราย Part ของพนักงาน พร้อมบันทึกความพร้อมเป็นวงกลม 4 ส่วนได้ในหน้าเดียว</p></div></div>
+                  <Button onClick={() => setEntryPoint("skill-matrix")}>Open skill matrix</Button>
+                </CardContent>
+              </Card>
+            ) : null}
+
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (entryPoint === "skill-matrix" && isAdmin) {
+    return (
+      <div className="app-shell">
+        <div className="backdrop-grid" />
+        <div className="backdrop-glow backdrop-glow-left" />
+        <div className="backdrop-glow backdrop-glow-right" />
+        <div className="app-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+            <div className="hero-copy">
+              <div className="hero-topbar">
+                <div className="hero-badges"><Badge>Skill Matrix</Badge><Badge outline>{activeEmployees.length} employees</Badge></div>
+                <div className="hero-session">
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
+                </div>
+              </div>
+              <h1>Skill Matrix</h1>
+              <p>ดึงข้อมูลพนักงานจากฐานข้อมูลเดิมและดึง Part จากคลังข้อสอบจริง พร้อมบันทึก skill เป็นวงกลม 4 ส่วน ส่วนละ 25%</p>
+            </div>
+            <div className="hero-stats">
+              <div className="hero-stat"><span>พนักงาน</span><strong>{activeEmployees.length}</strong></div>
+              <div className="hero-stat"><span>Part ในคลัง</span><strong>{skillMatrixParts.length}</strong></div>
+              <div className="hero-stat"><span>Skill entries</span><strong>{skillMatrixEntries.length}</strong></div>
+              <div className="hero-stat"><span>สถานะ</span><strong>{skillMatrixStatus === "saving" ? "Saving" : skillMatrixStatus === "loading" ? "Loading" : skillMatrixStatus === "error" ? "Error" : "Ready"}</strong></div>
+            </div>
+          </motion.section>
+
+          <Card>
+            <CardHeader>
+              <div className="section-heading">
+                <ClipboardCheck size={18} />
+                <div>
+                  <h3>Skill Matrix by employee and part</h3>
+                  <p>คลิกวงกลมในแต่ละช่องเพื่อวนค่า 0, 25, 50, 75, 100 เปอร์เซ็นต์</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {skillMatrixError ? <div className="alert-error">{skillMatrixError}</div> : null}
+              <div className="skill-matrix-wrap">
+                <table className="skill-matrix-table">
+                  <thead>
+                    <tr>
+                      <th>พนักงาน</th>
+                      <th>รหัส</th>
+                      <th>รูป</th>
+                      {skillMatrixParts.map((partEntry) => (
+                        <th key={partEntry.id}>
+                          <div className="skill-matrix-part-heading">
+                            <strong>{partEntry.modelCode}/{partEntry.partCode}</strong>
+                            <span>{partEntry.partName}</span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeEmployees.map((employee) => (
+                      <tr key={employee.id}>
+                        <td>
+                          <div className="skill-matrix-employee-name">
+                            <strong>{employee.fullName}</strong>
+                            <span>{employee.department || "-"} / {employee.position || "-"}</span>
+                          </div>
+                        </td>
+                        <td>{employee.employeeCode}</td>
+                        <td>
+                          <div className="skill-matrix-photo-frame">
+                            {employee.photoUrl ? <img src={employee.photoUrl} alt={employee.fullName} className="skill-matrix-photo" /> : <span>No photo</span>}
+                          </div>
+                        </td>
+                        {skillMatrixParts.map((partEntry) => {
+                          const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
+                          const pct = Number(entry?.scorePct || 0);
+                          return (
+                            <td key={`${employee.id}-${partEntry.id}`}>
+                              <button
+                                type="button"
+                                className="skill-matrix-cell"
+                                onClick={() => cycleSkillScore(employee.id, partEntry.id)}
+                                title={`${employee.fullName} / ${partEntry.partName} = ${pct}%`}
+                              >
+                                <span
+                                  className="skill-matrix-circle"
+                                  style={{
+                                    background: `conic-gradient(var(--accent) 0 ${pct}%, rgba(255,255,255,0.16) ${pct}% 100%)`,
+                                  }}
+                                >
+                                  <span className="skill-matrix-circle-core">{pct}%</span>
+                                  <span className="skill-matrix-circle-line line-v" />
+                                  <span className="skill-matrix-circle-line line-h" />
+                                </span>
+                              </button>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -2942,6 +3169,19 @@ export default function App() {
                         </div>
                       </div>
                       <div>
+                        <Label>รูปพนักงาน</Label>
+                        <Input value={employeeForm.photoUrl} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, photoUrl: e.target.value }))} placeholder="วาง URL หรือใช้ปุ่มเลือกรูป" />
+                        <label className="upload-button" style={{ marginTop: 10 }}>
+                          <ImagePlus size={16} /> เลือกรูปพนักงาน
+                          <input type="file" accept="image/*" hidden onChange={(e) => uploadEmployeePhoto(e.target.files?.[0])} />
+                        </label>
+                        {employeeForm.photoUrl ? (
+                          <div className="employee-photo-preview">
+                            <img src={employeeForm.photoUrl} alt={employeeForm.fullName || "employee"} />
+                          </div>
+                        ) : null}
+                      </div>
+                      <div>
                         <Label>สถานะ</Label>
                         <select value={employeeForm.isActive ? "ACTIVE" : "INACTIVE"} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, isActive: e.target.value === "ACTIVE" }))} style={S.input}>
                           <option value="ACTIVE">ACTIVE</option>
@@ -2974,6 +3214,7 @@ export default function App() {
                         <table className="dashboard-table">
                           <thead>
                             <tr>
+                              <th>รูป</th>
                               <th>ชื่อ</th>
                               <th>รหัสพนักงาน</th>
                               <th>แผนก/ตำแหน่ง</th>
@@ -2985,6 +3226,7 @@ export default function App() {
                           <tbody>
                             {employees.map((employee) => (
                               <tr key={employee.id}>
+                                <td>{employee.photoUrl ? <div className="employee-table-photo"><img src={employee.photoUrl} alt={employee.fullName} /></div> : <span>-</span>}</td>
                                 <td>{employee.fullName}</td>
                                 <td>{employee.employeeCode}</td>
                                 <td>{employee.department || "-"} / {employee.position || "-"}</td>
