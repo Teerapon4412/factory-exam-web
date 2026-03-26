@@ -24,6 +24,144 @@ function hasBankContent(bank) {
   return Array.isArray(bank?.models) && bank.models.some((model) => Array.isArray(model?.parts) && model.parts.some((part) => Array.isArray(part?.questions) && part.questions.length));
 }
 
+function modelKey(model) {
+  return String(model?.id || `${model?.modelCode || ""}::${model?.modelName || ""}`);
+}
+
+function partKey(part) {
+  return String(part?.id || `${part?.partCode || ""}::${part?.partName || ""}`);
+}
+
+function questionKey(question) {
+  return String(question?.id || `${question?.questionNo || ""}::${question?.questionText || ""}`);
+}
+
+function countBankContent(bank) {
+  const models = Array.isArray(bank?.models) ? bank.models.length : 0;
+  const parts = (bank?.models || []).reduce((sum, model) => sum + ((model.parts || []).length), 0);
+  const questions = (bank?.models || []).reduce(
+    (sum, model) => sum + (model.parts || []).reduce((partSum, part) => partSum + ((part.questions || []).length), 0),
+    0,
+  );
+
+  return { models, parts, questions };
+}
+
+function mergeQuestions(baseQuestions = [], incomingQuestions = []) {
+  const order = [];
+  const merged = new Map();
+
+  for (const question of baseQuestions) {
+    const key = questionKey(question);
+    if (!merged.has(key)) order.push(key);
+    merged.set(key, JSON.parse(JSON.stringify(question)));
+  }
+
+  for (const question of incomingQuestions) {
+    const key = questionKey(question);
+    if (!merged.has(key)) order.push(key);
+    const previous = merged.get(key) || {};
+    merged.set(key, {
+      ...previous,
+      ...JSON.parse(JSON.stringify(question)),
+    });
+  }
+
+  return order.map((key, index) => {
+    const question = merged.get(key);
+    return {
+      ...question,
+      questionNo: index + 1,
+    };
+  });
+}
+
+function mergeParts(baseParts = [], incomingParts = []) {
+  const order = [];
+  const merged = new Map();
+
+  for (const part of baseParts) {
+    const key = partKey(part);
+    if (!merged.has(key)) order.push(key);
+    merged.set(key, JSON.parse(JSON.stringify(part)));
+  }
+
+  for (const part of incomingParts) {
+    const key = partKey(part);
+    const previous = merged.get(key) || {};
+    if (!merged.has(key)) order.push(key);
+    merged.set(key, {
+      ...previous,
+      ...JSON.parse(JSON.stringify(part)),
+      questions: mergeQuestions(previous.questions || [], part.questions || []),
+    });
+  }
+
+  return order.map((key) => merged.get(key));
+}
+
+function mergeBanks(baseBank, incomingBank) {
+  if (!hasBankContent(baseBank) && !hasBankContent(incomingBank)) {
+    return createFallbackBank();
+  }
+
+  if (!hasBankContent(baseBank)) {
+    return JSON.parse(JSON.stringify(incomingBank));
+  }
+
+  if (!hasBankContent(incomingBank)) {
+    return JSON.parse(JSON.stringify(baseBank));
+  }
+
+  const order = [];
+  const merged = new Map();
+
+  for (const model of baseBank.models || []) {
+    const key = modelKey(model);
+    if (!merged.has(key)) order.push(key);
+    merged.set(key, JSON.parse(JSON.stringify(model)));
+  }
+
+  for (const model of incomingBank.models || []) {
+    const key = modelKey(model);
+    const previous = merged.get(key) || {};
+    if (!merged.has(key)) order.push(key);
+    merged.set(key, {
+      ...previous,
+      ...JSON.parse(JSON.stringify(model)),
+      parts: mergeParts(previous.parts || [], model.parts || []),
+    });
+  }
+
+  return {
+    ...JSON.parse(JSON.stringify(baseBank)),
+    ...JSON.parse(JSON.stringify(incomingBank)),
+    title: String(incomingBank?.title || baseBank?.title || "Factory Online Exam"),
+    models: order.map((key) => merged.get(key)),
+  };
+}
+
+function getProtectedBank(candidateBank, currentBank) {
+  const fallbackBank = createFallbackBank();
+  const candidate = hasBankContent(candidateBank) ? candidateBank : currentBank;
+  const current = hasBankContent(currentBank) ? currentBank : fallbackBank;
+  const protectedBank = mergeBanks(current, candidate);
+  const restoredBank = mergeBanks(fallbackBank, protectedBank);
+  const candidateStats = countBankContent(candidate);
+  const currentStats = countBankContent(current);
+  const restoredStats = countBankContent(restoredBank);
+
+  if (
+    candidateStats.models < currentStats.models
+    || candidateStats.parts < currentStats.parts
+    || candidateStats.questions < currentStats.questions
+  ) {
+    return restoredBank;
+  }
+
+  return restoredStats.questions >= candidateStats.questions ? restoredBank : candidate;
+}
+
 const defaultState = {
   bank: createFallbackBank(),
   results: [],
@@ -283,8 +421,9 @@ export async function loadState() {
 
   try {
     const parsed = JSON.parse(row.value);
+    const protectedBank = getProtectedBank(parsed.bank, defaultState.bank);
     return {
-      bank: hasBankContent(parsed.bank) ? parsed.bank : defaultState.bank,
+      bank: protectedBank,
       results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
       news: Array.isArray(parsed.news) ? parsed.news : defaultState.news,
     };
@@ -297,7 +436,7 @@ export async function saveState(state) {
   const db = await getDb();
   const current = await loadState();
   const safeState = {
-    bank: hasBankContent(state.bank) ? state.bank : current.bank,
+    bank: getProtectedBank(state.bank, current.bank),
     results: Array.isArray(state.results) ? state.results : current.results,
     news: Array.isArray(state.news) ? state.news : current.news,
   };
