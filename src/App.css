@@ -1492,6 +1492,39 @@ select:focus {
   background: rgba(255, 255, 255, 0.62);
 }
 
+.skill-matrix-legend {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.skill-matrix-legend-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.skill-matrix-legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-matrix-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(211, 84, 0, 0.08);
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
 .skill-matrix-table {
   width: 100%;
   min-width: 1100px;

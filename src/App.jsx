@@ -1208,7 +1208,9 @@ export default function App() {
       const combinedFullScore = (exam?.fullScore ?? 0) + (evaluation?.maxScore ?? 0);
       if (!combinedFullScore) return;
       const combinedPct = Math.round((combinedScore / combinedFullScore) * 100);
-      const skillPct = Math.max(0, Math.min(100, Math.round(combinedPct / 25) * 25));
+      const skillPct = combinedPct >= 100
+        ? 100
+        : Math.max(0, Math.min(100, Math.floor(combinedPct / 25) * 25));
       output.set(key, {
         combinedScore,
         combinedFullScore,
@@ -2220,12 +2222,22 @@ export default function App() {
                 <ClipboardCheck size={18} />
                 <div>
                   <h3>Skill Matrix by employee and part</h3>
-                  <p>คลิกวงกลมในแต่ละช่องเพื่อวนค่า 0, 25, 50, 75, 100 เปอร์เซ็นต์</p>
+                  <p>คะแนนรวมจะถูกแบ่งเป็น 4 ส่วน ส่วนละ 25% และปัดลงตามช่วงคะแนน เช่น 90/100 = 75%</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               {skillMatrixError ? <div className="alert-error">{skillMatrixError}</div> : null}
+              <div className="skill-matrix-legend">
+                <div className="skill-matrix-legend-title">เกณฑ์ระดับวงกลม</div>
+                <div className="skill-matrix-legend-items">
+                  <span className="skill-matrix-legend-item"><strong>0-24%</strong> = 0%</span>
+                  <span className="skill-matrix-legend-item"><strong>25-49%</strong> = 25%</span>
+                  <span className="skill-matrix-legend-item"><strong>50-74%</strong> = 50%</span>
+                  <span className="skill-matrix-legend-item"><strong>75-99%</strong> = 75%</span>
+                  <span className="skill-matrix-legend-item"><strong>100%</strong> = 100%</span>
+                </div>
+              </div>
               <div className="skill-matrix-wrap">
                 <table className="skill-matrix-table">
                   <thead>
