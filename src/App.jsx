@@ -1174,6 +1174,51 @@ export default function App() {
     return map;
   }, [skillMatrixEntries]);
 
+  const skillMatrixDerivedMap = useMemo(() => {
+    const examByEmployeePart = new Map();
+    resultHistory
+      .slice()
+      .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+      .forEach((entry) => {
+        const employeeCode = entry.candidateCode || entry.employeeCode || "";
+        const partKey = entry.partId || [entry.modelCode, entry.partCode].join("__");
+        const mapKey = `${employeeCode}::${partKey}`;
+        if (!employeeCode || examByEmployeePart.has(mapKey)) return;
+        examByEmployeePart.set(mapKey, entry);
+      });
+
+    const evaluationByEmployeePart = new Map();
+    evaluationHistory
+      .slice()
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
+      .forEach((entry) => {
+        const employeeCode = entry.employeeCode || "";
+        const partKey = entry.partId || [entry.modelCode, entry.partCode].join("__");
+        const mapKey = `${employeeCode}::${partKey}`;
+        if (!employeeCode || evaluationByEmployeePart.has(mapKey)) return;
+        evaluationByEmployeePart.set(mapKey, entry);
+      });
+
+    const output = new Map();
+    const allKeys = new Set([...examByEmployeePart.keys(), ...evaluationByEmployeePart.keys()]);
+    allKeys.forEach((key) => {
+      const exam = examByEmployeePart.get(key) || null;
+      const evaluation = evaluationByEmployeePart.get(key) || null;
+      const combinedScore = (exam?.score ?? 0) + (evaluation?.totalScore ?? 0);
+      const combinedFullScore = (exam?.fullScore ?? 0) + (evaluation?.maxScore ?? 0);
+      if (!combinedFullScore) return;
+      const combinedPct = Math.round((combinedScore / combinedFullScore) * 100);
+      const skillPct = Math.max(0, Math.min(100, Math.round(combinedPct / 25) * 25));
+      output.set(key, {
+        combinedScore,
+        combinedFullScore,
+        combinedPct,
+        skillPct,
+      });
+    });
+    return output;
+  }, [resultHistory, evaluationHistory]);
+
   const selectedEmployeeAttemptChart = useMemo(() => (
     selectedEmployeeResults
       .slice()
@@ -2215,14 +2260,16 @@ export default function App() {
                         </td>
                         {skillMatrixParts.map((partEntry) => {
                           const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
-                          const pct = Number(entry?.scorePct || 0);
+                          const derived = skillMatrixDerivedMap.get(`${employee.employeeCode}::${partEntry.id}`);
+                          const pct = Number(derived?.skillPct ?? entry?.scorePct ?? 0);
                           return (
                             <td key={`${employee.id}-${partEntry.id}`}>
                               <button
                                 type="button"
                                 className="skill-matrix-cell"
+                                disabled={Boolean(derived)}
                                 onClick={() => cycleSkillScore(employee.id, partEntry.id)}
-                                title={`${employee.fullName} / ${partEntry.partName} = ${pct}%`}
+                                title={`${employee.fullName} / ${partEntry.partName} = ${derived ? `${derived.combinedScore}/${derived.combinedFullScore} (sync from exam+evaluation)` : `${pct}%`}`}
                               >
                                 <span
                                   className="skill-matrix-circle"
@@ -2234,6 +2281,7 @@ export default function App() {
                                   <span className="skill-matrix-circle-line line-v" />
                                   <span className="skill-matrix-circle-line line-h" />
                                 </span>
+                                <span className="skill-matrix-score-note">{derived ? `${derived.combinedScore}/${derived.combinedFullScore}` : `${pct}%`}</span>
                               </button>
                             </td>
                           );
