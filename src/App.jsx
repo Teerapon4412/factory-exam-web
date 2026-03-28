@@ -579,6 +579,7 @@ export default function App() {
   const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
   const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
+  const suppressBuilderQuestionAutoScrollRef = useRef(false);
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -799,6 +800,10 @@ export default function App() {
   useEffect(() => { setAnswers({}); setSubmitted(false); setSubmitError(""); }, [modelId, partId]);
   useEffect(() => {
     if (!qId) return;
+    if (suppressBuilderQuestionAutoScrollRef.current) {
+      suppressBuilderQuestionAutoScrollRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       builderQuestionRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
@@ -1675,6 +1680,7 @@ export default function App() {
   const addQ = () => {
     const n = emptyQ(part.questions.length + 1);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
+    suppressBuilderQuestionAutoScrollRef.current = true;
     setQId(n.id);
     setBuilderQuestionSearch("");
   };
@@ -1683,6 +1689,7 @@ export default function App() {
     if (!sourceQuestion) return;
     const n = { ...sourceQuestion, id: uid(), questionNo: part.questions.length + 1 };
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
+    suppressBuilderQuestionAutoScrollRef.current = true;
     setQId(n.id);
     setBuilderQuestionSearch("");
   };
