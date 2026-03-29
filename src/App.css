@@ -21,7 +21,9 @@
 }
 
 .skill-matrix-container {
-  width: min(100%, clamp(1560px, 94vw, 2400px));
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
 .backdrop-grid {
@@ -163,7 +165,8 @@ select:focus {
 }
 
 .skill-matrix-hero {
-  width: min(100%, clamp(1420px, 92vw, 2200px));
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
   grid-template-columns: minmax(0, 1.2fr) minmax(360px, 520px);
   align-items: stretch;
@@ -1387,8 +1390,10 @@ select:focus {
 }
 
 .skill-matrix-card {
-  width: min(100%, clamp(1560px, 94vw, 2400px));
+  width: 100%;
+  max-width: 1800px;
   margin: 0 auto;
+  overflow: clip;
 }
 
 .skill-matrix-scroll-note {
