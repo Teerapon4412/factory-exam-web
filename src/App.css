@@ -1297,11 +1297,33 @@ select:focus {
   font-size: 0.86rem;
 }
 
+.skill-matrix-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.skill-matrix-header-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.skill-matrix-header-text h3 {
+  margin: 0;
+  color: var(--ink);
+}
+
+.skill-matrix-header-text p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .skill-matrix-top-scroll {
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
   margin-bottom: 12px;
-  height: 18px;
+  height: 24px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.76);
@@ -1309,7 +1331,7 @@ select:focus {
 }
 
 .skill-matrix-top-scroll-inner {
-  height: 16px;
+  height: 20px;
 }
 
 .skill-matrix-top-scroll::-webkit-scrollbar,
@@ -1370,8 +1392,7 @@ select:focus {
 }
 
 .skill-matrix-table {
-  width: 100%;
-  min-width: 1100px;
+  width: max-content;
   border-collapse: collapse;
 }
 

@@ -1273,6 +1273,11 @@ export default function App() {
     setSkillMatrixScrollWidth(wrap.scrollWidth);
   }, []);
 
+  const skillMatrixTableWidth = useMemo(
+    () => Math.max(1600, 390 + (skillMatrixParts.length * 190)),
+    [skillMatrixParts.length],
+  );
+
   useEffect(() => {
     syncSkillMatrixScrollMetrics();
     const handleResize = () => syncSkillMatrixScrollMetrics();
@@ -2294,9 +2299,9 @@ export default function App() {
 
           <Card>
             <CardHeader>
-              <div className="section-heading">
+              <div className="skill-matrix-header">
                 <ClipboardCheck size={18} />
-                <div>
+                <div className="skill-matrix-header-text">
                   <h3>Skill Matrix by employee and part</h3>
                   <p>คะแนนรวมจะถูกแบ่งเป็น 4 ส่วน ส่วนละ 25% และปัดลงตามช่วงคะแนน เช่น 90/100 = 75%</p>
                 </div>
@@ -2320,7 +2325,7 @@ export default function App() {
                 ref={skillMatrixTopScrollRef}
                 onScroll={() => syncSkillMatrixScrollPosition("top")}
               >
-                <div className="skill-matrix-top-scroll-inner" style={{ width: `${skillMatrixScrollWidth}px` }} />
+                <div className="skill-matrix-top-scroll-inner" style={{ width: `${Math.max(skillMatrixScrollWidth, skillMatrixTableWidth)}px` }} />
               </div>
               <div
                 className="skill-matrix-wrap"
@@ -2330,7 +2335,7 @@ export default function App() {
                   syncSkillMatrixScrollPosition("table");
                 }}
               >
-                <table className="skill-matrix-table">
+                <table className="skill-matrix-table" style={{ minWidth: `${skillMatrixTableWidth}px` }}>
                   <thead>
                     <tr>
                       <th>พนักงาน</th>
