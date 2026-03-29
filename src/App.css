@@ -1288,6 +1288,7 @@ select:focus {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
   scroll-behavior: smooth;
+  scrollbar-gutter: stable both-edges;
 }
 
 .skill-matrix-scroll-note {
@@ -1300,14 +1301,39 @@ select:focus {
   overflow-x: auto;
   overflow-y: hidden;
   margin-bottom: 12px;
-  padding-bottom: 6px;
+  height: 18px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.76);
+  scrollbar-gutter: stable;
 }
 
 .skill-matrix-top-scroll-inner {
-  height: 1px;
+  height: 16px;
+}
+
+.skill-matrix-top-scroll::-webkit-scrollbar,
+.skill-matrix-wrap::-webkit-scrollbar {
+  height: 14px;
+  width: 14px;
+}
+
+.skill-matrix-top-scroll::-webkit-scrollbar-track,
+.skill-matrix-wrap::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+}
+
+.skill-matrix-top-scroll::-webkit-scrollbar-thumb,
+.skill-matrix-wrap::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(211, 84, 0, 0.9), rgba(255, 138, 61, 0.9));
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.68);
+}
+
+.skill-matrix-top-scroll::-webkit-scrollbar-thumb:hover,
+.skill-matrix-wrap::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, rgba(194, 65, 12, 0.95), rgba(249, 115, 22, 0.95));
 }
 
 .skill-matrix-legend {
