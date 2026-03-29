@@ -612,11 +612,15 @@ export default function App() {
   const builderQuestionRefs = useRef({});
   const suppressBuilderQuestionAutoScrollRef = useRef(false);
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
+  const lastTabSessionKeyRef = useRef("");
 
   const isAdmin = session?.role === "ADMIN";
 
   useEffect(() => {
     if (!session) return;
+    const nextSessionKey = `${session.token || ""}:${session.role || ""}`;
+    if (lastTabSessionKeyRef.current === nextSessionKey) return;
+    lastTabSessionKeyRef.current = nextSessionKey;
     setActiveTab(isAdmin ? "builder" : "preview");
   }, [session, isAdmin]);
 
@@ -634,6 +638,7 @@ export default function App() {
 
   useEffect(() => {
     if (!session) {
+      lastTabSessionKeyRef.current = "";
       setCandidateName("");
       setCandidateCode("");
       return;
