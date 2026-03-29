@@ -2291,12 +2291,12 @@ export default function App() {
 
   if (entryPoint === "skill-matrix" && isAdmin) {
     return (
-      <div className="app-shell">
+      <div className="app-shell skill-matrix-page">
         <div className="backdrop-grid" />
         <div className="backdrop-glow backdrop-glow-left" />
         <div className="backdrop-glow backdrop-glow-right" />
-        <div className="app-container">
-          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
+        <div className="app-container skill-matrix-container">
+          <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel skill-matrix-hero">
             <div className="hero-copy">
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Skill Matrix</Badge><Badge outline>{activeEmployees.length} employees</Badge></div>
@@ -2316,7 +2316,7 @@ export default function App() {
             </div>
           </motion.section>
 
-          <Card>
+          <Card className="skill-matrix-card">
             <CardHeader>
               <div className="skill-matrix-header">
                 <ClipboardCheck size={18} />

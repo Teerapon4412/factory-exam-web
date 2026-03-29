@@ -16,6 +16,14 @@
   gap: 18px;
 }
 
+.skill-matrix-page {
+  padding-inline: 24px;
+}
+
+.skill-matrix-container {
+  width: min(100%, 1560px);
+}
+
 .backdrop-grid {
   position: absolute;
   inset: 0;
@@ -152,6 +160,11 @@ select:focus {
     linear-gradient(135deg, rgba(13, 27, 38, 0.96), rgba(27, 68, 84, 0.86));
   box-shadow: 0 30px 80px rgba(14, 26, 36, 0.22);
   color: #f8fafc;
+}
+
+.skill-matrix-hero {
+  width: min(100%, 1420px);
+  margin: 0 auto;
 }
 
 .hero-panel::after {
@@ -1145,6 +1158,10 @@ select:focus {
     padding-inline: 12px;
   }
 
+  .skill-matrix-page {
+    padding-inline: 12px;
+  }
+
   .exam-submit-actions {
     flex-direction: column;
     align-items: stretch;
@@ -1300,15 +1317,21 @@ select:focus {
   scrollbar-gutter: stable both-edges;
 }
 
+.skill-matrix-card {
+  width: min(100%, 1560px);
+  margin: 0 auto;
+}
+
 .skill-matrix-scroll-note {
   margin-bottom: 8px;
   color: var(--muted);
   font-size: 0.86rem;
+  text-align: center;
 }
 
 .skill-matrix-controls {
   display: grid;
-  grid-template-columns: minmax(260px, 420px) 1fr;
+  grid-template-columns: minmax(280px, 420px) 1fr;
   gap: 14px;
   align-items: end;
   margin-bottom: 12px;
@@ -1318,7 +1341,8 @@ select:focus {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
 }
 
 .skill-matrix-summary-chip {
@@ -1336,6 +1360,7 @@ select:focus {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  width: min(100%, 980px);
 }
 
 .skill-matrix-header-text {
