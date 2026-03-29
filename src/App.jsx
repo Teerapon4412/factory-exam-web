@@ -551,6 +551,7 @@ export default function App() {
   const [skillMatrixEntries, setSkillMatrixEntries] = useState([]);
   const [skillMatrixStatus, setSkillMatrixStatus] = useState("idle");
   const [skillMatrixError, setSkillMatrixError] = useState("");
+  const [skillMatrixModelFilter, setSkillMatrixModelFilter] = useState("ALL");
   const skillMatrixWrapRef = useRef(null);
   const skillMatrixTopScrollRef = useRef(null);
   const skillMatrixScrollSyncingRef = useRef(false);
@@ -1212,6 +1213,24 @@ export default function App() {
     [bank.models],
   );
 
+  const skillMatrixModelOptions = useMemo(
+    () => bank.models.map((entry) => ({
+      modelCode: entry.modelCode,
+      modelName: entry.modelName,
+      partCount: Array.isArray(entry.parts) ? entry.parts.length : 0,
+    })),
+    [bank.models],
+  );
+
+  const visibleSkillMatrixParts = useMemo(
+    () => (
+      skillMatrixModelFilter === "ALL"
+        ? skillMatrixParts
+        : skillMatrixParts.filter((entry) => entry.modelCode === skillMatrixModelFilter)
+    ),
+    [skillMatrixModelFilter, skillMatrixParts],
+  );
+
   const skillMatrixEntryMap = useMemo(() => {
     const map = new Map();
     skillMatrixEntries.forEach((entry) => {
@@ -1274,8 +1293,8 @@ export default function App() {
   }, []);
 
   const skillMatrixTableWidth = useMemo(
-    () => Math.max(1600, 390 + (skillMatrixParts.length * 190)),
-    [skillMatrixParts.length],
+    () => Math.max(1400, 390 + (visibleSkillMatrixParts.length * 190)),
+    [visibleSkillMatrixParts.length],
   );
 
   useEffect(() => {
@@ -2319,6 +2338,27 @@ export default function App() {
                   <span className="skill-matrix-legend-item"><strong>100%</strong> = 100%</span>
                 </div>
               </div>
+              <div className="skill-matrix-controls">
+                <div>
+                  <Label>Model</Label>
+                  <select
+                    value={skillMatrixModelFilter}
+                    onChange={(e) => setSkillMatrixModelFilter(e.target.value)}
+                    style={S.input}
+                  >
+                    <option value="ALL">ทั้งหมด ({skillMatrixParts.length} Part)</option>
+                    {skillMatrixModelOptions.map((entry) => (
+                      <option key={entry.modelCode} value={entry.modelCode}>
+                        {entry.modelCode} - {entry.modelName} ({entry.partCount} Part)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="skill-matrix-summary-chips">
+                  <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} Part</span>
+                  <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
+                </div>
+              </div>
               <div className="skill-matrix-scroll-note">เลื่อนแถบนี้เพื่อดู Part อื่น ๆ ทางขวา</div>
               <div
                 className="skill-matrix-top-scroll"
@@ -2341,7 +2381,7 @@ export default function App() {
                       <th>พนักงาน</th>
                       <th>รหัส</th>
                       <th>รูป</th>
-                      {skillMatrixParts.map((partEntry) => (
+                      {visibleSkillMatrixParts.map((partEntry) => (
                         <th key={partEntry.id}>
                           <div className="skill-matrix-part-heading">
                             <strong>{partEntry.modelCode}/{partEntry.partCode}</strong>
@@ -2366,7 +2406,7 @@ export default function App() {
                             {employee.photoUrl ? <img src={employee.photoUrl} alt={employee.fullName} className="skill-matrix-photo" /> : <span>No photo</span>}
                           </div>
                         </td>
-                        {skillMatrixParts.map((partEntry) => {
+                        {visibleSkillMatrixParts.map((partEntry) => {
                           const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
                           const derived = skillMatrixDerivedMap.get(`${employee.employeeCode}::${partEntry.id}`);
                           const pct = Number(derived?.skillPct ?? entry?.scorePct ?? 0);

@@ -1130,6 +1130,14 @@ select:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .skill-matrix-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-matrix-summary-chips {
+    justify-content: flex-start;
+  }
+
 }
 
 @media (max-width: 780px) {
@@ -1285,6 +1293,7 @@ select:focus {
 .skill-matrix-wrap {
   overflow: auto;
   border-radius: 20px;
+  max-height: min(70vh, 900px);
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
   scroll-behavior: smooth;
@@ -1295,6 +1304,32 @@ select:focus {
   margin-bottom: 8px;
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.skill-matrix-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) 1fr;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.skill-matrix-summary-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.skill-matrix-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(211, 84, 0, 0.08);
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
 .skill-matrix-header {
