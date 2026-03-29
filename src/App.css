@@ -165,6 +165,56 @@ select:focus {
 .skill-matrix-hero {
   width: min(100%, clamp(1420px, 92vw, 2200px));
   margin: 0 auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 520px);
+  align-items: stretch;
+  min-height: 248px;
+  padding: 30px 34px;
+}
+
+.skill-matrix-hero .hero-copy {
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.skill-matrix-hero .hero-topbar {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.skill-matrix-hero .hero-badges {
+  margin-bottom: 0;
+  justify-content: flex-start;
+}
+
+.skill-matrix-hero .hero-session {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.skill-matrix-hero .hero-copy h1 {
+  max-width: 12ch;
+}
+
+.skill-matrix-hero .hero-copy p {
+  max-width: 52rem;
+  margin-top: 0;
+}
+
+.skill-matrix-hero .hero-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  justify-self: end;
+  width: min(100%, 520px);
+  min-width: 360px;
+}
+
+.skill-matrix-hero .hero-stat {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .hero-panel::after {
@@ -1273,6 +1323,25 @@ select:focus {
 @media (max-width: 1080px) {
   .login-layout {
     grid-template-columns: 1fr;
+  }
+
+  .skill-matrix-hero {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .skill-matrix-hero .hero-topbar {
+    flex-wrap: wrap;
+  }
+
+  .skill-matrix-hero .hero-session {
+    justify-content: flex-start;
+  }
+
+  .skill-matrix-hero .hero-stats {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
   }
 }
 
