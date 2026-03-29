@@ -1129,6 +1129,7 @@ select:focus {
   .dashboard-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 780px) {
@@ -1286,6 +1287,27 @@ select:focus {
   border-radius: 20px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.62);
+  scroll-behavior: smooth;
+}
+
+.skill-matrix-scroll-note {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.skill-matrix-top-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.skill-matrix-top-scroll-inner {
+  height: 1px;
 }
 
 .skill-matrix-legend {
@@ -1335,6 +1357,13 @@ select:focus {
   vertical-align: middle;
 }
 
+.skill-matrix-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(248, 250, 252, 0.98);
+  z-index: 3;
+}
+
 .skill-matrix-table th:first-child,
 .skill-matrix-table td:first-child {
   position: sticky;
@@ -1357,6 +1386,12 @@ select:focus {
   left: 320px;
   background: rgba(248, 250, 252, 0.98);
   z-index: 2;
+}
+
+.skill-matrix-table thead th:first-child,
+.skill-matrix-table thead th:nth-child(2),
+.skill-matrix-table thead th:nth-child(3) {
+  z-index: 4;
 }
 
 .skill-matrix-employee-name {

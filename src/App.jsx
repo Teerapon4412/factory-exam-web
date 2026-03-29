@@ -506,6 +506,23 @@ const normalizeSession = (payload) => {
   };
 };
 
+const normalizeEmployees = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items.map((employee) => ({
+    id: employee.id,
+    username: employee.username || employee.employee_code || employee.employeeCode || "",
+    employeeCode: employee.employeeCode || employee.employee_code || "",
+    fullName: employee.fullName || employee.full_name || employee.displayName || employee.username || employee.employee_code || employee.employeeCode || "",
+    department: employee.department || "",
+    position: employee.position || "",
+    photoUrl: employee.photoUrl || employee.photo_url || "",
+    role: employee.role || "USER",
+    isActive: employee.isActive !== false && employee.is_active !== 0 && employee.is_active !== false,
+    createdAt: employee.createdAt || employee.created_at || "",
+    updatedAt: employee.updatedAt || employee.updated_at || "",
+  }));
+};
+
 export default function App() {
   const initialBank = useMemo(loadBank, []);
   const lastSyncedBankRef = useRef(JSON.stringify(initialBank));
@@ -534,6 +551,10 @@ export default function App() {
   const [skillMatrixEntries, setSkillMatrixEntries] = useState([]);
   const [skillMatrixStatus, setSkillMatrixStatus] = useState("idle");
   const [skillMatrixError, setSkillMatrixError] = useState("");
+  const skillMatrixWrapRef = useRef(null);
+  const skillMatrixTopScrollRef = useRef(null);
+  const skillMatrixScrollSyncingRef = useRef(false);
+  const [skillMatrixScrollWidth, setSkillMatrixScrollWidth] = useState(0);
   const [dashboardModelFilter, setDashboardModelFilter] = useState("ALL");
   const [dashboardPartFilter, setDashboardPartFilter] = useState("ALL");
   const [dashboardStatusFilter, setDashboardStatusFilter] = useState("ALL");
@@ -910,7 +931,7 @@ export default function App() {
     [evaluationForm.rows],
   );
   const activeEmployees = useMemo(
-    () => employees.filter((employee) => employee.isActive),
+    () => employees.filter((employee) => employee.isActive !== false),
     [employees],
   );
   const evaluationModel = useMemo(
@@ -1246,6 +1267,34 @@ export default function App() {
     return output;
   }, [resultHistory, evaluationHistory]);
 
+  const syncSkillMatrixScrollMetrics = useCallback(() => {
+    const wrap = skillMatrixWrapRef.current;
+    if (!wrap) return;
+    setSkillMatrixScrollWidth(wrap.scrollWidth);
+  }, []);
+
+  useEffect(() => {
+    syncSkillMatrixScrollMetrics();
+    const handleResize = () => syncSkillMatrixScrollMetrics();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [syncSkillMatrixScrollMetrics, skillMatrixParts.length, activeEmployees.length, entryPoint]);
+
+  const syncSkillMatrixScrollPosition = useCallback((source) => {
+    const wrap = skillMatrixWrapRef.current;
+    const topScroll = skillMatrixTopScrollRef.current;
+    if (!wrap || !topScroll || skillMatrixScrollSyncingRef.current) return;
+    skillMatrixScrollSyncingRef.current = true;
+    if (source === "top") {
+      wrap.scrollLeft = topScroll.scrollLeft;
+    } else {
+      topScroll.scrollLeft = wrap.scrollLeft;
+    }
+    window.requestAnimationFrame(() => {
+      skillMatrixScrollSyncingRef.current = false;
+    });
+  }, []);
+
   const selectedEmployeeAttemptChart = useMemo(() => (
     selectedEmployeeResults
       .slice()
@@ -1317,7 +1366,7 @@ export default function App() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (ignore) return;
-        setEmployees(Array.isArray(data) ? data : []);
+        setEmployees(normalizeEmployees(data));
         setEmployeeStatus("ready");
       } catch (error) {
         console.error(error);
@@ -1419,7 +1468,7 @@ export default function App() {
           });
           if (!employeesRes.ok) throw new Error(`HTTP ${employeesRes.status}`);
           const employeesData = await employeesRes.json();
-          if (!ignore) setEmployees(Array.isArray(employeesData) ? employeesData : []);
+          if (!ignore) setEmployees(normalizeEmployees(employeesData));
         }
 
         if (shouldRefreshEvaluations) {
@@ -2265,7 +2314,22 @@ export default function App() {
                   <span className="skill-matrix-legend-item"><strong>100%</strong> = 100%</span>
                 </div>
               </div>
-              <div className="skill-matrix-wrap">
+              <div className="skill-matrix-scroll-note">เลื่อนแถบนี้เพื่อดู Part อื่น ๆ ทางขวา</div>
+              <div
+                className="skill-matrix-top-scroll"
+                ref={skillMatrixTopScrollRef}
+                onScroll={() => syncSkillMatrixScrollPosition("top")}
+              >
+                <div className="skill-matrix-top-scroll-inner" style={{ width: `${skillMatrixScrollWidth}px` }} />
+              </div>
+              <div
+                className="skill-matrix-wrap"
+                ref={skillMatrixWrapRef}
+                onScroll={() => {
+                  syncSkillMatrixScrollMetrics();
+                  syncSkillMatrixScrollPosition("table");
+                }}
+              >
                 <table className="skill-matrix-table">
                   <thead>
                     <tr>
