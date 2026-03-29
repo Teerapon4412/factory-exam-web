@@ -1,5 +1,6 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useCallback } from "react";
 import fallbackExamBankSeed from "../scripts/exam-bank.seed.json";
 import {
   ArrowLeft,
@@ -32,6 +33,14 @@ const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
+const shuffleRank = (value) => {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(index);
+    hash |= 0;
+  }
+  return hash;
+};
 const emptyEmployeeForm = {
   employeeCode: "",
   fullName: "",
@@ -580,13 +589,14 @@ export default function App() {
   const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
   const suppressBuilderQuestionAutoScrollRef = useRef(false);
+  const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
 
   const isAdmin = session?.role === "ADMIN";
 
   useEffect(() => {
     if (!session) return;
     setActiveTab(isAdmin ? "builder" : "preview");
-  }, [session?.token, isAdmin]);
+  }, [session, isAdmin]);
 
   useEffect(() => {
     try {
@@ -613,7 +623,7 @@ export default function App() {
     setCandidateCode(session.employeeCode || "");
   }, [session]);
 
-  const applySharedData = (nextBank, nextResults, nextNews, preserveSelection = false) => {
+  const applySharedData = useCallback((nextBank, nextResults, nextNews, preserveSelection = false) => {
     setBank(nextBank);
     setResultHistory(nextResults);
     setNewsItems(nextNews);
@@ -634,9 +644,9 @@ export default function App() {
     setModelId(selectedModel?.id || null);
     setPartId(selectedPart?.id || null);
     setQId(selectedQuestion?.id || null);
-  };
+  }, [modelId, partId, qId]);
 
-  const fetchSharedData = async (activeSession, preserveSelection = false) => {
+  const fetchSharedData = useCallback(async (activeSession, preserveSelection = false) => {
     const stateRes = await fetch(`${API_BASE}/state`, {
       headers: authHeaders(activeSession),
     });
@@ -653,12 +663,13 @@ export default function App() {
     const nextResults = Array.isArray(data.results) ? data.results : [];
     const nextNews = normalizeNews(newsData);
     applySharedData(nextBank, nextResults, nextNews, preserveSelection);
-  };
+  }, [applySharedData]);
 
   useEffect(() => {
     let ignore = false;
 
     const hydrateSession = async () => {
+      let nextSession = session;
       if (!session?.token) {
         setDataReady(false);
         setSyncStatus("idle");
@@ -670,7 +681,7 @@ export default function App() {
           headers: authHeaders(session),
         });
         if (!authRes.ok) throw new Error(`HTTP ${authRes.status}`);
-        const nextSession = normalizeSession(await authRes.json());
+        nextSession = normalizeSession(await authRes.json());
         if (!nextSession) throw new Error("Invalid session payload");
         if (ignore) return;
         try {
@@ -714,7 +725,7 @@ export default function App() {
 
     hydrateSession();
     return () => { ignore = true; };
-  }, [session?.token]);
+  }, [fetchSharedData, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin) return;
@@ -725,7 +736,7 @@ export default function App() {
         const res = await fetch(`${API_BASE}/state`, {
           method: "PUT",
           headers: authHeaders(session, { "Content-Type": "application/json" }),
-          body: JSON.stringify({ bank }),
+          body: JSON.stringify({ bank, results: resultHistory }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         lastSyncedBankRef.current = JSON.stringify(bank);
@@ -739,7 +750,7 @@ export default function App() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [bank, dataReady, isAdmin, session]);
+  }, [bank, resultHistory, dataReady, isAdmin, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || isAdmin || !["portal", "news"].includes(entryPoint)) return;
@@ -764,7 +775,7 @@ export default function App() {
       ignore = true;
       clearInterval(timer);
     };
-  }, [dataReady, session, isAdmin, entryPoint, modelId, partId, qId]);
+  }, [dataReady, entryPoint, fetchSharedData, isAdmin, modelId, partId, qId, session]);
 
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
@@ -797,7 +808,12 @@ export default function App() {
 
   useEffect(() => { if (part && part.id !== partId) setPartId(part.id); }, [part, partId]);
   useEffect(() => { if (question && question.id !== qId) setQId(question.id); }, [question, qId]);
-  useEffect(() => { setAnswers({}); setSubmitted(false); setSubmitError(""); }, [modelId, partId]);
+  useEffect(() => {
+    setAnswers({});
+    setSubmitted(false);
+    setSubmitError("");
+    setQuestionShuffleSeed((seed) => seed + 1);
+  }, [modelId, partId]);
   useEffect(() => {
     if (!qId) return;
     if (suppressBuilderQuestionAutoScrollRef.current) {
@@ -817,8 +833,14 @@ export default function App() {
   const previewQs = useMemo(() => {
     const src = [...(part?.questions || [])];
     if (!part?.randomizeQuestions) return src;
-    return src.map((q) => ({ q, s: Math.random() })).sort((a, b) => a.s - b.s).map((x, i) => ({ ...x.q, questionNo: i + 1 }));
-  }, [part]);
+    return src
+      .map((entry) => ({
+        question: entry,
+        rank: shuffleRank(`${part.id}:${questionShuffleSeed}:${entry.id}`),
+      }))
+      .sort((left, right) => left.rank - right.rank)
+      .map((entry, index) => ({ ...entry.question, questionNo: index + 1 }));
+  }, [part, questionShuffleSeed]);
 
   const result = useMemo(() => {
     if (!part) return { score: 0, correct: 0, status: "FAIL" };
@@ -998,7 +1020,6 @@ export default function App() {
 
   const employeeResultSummaries = useMemo(() => {
     const map = new Map();
-
     employees.forEach((employee) => {
       const code = employee.employeeCode || "";
       if (!code) return;
@@ -1017,7 +1038,6 @@ export default function App() {
         position: employee.position || "",
       });
     });
-
     resultHistory.forEach((entry) => {
       const key = entry.candidateCode || entry.employeeCode || entry.id;
       const prev = map.get(key) || {
@@ -1124,7 +1144,7 @@ export default function App() {
     const evaluationByPart = new Map();
     evaluationHistory
       .filter((entry) => entry.employeeCode === selectedEmployeeResultCode)
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .forEach((entry) => {
         const key = entry.partId || [entry.modelCode, entry.partCode].join("__");
         if (!evaluationByPart.has(key)) evaluationByPart.set(key, entry);
@@ -1153,7 +1173,7 @@ export default function App() {
         combinedScore: (exam?.score ?? 0) + (evaluation?.totalScore ?? 0),
         combinedFullScore: (exam?.fullScore ?? 0) + (evaluation?.maxScore ?? 0),
         evaluator: evaluation?.evaluator || "-",
-        comparedAt: evaluation?.updatedAt || evaluation?.createdAt || exam?.submittedAt || "",
+        comparedAt: evaluation?.createdAt || exam?.submittedAt || "",
         learningStatusLabel: learningStatus.label,
         learningStatusClassName: learningStatus.className,
       };
@@ -1431,7 +1451,7 @@ export default function App() {
       ignore = true;
       clearInterval(timer);
     };
-  }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, qId]);
+  }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, qId, fetchSharedData]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
@@ -1464,6 +1484,18 @@ export default function App() {
       clearInterval(timer);
     };
   }, [dataReady, session, isAdmin, entryPoint, activeTab]);
+
+  const reloadBuilderFromServer = useCallback(() => {
+    if (!pendingBuilderBank) return;
+    setBank(pendingBuilderBank);
+    setModelId(pendingBuilderBank.models[0]?.id || null);
+    setPartId(pendingBuilderBank.models[0]?.parts[0]?.id || null);
+    setQId(pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null);
+    lastSyncedBankRef.current = JSON.stringify(pendingBuilderBank);
+    setBuilderServerUpdate(false);
+    setPendingBuilderBank(null);
+    setSyncStatus("synced");
+  }, [pendingBuilderBank]);
 
   const resetEmployeeForm = () => {
     setEmployeeForm(emptyEmployeeForm);
@@ -1788,7 +1820,7 @@ export default function App() {
 
   const submit = async () => {
     if (submitted) return;
-    if (answered < part.questions.length) return setSubmitError(`Please answer every question before submitting (${answered}/${part.questions.length})`);
+    if (answered < part.questions.length) return setSubmitError(`กรุณาตอบให้ครบก่อนส่ง (${answered}/${part.questions.length})`);
     setSubmitError("");
     setSubmitted(true);
     const entry = { id: uid(), submittedAt: new Date().toISOString(), candidateName: candidateName || "-", candidateCode: candidateCode || "-", modelId: model.id, modelCode: model.modelCode, modelName: model.modelName, partId: part.id, partCode: part.partCode, partName: part.partName, score: result.score, fullScore: scoreFull, passScore: part.passScore, correct: result.correct, questionCount: part.questions.length, status: result.status };
@@ -1805,17 +1837,17 @@ export default function App() {
       if (Array.isArray(data)) setResultHistory(data);
     } catch (error) {
       console.error(error);
-      setSubmitted(false);
-      setResultHistory((prev) => prev.filter((item) => item.id !== entry.id));
-      const message = error instanceof Error ? error.message : "Submission failed. Please try again.";
-      setSubmitError(message);
-      if (!String(message).includes("Retakes are locked")) {
-        setSyncStatus("offline");
-      }
+      setSyncStatus("offline");
     }
   };
 
-  const reset = () => { if (isExamLocked) return; setAnswers({}); setSubmitted(false); setSubmitError(""); };
+  const reset = () => {
+    if (isExamLocked) return;
+    setAnswers({});
+    setSubmitted(false);
+    setSubmitError("");
+    setQuestionShuffleSeed((seed) => seed + 1);
+  };
   const goToNextPart = () => {
     if (!nextPart) return;
     setPartId(nextPart.id);
@@ -1840,18 +1872,6 @@ export default function App() {
       alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
     }
   };
-  const reloadBuilderFromServer = () => {
-    if (!pendingBuilderBank) return;
-    setBank(pendingBuilderBank);
-    setModelId(pendingBuilderBank.models[0]?.id || null);
-    setPartId(pendingBuilderBank.models[0]?.parts[0]?.id || null);
-    setQId(pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null);
-    lastSyncedBankRef.current = JSON.stringify(pendingBuilderBank);
-    setBuilderServerUpdate(false);
-    setPendingBuilderBank(null);
-    setSyncStatus("synced");
-  };
-
   const saveLocal = async () => {
     try {
       setBuilderSaveMessage({ type: "", text: "" });
@@ -1859,7 +1879,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
         headers: authHeaders(session, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ bank }),
+        body: JSON.stringify({ bank, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
@@ -2339,7 +2359,7 @@ export default function App() {
             <div className="hero-stats">
               <div className="hero-stat"><span>Employees</span><strong>{employeeResultSummaries.length}</strong></div>
               <div className="hero-stat"><span>Total attempts</span><strong>{resultHistory.length}</strong></div>
-              <div className="hero-stat"><span>ผ่านครบ</span><strong>{employeeResultSummaries.filter((entry) => entry.learningStatusKey === "COMPLETED").length}</strong></div>
+              <div className="hero-stat"><span>Latest pass</span><strong>{employeeResultSummaries.filter((entry) => entry.latestStatus === "PASS").length}</strong></div>
               <div className="hero-stat"><span>Average score</span><strong>{employeeResultSummaries.length ? Math.round(employeeResultSummaries.reduce((sum, entry) => sum + entry.avgPct, 0) / employeeResultSummaries.length) : 0}%</strong></div>
             </div>
           </motion.section>
@@ -2360,13 +2380,11 @@ export default function App() {
                     </select>
                   </div>
                   <div>
-                    <Label>Learning status</Label>
+                    <Label>Latest status</Label>
                     <select value={employeeResultsStatusFilter} onChange={(e) => setEmployeeResultsStatusFilter(e.target.value)} style={S.input}>
-                      <option value="ALL">ทั้งหมด</option>
-                      <option value="NOT_STARTED">ยังไม่สอบ</option>
-                      <option value="EXAM_NOT_PASSED">สอบไม่ผ่าน</option>
-                      <option value="WAITING_EVALUATION">รอประเมิน</option>
-                      <option value="COMPLETED">ผ่านครบ</option>
+                      <option value="ALL">All</option>
+                      <option value="PASS">PASS</option>
+                      <option value="FAIL">FAIL</option>
                     </select>
                   </div>
                   <div>
@@ -2385,7 +2403,7 @@ export default function App() {
               <Card>
                 <CardHeader><div className="section-heading"><Users size={18} /><div><h3>Employees with scores</h3><p>Select a name to open that employee's score summary.</p></div></div></CardHeader>
                 <CardContent className="employee-result-list">
-                  {employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | {entry.latestModelPart !== "-" ? `Latest ${entry.latestModelPart}` : "ยังไม่มีประวัติสอบ"}</div></div><div className="employee-result-side"><span className={`status-pill ${entry.learningStatusClassName}`.trim()}>{entry.learningStatusLabel}</span><strong>{entry.avgPct}%</strong><div className="employee-result-meta">ผ่าน {entry.passedParts} Part | ประเมิน {entry.evaluatedParts} Part</div></div></button>)}
+                  {employeeResultSummaries.length === 0 ? <div className="empty-state">No employee results matched the current filter.</div> : employeeResultSummaries.map((entry) => <button key={entry.candidateCode} className={`employee-result-row ${selectedEmployeeResultCode === entry.candidateCode ? "is-active" : ""}`.trim()} onClick={() => setSelectedEmployeeResultCode(entry.candidateCode)}><div><strong>{entry.candidateName}</strong><div className="employee-result-meta">{entry.candidateCode} | Latest {entry.latestModelPart || "-"}</div></div><div className="employee-result-side"><span className={`status-pill status-${String(entry.latestStatus || "").toLowerCase()}`.trim()}>{entry.latestStatus}</span><strong>{entry.avgPct}%</strong></div></button>)}
                 </CardContent>
               </Card>
 
@@ -2448,7 +2466,6 @@ export default function App() {
       </div>
     );
   }
-
   if (entryPoint === "score-charts" && isAdmin) {
     return (
       <div className="app-shell">
@@ -2614,7 +2631,6 @@ export default function App() {
       </div>
     );
   }
-
   if (entryPoint === "news") {
     return (
       <div className="app-shell">
@@ -3327,6 +3343,3 @@ export default function App() {
     </div>
   );
 }
-
-
-

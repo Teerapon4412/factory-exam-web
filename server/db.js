@@ -395,16 +395,6 @@ function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
-function verifyPassword(password, storedHash) {
-  if (!storedHash || !password || !storedHash.includes(":")) return false;
-  const [salt, originalHash] = storedHash.split(":");
-  const candidate = crypto.pbkdf2Sync(password, salt, 120000, 64, "sha512").toString("hex");
-  const a = Buffer.from(originalHash, "hex");
-  const b = Buffer.from(candidate, "hex");
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
-}
-
 function createSessionExpiry() {
   const expires = new Date();
   expires.setDate(expires.getDate() + SESSION_TTL_DAYS);
@@ -750,14 +740,6 @@ export async function saveState(state) {
 
 export async function appendResult(result) {
   const current = await loadState();
-  const candidateCode = String(result?.candidateCode || "").trim();
-  const partId = String(result?.partId || "").trim();
-
-  if (candidateCode && partId) {
-    const alreadyPassed = (Array.isArray(current.results) ? current.results : []).some((entry) => entry.candidateCode === candidateCode && entry.partId === partId && entry.status === "PASS");
-    if (alreadyPassed) throw new Error("PART_ALREADY_PASSED");
-  }
-
   const next = {
     ...current,
     results: [result, ...(Array.isArray(current.results) ? current.results : [])].slice(0, 1000),
