@@ -1494,41 +1494,81 @@ export default function App() {
     let ignore = false;
 
     const refreshAdminViews = async () => {
-      try {
-        if (shouldRefreshSharedData) {
-          await fetchSharedData(session, true);
-        }
+      const tasks = [];
 
-        if (shouldRefreshEmployees) {
+      if (shouldRefreshSharedData) {
+        tasks.push(
+          fetchSharedData(session, true).catch((error) => {
+            console.error(error);
+            if (!ignore) setSyncStatus("offline");
+          }),
+        );
+      }
+
+      if (shouldRefreshEmployees) {
+        if (!ignore) setEmployeeStatus("loading");
+        tasks.push((async () => {
           const employeesRes = await fetch(`${API_BASE}/employees`, {
             headers: authHeaders(session),
           });
           if (!employeesRes.ok) throw new Error(`HTTP ${employeesRes.status}`);
           const employeesData = await employeesRes.json();
-          if (!ignore) setEmployees(normalizeEmployees(employeesData));
-        }
+          if (ignore) return;
+          setEmployees(normalizeEmployees(employeesData));
+          setEmployeeError("");
+          setEmployeeStatus("ready");
+        })().catch((error) => {
+          console.error(error);
+          if (!ignore) {
+            setEmployeeStatus("error");
+            setEmployeeError("โหลดรายชื่อพนักงานไม่สำเร็จ");
+          }
+        }));
+      }
 
-        if (shouldRefreshEvaluations) {
+      if (shouldRefreshEvaluations) {
+        if (!ignore) setEvaluationStatus("loading");
+        tasks.push((async () => {
           const evaluationsRes = await fetch(`${API_BASE}/evaluations`, {
             headers: authHeaders(session),
           });
           if (!evaluationsRes.ok) throw new Error(`HTTP ${evaluationsRes.status}`);
           const evaluationsData = await evaluationsRes.json();
-          if (!ignore) setEvaluationHistory(Array.isArray(evaluationsData) ? evaluationsData : []);
-        }
+          if (ignore) return;
+          setEvaluationHistory(Array.isArray(evaluationsData) ? evaluationsData : []);
+          setEvaluationError("");
+          setEvaluationStatus("ready");
+        })().catch((error) => {
+          console.error(error);
+          if (!ignore) {
+            setEvaluationStatus("error");
+            setEvaluationError("โหลดประวัติผลประเมินไม่สำเร็จ");
+          }
+        }));
+      }
 
-        if (shouldRefreshSkillMatrix) {
+      if (shouldRefreshSkillMatrix) {
+        if (!ignore) setSkillMatrixStatus("loading");
+        tasks.push((async () => {
           const skillMatrixRes = await fetch(`${API_BASE}/skill-matrix`, {
             headers: authHeaders(session),
           });
           if (!skillMatrixRes.ok) throw new Error(`HTTP ${skillMatrixRes.status}`);
           const skillMatrixData = await skillMatrixRes.json();
-          if (!ignore) setSkillMatrixEntries(Array.isArray(skillMatrixData) ? skillMatrixData : []);
-        }
-      } catch (error) {
-        console.error(error);
-        if (!ignore) setSyncStatus("offline");
+          if (ignore) return;
+          setSkillMatrixEntries(Array.isArray(skillMatrixData) ? skillMatrixData : []);
+          setSkillMatrixError("");
+          setSkillMatrixStatus("ready");
+        })().catch((error) => {
+          console.error(error);
+          if (!ignore) {
+            setSkillMatrixStatus("error");
+            setSkillMatrixError("โหลดข้อมูล Skill Matrix ไม่สำเร็จ");
+          }
+        }));
       }
+
+      await Promise.allSettled(tasks);
     };
 
     refreshAdminViews();
