@@ -802,6 +802,14 @@ export default function App() {
   const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
   const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
   const question = useMemo(() => part?.questions.find((q) => q.id === qId) || part?.questions[0] || null, [part, qId]);
+  const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
+  const syncStatusLabel = effectiveSyncStatus === "saving"
+    ? "Saving..."
+    : effectiveSyncStatus === "offline"
+      ? "Server Offline"
+      : effectiveSyncStatus === "loading"
+        ? "Loading..."
+        : "Server Synced";
   const filteredBuilderQuestions = useMemo(() => {
     const keyword = builderQuestionSearch.trim().toLowerCase();
     if (!part?.questions?.length) return [];
@@ -2860,7 +2868,7 @@ export default function App() {
           <div className="hero-copy">
             <div className="hero-topbar">
               <div className="hero-badges"><Badge>Factory Exam Builder</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-              <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button><Badge outline>{syncStatus === "saving" ? "Saving..." : syncStatus === "offline" ? "Server Offline" : syncStatus === "loading" ? "Loading..." : "Server Synced"}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
+              <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button><Badge outline>{syncStatusLabel}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
             </div>
             <h1>{bank.title}</h1>
             <p>จัดการข้อสอบพนักงานแบบครบวงจร ตั้งแต่สร้างคลังข้อสอบ แสดงตัวอย่างข้อสอบ ไปจนถึงติดตามผลสอบใน Dashboard เดียว</p>
