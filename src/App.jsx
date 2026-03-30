@@ -425,6 +425,18 @@ const downloadExcelHtml = (filename, html) => {
   URL.revokeObjectURL(url);
 };
 
+const openPrintDocument = (title, html) => {
+  const popup = window.open("", "_blank", "width=1440,height=900");
+  if (!popup) return;
+  popup.document.open();
+  popup.document.write(html.replace("<title>Skill Matrix</title>", `<title>${escapeHtml(title)}</title>`));
+  popup.document.close();
+  popup.focus();
+  popup.onload = () => {
+    popup.print();
+  };
+};
+
 const fetchImageAsDataUrl = async (imageUrl) => {
   if (!imageUrl) return "";
   try {
@@ -2136,8 +2148,7 @@ export default function App() {
     downloadCsv(`employee_results_${selectedEmployeeResultCode || "employee"}_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "status"], rows);
   };
 
-  const exportSkillMatrixExcel = async () => {
-    const now = new Date().toISOString().slice(0, 10);
+  const buildSkillMatrixExportHtml = async (now) => {
     const embeddedPhotoMap = new Map(await Promise.all(
       activeEmployees.map(async (employee) => [employee.id, await fetchImageAsDataUrl(employee.photoUrl)]),
     ));
@@ -2206,11 +2217,12 @@ export default function App() {
       `;
     }).join("");
 
-    const html = `
+    return `
       <html xmlns:o="urn:schemas-microsoft-com:office:office"
             xmlns:x="urn:schemas-microsoft-com:office:excel"
             xmlns="http://www.w3.org/TR/REC-html40">
         <head>
+          <title>Skill Matrix</title>
           <meta charset="utf-8" />
           <style>
             body { font-family: Segoe UI, Tahoma, sans-serif; color: #1f2937; }
@@ -2302,8 +2314,18 @@ export default function App() {
         </body>
       </html>
     `;
+  };
 
+  const exportSkillMatrixExcel = async () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const html = await buildSkillMatrixExportHtml(now);
     downloadExcelHtml(`skill_matrix_layout_${now}.xls`, html);
+  };
+
+  const exportSkillMatrixPdf = async () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const html = await buildSkillMatrixExportHtml(now);
+    openPrintDocument(`Skill Matrix ${now}`, html);
   };
 
   const patchEvaluationMeta = (field, value) => {
@@ -2668,6 +2690,10 @@ export default function App() {
                 <div className="skill-matrix-summary-chips">
                   <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} Part</span>
                   <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
+                  <Button variant="outline" onClick={exportSkillMatrixPdf}>
+                    <FileSpreadsheet size={16} />
+                    Export PDF
+                  </Button>
                   <Button variant="outline" onClick={exportSkillMatrixExcel}>
                     <FileSpreadsheet size={16} />
                     Export Excel
