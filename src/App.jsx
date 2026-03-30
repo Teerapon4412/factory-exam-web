@@ -622,7 +622,15 @@ export default function App() {
     if (lastTabSessionKeyRef.current === nextSessionKey) return;
     lastTabSessionKeyRef.current = nextSessionKey;
     setActiveTab(isAdmin ? "builder" : "preview");
+    setEntryPoint(isAdmin ? "portal" : "exam");
   }, [session, isAdmin]);
+
+  useEffect(() => {
+    if (!session || isAdmin) return;
+    if (entryPoint !== "exam") {
+      setEntryPoint("exam");
+    }
+  }, [session, isAdmin, entryPoint]);
 
   useEffect(() => {
     try {
@@ -2913,7 +2921,7 @@ export default function App() {
           <div className="hero-copy">
             <div className="hero-topbar">
               <div className="hero-badges"><Badge>Factory Exam Builder</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-              <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button><Badge outline>{syncStatusLabel}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
+              <div className="hero-session"><span>{session.displayName} ({session.username})</span>{isAdmin ? <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button> : null}<Badge outline>{syncStatusLabel}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
             </div>
             <h1>{bank.title}</h1>
             <p>จัดการข้อสอบพนักงานแบบครบวงจร ตั้งแต่สร้างคลังข้อสอบ แสดงตัวอย่างข้อสอบ ไปจนถึงติดตามผลสอบใน Dashboard เดียว</p>
