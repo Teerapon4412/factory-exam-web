@@ -661,19 +661,6 @@ export default function App() {
   }, [session]);
 
   useEffect(() => {
-    if (!session?.employeeCode || isAdmin) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem(EXAM_SELECTION_KEY) || "{}");
-      const employeeSelection = saved?.[session.employeeCode];
-      if (!employeeSelection) return;
-      if (employeeSelection.modelId) setModelId(employeeSelection.modelId);
-      if (employeeSelection.partId) setPartId(employeeSelection.partId);
-    } catch {
-      // Ignore storage restrictions in locked-down browsers.
-    }
-  }, [session?.employeeCode, isAdmin]);
-
-  useEffect(() => {
     if (!session?.employeeCode || isAdmin || !modelId || !partId) return;
     try {
       const saved = JSON.parse(localStorage.getItem(EXAM_SELECTION_KEY) || "{}");
@@ -695,9 +682,27 @@ export default function App() {
     setPendingBuilderBank(null);
 
     if (!preserveSelection) {
-      setModelId(nextBank.models[0]?.id || null);
-      setPartId(nextBank.models[0]?.parts[0]?.id || null);
-      setQId(nextBank.models[0]?.parts[0]?.questions[0]?.id || null);
+      let defaultModel = nextBank.models[0] || null;
+      let defaultPart = defaultModel?.parts?.[0] || null;
+
+      if (!isAdmin && session?.employeeCode) {
+        try {
+          const saved = JSON.parse(localStorage.getItem(EXAM_SELECTION_KEY) || "{}");
+          const employeeSelection = saved?.[session.employeeCode];
+          const savedModel = nextBank.models.find((entry) => entry.id === employeeSelection?.modelId) || null;
+          const savedPart = savedModel?.parts?.find((entry) => entry.id === employeeSelection?.partId) || null;
+          if (savedModel && savedPart) {
+            defaultModel = savedModel;
+            defaultPart = savedPart;
+          }
+        } catch {
+          // Ignore storage restrictions in locked-down browsers.
+        }
+      }
+
+      setModelId(defaultModel?.id || null);
+      setPartId(defaultPart?.id || null);
+      setQId(defaultPart?.questions?.[0]?.id || null);
       return;
     }
 
@@ -707,7 +712,7 @@ export default function App() {
     setModelId(selectedModel?.id || null);
     setPartId(selectedPart?.id || null);
     setQId(selectedQuestion?.id || null);
-  }, [modelId, partId, qId]);
+  }, [isAdmin, modelId, partId, qId, session?.employeeCode]);
 
   const fetchSharedData = useCallback(async (activeSession, preserveSelection = false) => {
     const stateRes = await fetch(`${API_BASE}/state`, {
