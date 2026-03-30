@@ -408,6 +408,23 @@ const downloadCsv = (filename, headers, rows) => {
   URL.revokeObjectURL(url);
 };
 
+const escapeHtml = (value) => String(value ?? "")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&#39;");
+
+const downloadExcelHtml = (filename, html) => {
+  const blob = new Blob([`\uFEFF${html}`], { type: "application/vnd.ms-excel;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 function normalize(raw) {
   if (Array.isArray(raw?.models) && raw.models.length) {
     return sanitizeBank({
@@ -2104,36 +2121,114 @@ export default function App() {
 
   const exportSkillMatrixExcel = () => {
     const now = new Date().toISOString().slice(0, 10);
-    const rows = activeEmployees.flatMap((employee) => (
-      visibleSkillMatrixParts.map((partEntry) => {
+    const partHeaders = visibleSkillMatrixParts.map((partEntry) => `
+      <th class="part-head">
+        <div class="part-code">${escapeHtml(partEntry.modelCode)}/${escapeHtml(partEntry.partCode)}</div>
+        <div class="part-name">${escapeHtml(partEntry.partName)}</div>
+      </th>
+    `).join("");
+
+    const employeeRows = activeEmployees.map((employee) => {
+      const partCells = visibleSkillMatrixParts.map((partEntry) => {
         const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
         const derived = skillMatrixDerivedMap.get(`${employee.employeeCode}::${partEntry.id}`);
         const skillPct = Number(derived?.skillPct ?? entry?.scorePct ?? 0);
         const combinedScore = derived?.combinedScore ?? "";
         const combinedFullScore = derived?.combinedFullScore ?? "";
-        const combinedPct = derived?.combinedPct ?? "";
-        return [
-          employee.employeeCode,
-          employee.fullName,
-          employee.department || "",
-          employee.position || "",
-          partEntry.modelCode,
-          partEntry.modelName,
-          partEntry.partCode,
-          partEntry.partName,
-          skillPct,
-          combinedScore,
-          combinedFullScore,
-          combinedPct,
-          derived ? "EXAM_EVAL_SYNC" : "MANUAL",
-        ];
-      })
-    ));
-    downloadCsv(
-      `skill_matrix_${now}.csv`,
-      ["employee_code", "employee_name", "department", "position", "model_code", "model_name", "part_code", "part_name", "skill_pct", "combined_score", "combined_full_score", "combined_pct", "source"],
-      rows,
-    );
+        const scoreNote = derived ? `${combinedScore}/${combinedFullScore}` : `${skillPct}%`;
+        return `
+          <td class="skill-cell">
+            <div class="skill-circle skill-${skillPct}">
+              <span>${skillPct}%</span>
+            </div>
+            <div class="score-note">${escapeHtml(scoreNote)}</div>
+            <div class="score-source">${derived ? "SYNC" : "MANUAL"}</div>
+          </td>
+        `;
+      }).join("");
+
+      return `
+        <tr>
+          <td class="employee-name">
+            <div class="employee-strong">${escapeHtml(employee.fullName)}</div>
+            <div class="employee-meta">${escapeHtml(employee.department || "-")} / ${escapeHtml(employee.position || "-")}</div>
+          </td>
+          <td class="employee-code">${escapeHtml(employee.employeeCode)}</td>
+          <td class="employee-photo">
+            ${employee.photoUrl ? `<img src="${escapeHtml(employee.photoUrl)}" alt="${escapeHtml(employee.fullName)}" />` : "<span>No photo</span>"}
+          </td>
+          ${partCells}
+        </tr>
+      `;
+    }).join("");
+
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:x="urn:schemas-microsoft-com:office:excel"
+            xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            body { font-family: Segoe UI, Tahoma, sans-serif; color: #1f2937; }
+            .title { font-size: 22px; font-weight: 700; color: #0f4c5c; margin-bottom: 6px; }
+            .subtitle { font-size: 12px; color: #475569; margin-bottom: 12px; }
+            .legend { margin: 0 0 12px; font-size: 12px; }
+            .legend span { display: inline-block; margin-right: 12px; padding: 4px 8px; background: #eef2ff; border-radius: 999px; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; }
+            th { background: #e2e8f0; text-align: center; }
+            .part-head { min-width: 150px; }
+            .part-code { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+            .part-name { font-size: 11px; color: #334155; }
+            .employee-name { min-width: 220px; }
+            .employee-strong { font-weight: 700; margin-bottom: 4px; }
+            .employee-meta { font-size: 11px; color: #64748b; }
+            .employee-code { min-width: 90px; text-align: center; font-weight: 700; }
+            .employee-photo { width: 88px; min-width: 88px; text-align: center; }
+            .employee-photo img { width: 70px; height: 86px; object-fit: cover; border-radius: 10px; border: 1px solid #cbd5e1; }
+            .skill-cell { min-width: 130px; text-align: center; }
+            .skill-circle { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 999px; position: relative; border: 2px solid #94a3b8; box-sizing: border-box; }
+            .skill-circle::before, .skill-circle::after { content: ""; position: absolute; background: rgba(15, 23, 42, 0.22); }
+            .skill-circle::before { width: 2px; top: 6px; bottom: 6px; left: 50%; transform: translateX(-50%); }
+            .skill-circle::after { height: 2px; left: 6px; right: 6px; top: 50%; transform: translateY(-50%); }
+            .skill-circle span { position: absolute; inset: 12px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 999px; font-size: 12px; font-weight: 700; z-index: 1; }
+            .skill-0 { background: conic-gradient(#e2e8f0 0 100%); }
+            .skill-25 { background: conic-gradient(#f59e0b 0 25%, #e2e8f0 25% 100%); }
+            .skill-50 { background: conic-gradient(#f59e0b 0 50%, #e2e8f0 50% 100%); }
+            .skill-75 { background: conic-gradient(#10b981 0 75%, #e2e8f0 75% 100%); }
+            .skill-100 { background: conic-gradient(#10b981 0 100%); }
+            .score-note { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+            .score-source { font-size: 10px; color: #64748b; }
+          </style>
+        </head>
+        <body>
+          <div class="title">Skill Matrix</div>
+          <div class="subtitle">Export วันที่ ${escapeHtml(now)} | Model filter: ${escapeHtml(skillMatrixModelFilter === "ALL" ? "ทั้งหมด" : skillMatrixModelFilter)}</div>
+          <div class="legend">
+            <span>0-24% = 0%</span>
+            <span>25-49% = 25%</span>
+            <span>50-74% = 50%</span>
+            <span>75-99% = 75%</span>
+            <span>100% = 100%</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>พนักงาน</th>
+                <th>รหัส</th>
+                <th>รูป</th>
+                ${partHeaders}
+              </tr>
+            </thead>
+            <tbody>
+              ${employeeRows}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    downloadExcelHtml(`skill_matrix_layout_${now}.xls`, html);
   };
 
   const patchEvaluationMeta = (field, value) => {
