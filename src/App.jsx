@@ -615,8 +615,17 @@ export default function App() {
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
   const lastTabSessionKeyRef = useRef("");
   const examSelectionTouchedRef = useRef(false);
+  const currentModelIdRef = useRef(null);
+  const currentPartIdRef = useRef(null);
+  const currentQIdRef = useRef(null);
 
   const isAdmin = session?.role === "ADMIN";
+
+  useEffect(() => {
+    currentModelIdRef.current = modelId;
+    currentPartIdRef.current = partId;
+    currentQIdRef.current = qId;
+  }, [modelId, partId, qId]);
 
   useEffect(() => {
     if (!session) return;
@@ -706,13 +715,16 @@ export default function App() {
       return;
     }
 
-    const selectedModel = nextBank.models.find((entry) => entry.id === modelId) || nextBank.models[0];
-    const selectedPart = selectedModel?.parts.find((entry) => entry.id === partId) || selectedModel?.parts[0];
-    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === qId) || selectedPart?.questions[0] || null;
+    const activeModelId = currentModelIdRef.current;
+    const activePartId = currentPartIdRef.current;
+    const activeQId = currentQIdRef.current;
+    const selectedModel = nextBank.models.find((entry) => entry.id === activeModelId) || nextBank.models[0];
+    const selectedPart = selectedModel?.parts.find((entry) => entry.id === activePartId) || selectedModel?.parts[0];
+    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === activeQId) || selectedPart?.questions[0] || null;
     setModelId(selectedModel?.id || null);
     setPartId(selectedPart?.id || null);
     setQId(selectedQuestion?.id || null);
-  }, [isAdmin, modelId, partId, qId, session?.employeeCode]);
+  }, [isAdmin, session?.employeeCode]);
 
   const fetchSharedData = useCallback(async (activeSession, preserveSelection = false) => {
     const stateRes = await fetch(`${API_BASE}/state`, {
