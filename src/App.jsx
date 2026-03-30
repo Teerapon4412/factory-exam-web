@@ -32,6 +32,9 @@ const SESSION_KEY = "factory_exam_session_v1";
 const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
 const EXAM_SELECTION_KEY = "factory_exam_selection_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+const SKILL_MATRIX_EXAM_WEIGHT = 40;
+const SKILL_MATRIX_EVALUATION_WEIGHT = 60;
+const SKILL_MATRIX_TOTAL_WEIGHT = SKILL_MATRIX_EXAM_WEIGHT + SKILL_MATRIX_EVALUATION_WEIGHT;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const shuffleRank = (value) => {
@@ -423,6 +426,29 @@ const downloadExcelHtml = (filename, html) => {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+};
+
+const deriveWeightedSkillSummary = (exam, evaluation) => {
+  const examWeightedScore = exam?.fullScore
+    ? Math.round((Number(exam.score || 0) / Number(exam.fullScore)) * SKILL_MATRIX_EXAM_WEIGHT)
+    : 0;
+  const evaluationWeightedScore = evaluation?.maxScore
+    ? Math.round((Number(evaluation.totalScore || 0) / Number(evaluation.maxScore)) * SKILL_MATRIX_EVALUATION_WEIGHT)
+    : 0;
+  const combinedScore = examWeightedScore + evaluationWeightedScore;
+  const combinedFullScore = SKILL_MATRIX_TOTAL_WEIGHT;
+  const combinedPct = Math.round((combinedScore / combinedFullScore) * 100);
+  const skillPct = combinedPct >= 100
+    ? 100
+    : Math.max(0, Math.min(100, Math.floor(combinedPct / 25) * 25));
+  return {
+    examWeightedScore,
+    evaluationWeightedScore,
+    combinedScore,
+    combinedFullScore,
+    combinedPct,
+    skillPct,
+  };
 };
 
 const openPrintDocument = (title, html) => {
@@ -1294,6 +1320,7 @@ export default function App() {
         passedParts: exam?.status === "PASS" ? 1 : 0,
         evaluatedParts: evaluation ? 1 : 0,
       });
+      const weighted = deriveWeightedSkillSummary(exam, evaluation);
       return {
         key,
         modelCode: exam?.modelCode || evaluation?.modelCode || "-",
@@ -1304,8 +1331,9 @@ export default function App() {
         examStatus: exam?.status || "-",
         evaluationScore: evaluation?.totalScore ?? null,
         evaluationMaxScore: evaluation?.maxScore ?? null,
-        combinedScore: (exam?.score ?? 0) + (evaluation?.totalScore ?? 0),
-        combinedFullScore: (exam?.fullScore ?? 0) + (evaluation?.maxScore ?? 0),
+        combinedScore: weighted.combinedScore,
+        combinedFullScore: weighted.combinedFullScore,
+        combinedPct: weighted.combinedPct,
         evaluator: evaluation?.evaluator || "-",
         comparedAt: evaluation?.createdAt || exam?.submittedAt || "",
         learningStatusLabel: learningStatus.label,
@@ -1381,18 +1409,12 @@ export default function App() {
     allKeys.forEach((key) => {
       const exam = examByEmployeePart.get(key) || null;
       const evaluation = evaluationByEmployeePart.get(key) || null;
-      const combinedScore = (exam?.score ?? 0) + (evaluation?.totalScore ?? 0);
-      const combinedFullScore = (exam?.fullScore ?? 0) + (evaluation?.maxScore ?? 0);
-      if (!combinedFullScore) return;
-      const combinedPct = Math.round((combinedScore / combinedFullScore) * 100);
-      const skillPct = combinedPct >= 100
-        ? 100
-        : Math.max(0, Math.min(100, Math.floor(combinedPct / 25) * 25));
+      const weighted = deriveWeightedSkillSummary(exam, evaluation);
       output.set(key, {
-        combinedScore,
-        combinedFullScore,
-        combinedPct,
-        skillPct,
+        combinedScore: weighted.combinedScore,
+        combinedFullScore: weighted.combinedFullScore,
+        combinedPct: weighted.combinedPct,
+        skillPct: weighted.skillPct,
       });
     });
     return output;
