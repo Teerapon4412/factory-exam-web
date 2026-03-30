@@ -30,6 +30,7 @@ const RESULTS_KEY = "factory_exam_results_v1";
 const NEWS_KEY = "factory_exam_news_v1";
 const SESSION_KEY = "factory_exam_session_v1";
 const EVALUATION_DRAFT_KEY = "factory_exam_evaluation_draft_v1";
+const EXAM_SELECTION_KEY = "factory_exam_selection_v1";
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -613,6 +614,7 @@ export default function App() {
   const suppressBuilderQuestionAutoScrollRef = useRef(false);
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
   const lastTabSessionKeyRef = useRef("");
+  const examSelectionTouchedRef = useRef(false);
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -657,6 +659,32 @@ export default function App() {
     setCandidateName(session.displayName || session.username || "");
     setCandidateCode(session.employeeCode || "");
   }, [session]);
+
+  useEffect(() => {
+    if (!session?.employeeCode || isAdmin) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(EXAM_SELECTION_KEY) || "{}");
+      const employeeSelection = saved?.[session.employeeCode];
+      if (!employeeSelection) return;
+      if (employeeSelection.modelId) setModelId(employeeSelection.modelId);
+      if (employeeSelection.partId) setPartId(employeeSelection.partId);
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [session?.employeeCode, isAdmin]);
+
+  useEffect(() => {
+    if (!session?.employeeCode || isAdmin || !modelId || !partId) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(EXAM_SELECTION_KEY) || "{}");
+      localStorage.setItem(EXAM_SELECTION_KEY, JSON.stringify({
+        ...saved,
+        [session.employeeCode]: { modelId, partId },
+      }));
+    } catch {
+      // Ignore storage restrictions in locked-down browsers.
+    }
+  }, [session?.employeeCode, isAdmin, modelId, partId]);
 
   const applySharedData = useCallback((nextBank, nextResults, nextNews, preserveSelection = false) => {
     setBank(nextBank);
@@ -741,7 +769,7 @@ export default function App() {
 
       try {
         setSyncStatus("loading");
-        await fetchSharedData(nextSession);
+        await fetchSharedData(nextSession, examSelectionTouchedRef.current || Boolean(modelId || partId));
         try {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(RESULTS_KEY);
@@ -1984,6 +2012,7 @@ export default function App() {
   };
   const goToNextPart = () => {
     if (!nextPart) return;
+    examSelectionTouchedRef.current = true;
     setPartId(nextPart.id);
     setAnswers({});
     setSubmitted(false);
@@ -3131,7 +3160,7 @@ export default function App() {
 
           <TabsContent value="preview">
             <div className="split-grid">
-              <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>Candidate details</h3><p>Preview the exam form and track the current attempt in real time.</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>Employee name</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>Employee code</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>Progress</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div>{submitError ? <div className="alert-error">{submitError}</div> : null}{isExamLocked ? <div className="alert-error">This part was already passed on {new Date(passedAttemptForCurrentPart.submittedAt).toLocaleString()} with score {passedAttemptForCurrentPart.score}/{passedAttemptForCurrentPart.fullScore}.</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>Export result CSV</Button><Button variant="outline" onClick={reset} disabled={isExamLocked}>Start over</Button></div></CardContent></Card>
+              <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>Candidate details</h3><p>Preview the exam form and track the current attempt in real time.</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { examSelectionTouchedRef.current = true; setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => { examSelectionTouchedRef.current = true; setPartId(e.target.value); }} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>Employee name</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>Employee code</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>Progress</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div>{submitError ? <div className="alert-error">{submitError}</div> : null}{isExamLocked ? <div className="alert-error">This part was already passed on {new Date(passedAttemptForCurrentPart.submittedAt).toLocaleString()} with score {passedAttemptForCurrentPart.score}/{passedAttemptForCurrentPart.fullScore}.</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>Export result CSV</Button><Button variant="outline" onClick={reset} disabled={isExamLocked}>Start over</Button></div></CardContent></Card>
               <div className="preview-column"><Card className="exam-overview"><CardContent><div className="hero-badges"><Badge>{model.modelCode}</Badge><Badge outline>{part.partCode}</Badge></div><h2>{bank.title}</h2><div className="overview-line">{model.modelName} | {part.partName}</div><p>{part.subtitle}</p></CardContent></Card>{previewQs.map((q, i) => <Card key={q.id} className="exam-question-card"><CardContent><div className="question-meta"><span>Question {i + 1}</span><strong>{q.score} pts</strong></div><h3>{q.questionText}</h3>{q.imageUrl ? <img src={q.imageUrl} alt={`question-${i + 1}`} className="question-image" /> : null}<div className="answer-grid">{["A", "B", "C", "D"].map((key) => { const selected = answers[q.id] === key; const correct = q.correctAnswer === key; let className = "answer-choice"; if (selected) className += " is-selected"; if (submitted && correct) className += " is-correct"; if (submitted && selected && !correct) className += " is-wrong"; return <button key={key} onClick={() => !submitted && !isExamLocked && setAnswers((p) => ({ ...p, [q.id]: key }))} className={className} disabled={isExamLocked}><strong>{key}.</strong> {q.choices[key]}</button>; })}</div></CardContent></Card>)}{isExamLocked ? <Card className="exam-lock-card"><CardContent className="exam-submit-actions"><div><div className="result-label">Part already passed</div><p>Retakes are disabled after a passing result. Latest score {passedAttemptForCurrentPart.score}/{passedAttemptForCurrentPart.fullScore}</p></div><div className="button-row"><Button variant="outline" disabled>Submission locked</Button>{nextPart ? <Button onClick={goToNextPart}>Go to next part</Button> : null}</div></CardContent></Card> : <Card className="exam-submit-card"><CardContent className="exam-submit-actions"><div><div className="result-label">Ready to submit</div><p>Review every answer and submit from the section below.</p></div><div className="button-row"><Button onClick={submit}>Submit answers</Button>{submitted && nextPart ? <Button variant="outline" onClick={goToNextPart}>Go to next part</Button> : null}</div></CardContent></Card>}{submitted && part.showResultImmediately ? <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Card className={`result-banner ${result.status === "PASS" ? "is-pass" : "is-fail"}`}><CardContent className="result-banner-content"><div><div className="result-label"><Trophy size={18} /> Exam result</div><h2>{result.score} / {scoreFull}</h2><p>Correct answers {result.correct} of {part.questions.length}</p></div><div className="result-status"><span>Status</span><strong>{result.status}</strong></div></CardContent></Card></motion.div> : null}</div>
             </div>
           </TabsContent>
