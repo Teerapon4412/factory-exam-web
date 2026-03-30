@@ -2257,7 +2257,7 @@ export default function App() {
             <p>กรอกรหัสพนักงานเพียงอย่างเดียว ระบบจะจับคู่ชื่อและสิทธิ์การใช้งานจากฐานข้อมูลพนักงานให้อัตโนมัติ</p>
             <div className="login-feature-list">
               <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN จัดการข้อสอบ, Dashboard และ Import/Export ได้</span></div>
-              <div className="login-feature-item"><Eye size={18} /><span>USER เข้าทำข้อสอบและดูผลสอบได้อย่างเดียว</span></div>
+              <div className="login-feature-item"><Eye size={18} /><span>USER เห็นเฉพาะหน้า Student Preview สำหรับทำข้อสอบเท่านั้น</span></div>
             </div>
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
