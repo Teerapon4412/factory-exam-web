@@ -2121,6 +2121,27 @@ export default function App() {
 
   const exportSkillMatrixExcel = () => {
     const now = new Date().toISOString().slice(0, 10);
+    const modelGroups = [];
+    visibleSkillMatrixParts.forEach((partEntry) => {
+      const last = modelGroups[modelGroups.length - 1];
+      if (last && last.modelCode === partEntry.modelCode && last.modelName === partEntry.modelName) {
+        last.count += 1;
+        return;
+      }
+      modelGroups.push({
+        modelCode: partEntry.modelCode,
+        modelName: partEntry.modelName,
+        count: 1,
+      });
+    });
+
+    const groupedHeaders = modelGroups.map((group) => `
+      <th class="model-group-head" colspan="${group.count}">
+        <div class="model-group-code">${escapeHtml(group.modelCode)}</div>
+        <div class="model-group-name">${escapeHtml(group.modelName)}</div>
+      </th>
+    `).join("");
+
     const partHeaders = visibleSkillMatrixParts.map((partEntry) => `
       <th class="part-head">
         <div class="part-code">${escapeHtml(partEntry.modelCode)}/${escapeHtml(partEntry.partCode)}</div>
@@ -2128,7 +2149,7 @@ export default function App() {
       </th>
     `).join("");
 
-    const employeeRows = activeEmployees.map((employee) => {
+    const employeeRows = activeEmployees.map((employee, index) => {
       const partCells = visibleSkillMatrixParts.map((partEntry) => {
         const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
         const derived = skillMatrixDerivedMap.get(`${employee.employeeCode}::${partEntry.id}`);
@@ -2149,6 +2170,7 @@ export default function App() {
 
       return `
         <tr>
+          <td class="employee-index">${index + 1}</td>
           <td class="employee-name">
             <div class="employee-strong">${escapeHtml(employee.fullName)}</div>
             <div class="employee-meta">${escapeHtml(employee.department || "-")} / ${escapeHtml(employee.position || "-")}</div>
@@ -2170,16 +2192,24 @@ export default function App() {
           <meta charset="utf-8" />
           <style>
             body { font-family: Segoe UI, Tahoma, sans-serif; color: #1f2937; }
-            .title { font-size: 22px; font-weight: 700; color: #0f4c5c; margin-bottom: 6px; }
-            .subtitle { font-size: 12px; color: #475569; margin-bottom: 12px; }
+            .sheet-head { margin-bottom: 14px; border: 1px solid #94a3b8; }
+            .sheet-title { background: #155e75; color: #fff; text-align: center; font-size: 26px; font-weight: 800; letter-spacing: 0.3px; padding: 18px 12px; }
+            .sheet-meta { width: 100%; border-collapse: collapse; }
+            .sheet-meta td { border: 1px solid #cbd5e1; padding: 8px 10px; font-size: 12px; }
+            .meta-label { width: 110px; background: #f8fafc; font-weight: 700; color: #334155; }
+            .meta-value { font-weight: 700; color: #0f172a; }
             .legend { margin: 0 0 12px; font-size: 12px; }
             .legend span { display: inline-block; margin-right: 12px; padding: 4px 8px; background: #eef2ff; border-radius: 999px; }
             table { border-collapse: collapse; width: 100%; }
             th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; }
             th { background: #e2e8f0; text-align: center; }
+            .model-group-head { background: #bae6fd; }
+            .model-group-code { font-size: 13px; font-weight: 800; color: #0f172a; }
+            .model-group-name { font-size: 11px; color: #334155; margin-top: 4px; }
             .part-head { min-width: 150px; }
             .part-code { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
             .part-name { font-size: 11px; color: #334155; }
+            .employee-index { min-width: 54px; text-align: center; font-weight: 800; }
             .employee-name { min-width: 220px; }
             .employee-strong { font-weight: 700; margin-bottom: 4px; }
             .employee-meta { font-size: 11px; color: #64748b; }
@@ -2202,8 +2232,27 @@ export default function App() {
           </style>
         </head>
         <body>
-          <div class="title">Skill Matrix</div>
-          <div class="subtitle">Export วันที่ ${escapeHtml(now)} | Model filter: ${escapeHtml(skillMatrixModelFilter === "ALL" ? "ทั้งหมด" : skillMatrixModelFilter)}</div>
+          <div class="sheet-head">
+            <div class="sheet-title">Skill Matrix</div>
+            <table class="sheet-meta">
+              <tr>
+                <td class="meta-label">วันที่ Export</td>
+                <td class="meta-value">${escapeHtml(now)}</td>
+                <td class="meta-label">Model Filter</td>
+                <td class="meta-value">${escapeHtml(skillMatrixModelFilter === "ALL" ? "ทั้งหมด" : skillMatrixModelFilter)}</td>
+                <td class="meta-label">จำนวนพนักงาน</td>
+                <td class="meta-value">${escapeHtml(activeEmployees.length)}</td>
+              </tr>
+              <tr>
+                <td class="meta-label">จำนวน Part</td>
+                <td class="meta-value">${escapeHtml(visibleSkillMatrixParts.length)}</td>
+                <td class="meta-label">เกณฑ์วงกลม</td>
+                <td class="meta-value">แบ่ง 100 เป็น 4 ส่วน</td>
+                <td class="meta-label">ที่มา</td>
+                <td class="meta-value">Skill Matrix / Exam / Evaluation</td>
+              </tr>
+            </table>
+          </div>
           <div class="legend">
             <span>0-24% = 0%</span>
             <span>25-49% = 25%</span>
@@ -2214,9 +2263,13 @@ export default function App() {
           <table>
             <thead>
               <tr>
-                <th>พนักงาน</th>
-                <th>รหัส</th>
-                <th>รูป</th>
+                <th rowspan="2">ที่</th>
+                <th rowspan="2">พนักงาน</th>
+                <th rowspan="2">รหัส</th>
+                <th rowspan="2">รูป</th>
+                ${groupedHeaders}
+              </tr>
+              <tr>
                 ${partHeaders}
               </tr>
             </thead>
