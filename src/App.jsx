@@ -425,6 +425,23 @@ const downloadExcelHtml = (filename, html) => {
   URL.revokeObjectURL(url);
 };
 
+const fetchImageAsDataUrl = async (imageUrl) => {
+  if (!imageUrl) return "";
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) return "";
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result || ""));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return "";
+  }
+};
+
 function normalize(raw) {
   if (Array.isArray(raw?.models) && raw.models.length) {
     return sanitizeBank({
@@ -2119,8 +2136,11 @@ export default function App() {
     downloadCsv(`employee_results_${selectedEmployeeResultCode || "employee"}_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "status"], rows);
   };
 
-  const exportSkillMatrixExcel = () => {
+  const exportSkillMatrixExcel = async () => {
     const now = new Date().toISOString().slice(0, 10);
+    const embeddedPhotoMap = new Map(await Promise.all(
+      activeEmployees.map(async (employee) => [employee.id, await fetchImageAsDataUrl(employee.photoUrl)]),
+    ));
     const modelGroups = [];
     visibleSkillMatrixParts.forEach((partEntry) => {
       const last = modelGroups[modelGroups.length - 1];
@@ -2177,7 +2197,9 @@ export default function App() {
           </td>
           <td class="employee-code">${escapeHtml(employee.employeeCode)}</td>
           <td class="employee-photo">
-            ${employee.photoUrl ? `<img src="${escapeHtml(employee.photoUrl)}" alt="${escapeHtml(employee.fullName)}" />` : "<span>No photo</span>"}
+            ${(embeddedPhotoMap.get(employee.id) || employee.photoUrl)
+              ? `<img src="${escapeHtml(embeddedPhotoMap.get(employee.id) || employee.photoUrl)}" alt="${escapeHtml(employee.fullName)}" />`
+              : "<span>No photo</span>"}
           </td>
           ${partCells}
         </tr>
