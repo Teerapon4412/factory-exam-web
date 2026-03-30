@@ -622,8 +622,15 @@ export default function App() {
     if (lastTabSessionKeyRef.current === nextSessionKey) return;
     lastTabSessionKeyRef.current = nextSessionKey;
     setActiveTab(isAdmin ? "builder" : "preview");
-    setEntryPoint("portal");
+    setEntryPoint(isAdmin ? "portal" : "exam");
   }, [session, isAdmin]);
+
+  useEffect(() => {
+    if (!session || isAdmin) return;
+    if (entryPoint !== "exam") {
+      setEntryPoint("exam");
+    }
+  }, [session, isAdmin, entryPoint]);
 
   useEffect(() => {
     try {
