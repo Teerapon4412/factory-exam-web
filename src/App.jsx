@@ -622,15 +622,8 @@ export default function App() {
     if (lastTabSessionKeyRef.current === nextSessionKey) return;
     lastTabSessionKeyRef.current = nextSessionKey;
     setActiveTab(isAdmin ? "builder" : "preview");
-    setEntryPoint(isAdmin ? "portal" : "exam");
+    setEntryPoint("portal");
   }, [session, isAdmin]);
-
-  useEffect(() => {
-    if (!session || isAdmin) return;
-    if (entryPoint !== "exam") {
-      setEntryPoint("exam");
-    }
-  }, [session, isAdmin, entryPoint]);
 
   useEffect(() => {
     try {
@@ -2305,7 +2298,7 @@ export default function App() {
           <div className="portal-grid">
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Eye size={20} /><div><h3>เข้าทำข้อสอบ</h3><p>เปิดหน้าใช้งานข้อสอบ, ประเมิน, dashboard และเครื่องมือที่เกี่ยวข้อง</p></div></div>
+                <div className="section-heading"><Eye size={20} /><div><h3>เข้าทำข้อสอบ</h3><p>{isAdmin ? "เปิดหน้าใช้งานข้อสอบ, ประเมิน, dashboard และเครื่องมือที่เกี่ยวข้อง" : "เปิดหน้า Student Preview เพื่อทำข้อสอบและดูผลของ Part ปัจจุบัน"}</p></div></div>
                 <Button onClick={() => setEntryPoint("exam")}>ไปหน้าข้อสอบ</Button>
               </CardContent>
             </Card>
