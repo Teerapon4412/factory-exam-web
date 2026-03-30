@@ -2102,6 +2102,40 @@ export default function App() {
     downloadCsv(`employee_results_${selectedEmployeeResultCode || "employee"}_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "status"], rows);
   };
 
+  const exportSkillMatrixExcel = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = activeEmployees.flatMap((employee) => (
+      visibleSkillMatrixParts.map((partEntry) => {
+        const entry = skillMatrixEntryMap.get(`${employee.id}::${partEntry.id}`);
+        const derived = skillMatrixDerivedMap.get(`${employee.employeeCode}::${partEntry.id}`);
+        const skillPct = Number(derived?.skillPct ?? entry?.scorePct ?? 0);
+        const combinedScore = derived?.combinedScore ?? "";
+        const combinedFullScore = derived?.combinedFullScore ?? "";
+        const combinedPct = derived?.combinedPct ?? "";
+        return [
+          employee.employeeCode,
+          employee.fullName,
+          employee.department || "",
+          employee.position || "",
+          partEntry.modelCode,
+          partEntry.modelName,
+          partEntry.partCode,
+          partEntry.partName,
+          skillPct,
+          combinedScore,
+          combinedFullScore,
+          combinedPct,
+          derived ? "EXAM_EVAL_SYNC" : "MANUAL",
+        ];
+      })
+    ));
+    downloadCsv(
+      `skill_matrix_${now}.csv`,
+      ["employee_code", "employee_name", "department", "position", "model_code", "model_name", "part_code", "part_name", "skill_pct", "combined_score", "combined_full_score", "combined_pct", "source"],
+      rows,
+    );
+  };
+
   const patchEvaluationMeta = (field, value) => {
     setEvaluationForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -2464,6 +2498,10 @@ export default function App() {
                 <div className="skill-matrix-summary-chips">
                   <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} Part</span>
                   <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
+                  <Button variant="outline" onClick={exportSkillMatrixExcel}>
+                    <FileSpreadsheet size={16} />
+                    Export Excel
+                  </Button>
                 </div>
               </div>
               <div className="skill-matrix-scroll-note">เลื่อนแถบนี้เพื่อดู Part อื่น ๆ ทางขวา</div>
