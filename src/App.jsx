@@ -428,6 +428,16 @@ const downloadExcelHtml = (filename, html) => {
   URL.revokeObjectURL(url);
 };
 
+const downloadJson = (filename, payload) => {
+  const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 const deriveWeightedSkillSummary = (exam, evaluation) => {
   const examWeightedScore = exam?.fullScore
     ? Math.round((Number(exam.score || 0) / Number(exam.fullScore)) * SKILL_MATRIX_EXAM_WEIGHT)
@@ -2170,6 +2180,28 @@ export default function App() {
     downloadCsv(`employee_results_${selectedEmployeeResultCode || "employee"}_${now}.csv`, ["submitted_at", "candidate_name", "candidate_code", "model_code", "model_name", "part_code", "part_name", "score", "full_score", "status"], rows);
   };
 
+  const exportEmployeesDataset = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    downloadJson(`employees_dataset_${now}.json`, {
+      exportedAt: new Date().toISOString(),
+      totalEmployees: employees.length,
+      activeEmployees: activeEmployees.length,
+      employees: employees.map((employee) => ({
+        id: employee.id,
+        employeeCode: employee.employeeCode,
+        username: employee.username,
+        fullName: employee.fullName,
+        department: employee.department || "",
+        position: employee.position || "",
+        photoUrl: employee.photoUrl || "",
+        role: employee.role || "USER",
+        isActive: employee.isActive !== false,
+        createdAt: employee.createdAt || "",
+        updatedAt: employee.updatedAt || "",
+      })),
+    });
+  };
+
   const buildSkillMatrixExportHtml = async (now) => {
     const embeddedPhotoMap = new Map(await Promise.all(
       activeEmployees.map(async (employee) => [employee.id, await fetchImageAsDataUrl(employee.photoUrl)]),
@@ -3759,6 +3791,9 @@ export default function App() {
                         <h3>รายชื่อพนักงาน</h3>
                         <p>จำนวนทั้งหมด {employees.length} คน {employeeStatus === "loading" ? "(กำลังโหลด...)" : ""}</p>
                       </div>
+                      <Button variant="outline" onClick={exportEmployeesDataset} disabled={!employees.length}>
+                        <FileJson size={16} /> Export Employees JSON
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
