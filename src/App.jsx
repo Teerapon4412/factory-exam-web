@@ -949,6 +949,10 @@ export default function App() {
   const builderPart = useMemo(() => selectedBuilderPart || builderModel?.parts[0] || null, [builderModel, selectedBuilderPart]);
   const selectedBuilderQuestion = useMemo(() => builderPart?.questions.find((q) => q.id === builderQId) || null, [builderPart, builderQId]);
   const builderQuestion = useMemo(() => selectedBuilderQuestion || builderPart?.questions[0] || null, [builderPart, selectedBuilderQuestion]);
+  const builderHasUnsavedChanges = useMemo(
+    () => JSON.stringify(bank) !== lastSyncedBankRef.current,
+    [bank],
+  );
   const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
   const syncStatusLabel = effectiveSyncStatus === "saving"
     ? "Saving..."
@@ -2298,20 +2302,6 @@ export default function App() {
     }
   }, [bank, isBankStructurallyValid, pauseBuilderSync, queueBuilderSelection, resultHistory, session]);
 
-  useEffect(() => {
-    if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
-    if (!isBankStructurallyValid(bank)) return;
-    if (JSON.stringify(bank) === lastSyncedBankRef.current) return;
-    if (builderSaveInFlightRef.current) return;
-    if (Date.now() < builderSyncPauseUntilRef.current) return;
-
-    const timer = setTimeout(() => {
-      void saveLocal({ silent: true });
-    }, 900);
-
-    return () => clearTimeout(timer);
-  }, [activeTab, bank, dataReady, entryPoint, isAdmin, isBankStructurallyValid, saveLocal, session]);
-
   const exportCSV = () => {
     if (!submitted) return alert("กรุณาส่งคำตอบก่อนจึงจะบันทึกผลสอบได้");
     const now = new Date().toISOString();
@@ -3562,6 +3552,7 @@ export default function App() {
                       <div className="builder-v2-toolbar-actions">
                         <Badge outline>{builderPart?.questions?.length || 0} Questions</Badge>
                         <Badge outline>{builderScoreFull} คะแนนเต็ม</Badge>
+                        <Badge outline>{builderHasUnsavedChanges ? "ยังไม่บันทึก" : "บันทึกแล้ว"}</Badge>
                         <Button variant="outline" onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบ</Button>
                         <Button onClick={saveLocal} disabled={syncStatus === "saving"}>
                           <Save size={16} /> {syncStatus === "saving" ? "กำลังบันทึก..." : "บันทึก"}
