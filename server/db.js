@@ -24,16 +24,33 @@ function hasBankContent(bank) {
   return Array.isArray(bank?.models) && bank.models.some((model) => Array.isArray(model?.parts) && model.parts.some((part) => Array.isArray(part?.questions) && part.questions.length));
 }
 
+function normalizedKeyPart(value) {
+  return String(value || "").trim();
+}
+
 function modelKey(model) {
-  return String(model?.id || `${model?.modelCode || ""}::${model?.modelName || ""}`);
+  const modelCode = normalizedKeyPart(model?.modelCode);
+  if (modelCode) return `model-code:${modelCode}`;
+  const modelName = normalizedKeyPart(model?.modelName);
+  if (modelName) return `model-name:${modelName}`;
+  return `model-id:${String(model?.id || "")}`;
 }
 
 function partKey(part) {
-  return String(part?.id || `${part?.partCode || ""}::${part?.partName || ""}`);
+  const partCode = normalizedKeyPart(part?.partCode);
+  if (partCode) return `part-code:${partCode}`;
+  const partName = normalizedKeyPart(part?.partName);
+  if (partName) return `part-name:${partName}`;
+  return `part-id:${String(part?.id || "")}`;
 }
 
 function questionKey(question) {
-  return String(question?.id || `${question?.questionNo || ""}::${question?.questionText || ""}`);
+  if (Number.isFinite(Number(question?.questionNo)) && Number(question.questionNo) > 0) {
+    return `question-no:${Number(question.questionNo)}`;
+  }
+  const questionText = normalizedKeyPart(question?.questionText);
+  if (questionText) return `question-text:${questionText}`;
+  return `question-id:${String(question?.id || "")}`;
 }
 
 function countBankContent(bank) {
@@ -712,13 +729,24 @@ export async function loadState() {
   try {
     const parsed = JSON.parse(row.value);
     const protectedBank = getProtectedBank(bankFromTables, parsed.bank);
+    const safeResults = Array.isArray(parsed.results) ? parsed.results : defaultState.results;
+    const safeNews = Array.isArray(parsed.news) ? parsed.news : defaultState.news;
+    const safeState = {
+      bank: protectedBank,
+      results: safeResults,
+      news: safeNews,
+    };
     if (JSON.stringify(protectedBank) !== JSON.stringify(bankFromTables)) {
       writeBankToTables(db, protectedBank);
     }
+    if ((row.value || "") !== JSON.stringify(safeState)) {
+      db.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?")
+        .run(JSON.stringify(safeState), nowIso(), "global_state");
+    }
     return {
       bank: protectedBank,
-      results: Array.isArray(parsed.results) ? parsed.results : defaultState.results,
-      news: Array.isArray(parsed.news) ? parsed.news : defaultState.news,
+      results: safeResults,
+      news: safeNews,
     };
   } catch {
     return defaultState;
