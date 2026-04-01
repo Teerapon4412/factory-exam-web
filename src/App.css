@@ -1530,9 +1530,9 @@ select:focus {
 }
 
 .skill-matrix-table {
-  --skill-matrix-sticky-name: 280px;
-  --skill-matrix-sticky-code: 120px;
-  --skill-matrix-sticky-photo: 120px;
+  --skill-matrix-sticky-name: 200px;
+  --skill-matrix-sticky-code: 88px;
+  --skill-matrix-sticky-photo: 92px;
   width: max-content;
   border-collapse: separate;
   border-spacing: 0;
@@ -1540,7 +1540,7 @@ select:focus {
 
 .skill-matrix-table th,
 .skill-matrix-table td {
-  padding: 12px;
+  padding: 10px 8px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   text-align: center;
   vertical-align: middle;
@@ -1614,7 +1614,7 @@ select:focus {
 .skill-matrix-employee-name span,
 .skill-matrix-part-heading span {
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.8rem;
 }
 
 .skill-matrix-part-heading {
@@ -1624,11 +1624,11 @@ select:focus {
 }
 
 .skill-matrix-photo-frame {
-  width: 72px;
-  height: 90px;
+  width: 60px;
+  height: 74px;
   margin: 0 auto;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
 .skill-matrix-cell {
