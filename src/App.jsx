@@ -2025,25 +2025,34 @@ export default function App() {
   const addModel = (event) => {
     event?.preventDefault?.();
     const n = emptyModel(bank.models.length + 1, false);
-    setBank((b) => ({ ...b, models: [...b.models, n] }));
+    const nextBank = { ...bank, models: [...bank.models, n] };
+    setBank(nextBank);
     applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
     setBuilderQuestionSearch("");
+    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const removeModel = () => {
     if (bank.models.length <= 1) return alert("ต้องมีอย่างน้อย 1 Model");
     const remaining = bank.models.filter((m) => m.id !== builderModel?.id);
-    setBank((b) => ({ ...b, models: remaining }));
+    const nextBank = { ...bank, models: remaining };
+    setBank(nextBank);
     applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
+    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const addPart = (event) => {
     event?.preventDefault?.();
     if (builderModel.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(builderModel.parts.length + 1, false);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)) }));
+    const nextBank = {
+      ...bank,
+      models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)),
+    };
+    setBank(nextBank);
     applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
+    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const uploadEmployeePhoto = (file) => {
@@ -2058,8 +2067,13 @@ export default function App() {
   const removePart = () => {
     if (builderModel.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
     const remaining = builderModel.parts.filter((p) => p.id !== builderPart.id);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)) }));
+    const nextBank = {
+      ...bank,
+      models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)),
+    };
+    setBank(nextBank);
     applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
+    void saveLocal({ silent: true, bankOverride: nextBank });
   };
   const addQ = (event) => {
     event?.preventDefault?.();
@@ -2224,11 +2238,12 @@ export default function App() {
       alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
     }
   };
-  const saveLocal = useCallback(async ({ silent = false } = {}) => {
+  const saveLocal = useCallback(async ({ silent = false, bankOverride = null } = {}) => {
     try {
-      const nextBankJson = JSON.stringify(bank);
+      const bankToSave = bankOverride || bank;
+      const nextBankJson = JSON.stringify(bankToSave);
       if (nextBankJson === lastSyncedBankRef.current) return true;
-      if (!isBankStructurallyValid(bank)) {
+      if (!isBankStructurallyValid(bankToSave)) {
         if (!silent) {
           setBuilderSaveMessage({ type: "error", text: "บันทึกไม่ได้ เนื่องจากมี Model หรือ Part ที่ยังไม่มีข้อสอบอย่างน้อย 1 ข้อ" });
         }
@@ -2239,7 +2254,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
         headers: authHeaders(session, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ bank, results: resultHistory }),
+        body: JSON.stringify({ bank: bankToSave, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       if (!silent) {
