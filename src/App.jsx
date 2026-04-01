@@ -2793,6 +2793,7 @@ export default function App() {
                     style={S.input}
                   >
                     <option value={6}>6 Part</option>
+                    <option value={8}>8 Part</option>
                     <option value={10}>10 Part</option>
                     <option value={12}>12 Part</option>
                   </select>
