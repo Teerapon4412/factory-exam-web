@@ -720,6 +720,8 @@ export default function App() {
   const currentBuilderModelIdRef = useRef(null);
   const currentBuilderPartIdRef = useRef(null);
   const currentBuilderQIdRef = useRef(null);
+  const builderSyncPauseUntilRef = useRef(0);
+  const builderSaveInFlightRef = useRef(false);
 
   const isAdmin = session?.role === "ADMIN";
 
@@ -728,6 +730,10 @@ export default function App() {
     currentBuilderPartIdRef.current = builderPartId;
     currentBuilderQIdRef.current = builderQId;
   }, [builderModelId, builderPartId, builderQId]);
+
+  const pauseBuilderSync = useCallback((ms = 2500) => {
+    builderSyncPauseUntilRef.current = Date.now() + ms;
+  }, []);
 
   useEffect(() => {
     if (!session) return;
@@ -1803,6 +1809,8 @@ export default function App() {
     let ignore = false;
 
     const checkBuilderServerState = async () => {
+      if (builderSaveInFlightRef.current) return;
+      if (Date.now() < builderSyncPauseUntilRef.current) return;
       try {
         const stateRes = await fetch(`${API_BASE}/state`, {
           headers: authHeaders(session),
@@ -2251,6 +2259,8 @@ export default function App() {
         return false;
       }
       if (!silent) setBuilderSaveMessage({ type: "", text: "" });
+      builderSaveInFlightRef.current = true;
+      pauseBuilderSync();
       setSyncStatus("saving");
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
@@ -2270,6 +2280,7 @@ export default function App() {
       setBuilderServerUpdate(false);
       setPendingBuilderBank(null);
       setSyncStatus("synced");
+      pauseBuilderSync();
       return true;
     } catch (error) {
       console.error(error);
@@ -2278,13 +2289,17 @@ export default function App() {
         setBuilderSaveMessage({ type: "error", text: error?.message === "HTTP 400" ? "บันทึกไม่ได้ เนื่องจากโครงสร้างข้อสอบยังไม่ครบ" : "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
       }
       return false;
+    } finally {
+      builderSaveInFlightRef.current = false;
     }
-  }, [bank, isBankStructurallyValid, resultHistory, session]);
+  }, [bank, isBankStructurallyValid, pauseBuilderSync, resultHistory, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
     if (!isBankStructurallyValid(bank)) return;
     if (JSON.stringify(bank) === lastSyncedBankRef.current) return;
+    if (builderSaveInFlightRef.current) return;
+    if (Date.now() < builderSyncPauseUntilRef.current) return;
 
     const timer = setTimeout(() => {
       void saveLocal({ silent: true });
