@@ -627,7 +627,9 @@ export default function App() {
   const [bank, setBank] = useState(initialBank);
   const [modelId, setModelId] = useState(initialBank.models[0]?.id || null);
   const [partId, setPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
-  const [qId, setQId] = useState(null);
+  const [builderModelId, setBuilderModelId] = useState(initialBank.models[0]?.id || null);
+  const [builderPartId, setBuilderPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
+  const [builderQId, setBuilderQId] = useState(null);
   const [candidateName, setCandidateName] = useState("");
   const [candidateCode, setCandidateCode] = useState("");
   const [answers, setAnswers] = useState({});
@@ -714,17 +716,17 @@ export default function App() {
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
   const lastTabSessionKeyRef = useRef("");
   const examSelectionTouchedRef = useRef(false);
-  const currentModelIdRef = useRef(null);
-  const currentPartIdRef = useRef(null);
-  const currentQIdRef = useRef(null);
+  const currentBuilderModelIdRef = useRef(null);
+  const currentBuilderPartIdRef = useRef(null);
+  const currentBuilderQIdRef = useRef(null);
 
   const isAdmin = session?.role === "ADMIN";
 
   useEffect(() => {
-    currentModelIdRef.current = modelId;
-    currentPartIdRef.current = partId;
-    currentQIdRef.current = qId;
-  }, [modelId, partId, qId]);
+    currentBuilderModelIdRef.current = builderModelId;
+    currentBuilderPartIdRef.current = builderPartId;
+    currentBuilderQIdRef.current = builderQId;
+  }, [builderModelId, builderPartId, builderQId]);
 
   useEffect(() => {
     if (!session) return;
@@ -752,7 +754,7 @@ export default function App() {
 
   useEffect(() => {
     setBuilderSaveMessage({ type: "", text: "" });
-  }, [bank, modelId, partId]);
+  }, [bank, builderModelId, builderPartId]);
 
   useEffect(() => {
     if (!session) {
@@ -814,15 +816,15 @@ export default function App() {
       return;
     }
 
-    const activeModelId = currentModelIdRef.current;
-    const activePartId = currentPartIdRef.current;
-    const activeQId = currentQIdRef.current;
-    const selectedModel = nextBank.models.find((entry) => entry.id === activeModelId) || nextBank.models[0];
-    const selectedPart = selectedModel?.parts.find((entry) => entry.id === activePartId) || selectedModel?.parts[0];
-    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === activeQId) || selectedPart?.questions[0] || null;
-    setModelId(selectedModel?.id || null);
-    setPartId(selectedPart?.id || null);
-    setQId(selectedQuestion?.id || null);
+    const activeBuilderModelId = currentBuilderModelIdRef.current;
+    const activeBuilderPartId = currentBuilderPartIdRef.current;
+    const activeBuilderQId = currentBuilderQIdRef.current;
+    const selectedBuilderModel = nextBank.models.find((entry) => entry.id === activeBuilderModelId) || nextBank.models[0];
+    const selectedBuilderPart = selectedBuilderModel?.parts.find((entry) => entry.id === activeBuilderPartId) || selectedBuilderModel?.parts[0];
+    const selectedBuilderQuestion = selectedBuilderPart?.questions.find((entry) => entry.id === activeBuilderQId) || selectedBuilderPart?.questions[0] || null;
+    setBuilderModelId(selectedBuilderModel?.id || null);
+    setBuilderPartId(selectedBuilderPart?.id || null);
+    setBuilderQId(selectedBuilderQuestion?.id || null);
   }, [isAdmin, session?.employeeCode]);
 
   const fetchSharedData = useCallback(async (activeSession, preserveSelection = false) => {
@@ -935,8 +937,12 @@ export default function App() {
   const model = useMemo(() => selectedModel || bank.models[0] || null, [bank.models, selectedModel]);
   const selectedPart = useMemo(() => model?.parts.find((p) => p.id === partId) || null, [model, partId]);
   const part = useMemo(() => selectedPart || model?.parts[0] || null, [model, selectedPart]);
-  const selectedQuestion = useMemo(() => part?.questions.find((q) => q.id === qId) || null, [part, qId]);
-  const question = useMemo(() => selectedQuestion || part?.questions[0] || null, [part, selectedQuestion]);
+  const selectedBuilderModel = useMemo(() => bank.models.find((m) => m.id === builderModelId) || null, [bank.models, builderModelId]);
+  const builderModel = useMemo(() => selectedBuilderModel || bank.models[0] || null, [bank.models, selectedBuilderModel]);
+  const selectedBuilderPart = useMemo(() => builderModel?.parts.find((p) => p.id === builderPartId) || null, [builderModel, builderPartId]);
+  const builderPart = useMemo(() => selectedBuilderPart || builderModel?.parts[0] || null, [builderModel, selectedBuilderPart]);
+  const selectedBuilderQuestion = useMemo(() => builderPart?.questions.find((q) => q.id === builderQId) || null, [builderPart, builderQId]);
+  const builderQuestion = useMemo(() => selectedBuilderQuestion || builderPart?.questions[0] || null, [builderPart, selectedBuilderQuestion]);
   const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
   const syncStatusLabel = effectiveSyncStatus === "saving"
     ? "Saving..."
@@ -947,9 +953,9 @@ export default function App() {
         : "Server Synced";
   const filteredBuilderQuestions = useMemo(() => {
     const keyword = builderQuestionSearch.trim().toLowerCase();
-    if (!part?.questions?.length) return [];
-    if (!keyword) return part.questions;
-    return part.questions.filter((entry, index) => {
+    if (!builderPart?.questions?.length) return [];
+    if (!keyword) return builderPart.questions;
+    return builderPart.questions.filter((entry, index) => {
       const haystack = [
         `ข้อ ${index + 1}`,
         entry.questionText,
@@ -962,7 +968,7 @@ export default function App() {
         .toLowerCase();
       return haystack.includes(keyword);
     });
-  }, [part, builderQuestionSearch]);
+  }, [builderPart, builderQuestionSearch]);
 
   const queueBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
     builderPendingSelectionRef.current = {
@@ -982,33 +988,33 @@ export default function App() {
     const selectedPart = selectedModel.parts.find((entry) => entry.id === pendingSelection.partId) || selectedModel.parts[0] || null;
     const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === pendingSelection.qId) || selectedPart?.questions[0] || null;
 
-    if (modelId !== selectedModel.id) setModelId(selectedModel.id);
-    if ((selectedPart?.id || null) !== partId) setPartId(selectedPart?.id || null);
-    if ((selectedQuestion?.id || null) !== qId) setQId(selectedQuestion?.id || null);
+    if (builderModelId !== selectedModel.id) setBuilderModelId(selectedModel.id);
+    if ((selectedPart?.id || null) !== builderPartId) setBuilderPartId(selectedPart?.id || null);
+    if ((selectedQuestion?.id || null) !== builderQId) setBuilderQId(selectedQuestion?.id || null);
 
     builderPendingSelectionRef.current = null;
-  }, [bank, modelId, partId, qId]);
+  }, [bank, builderModelId, builderPartId, builderQId]);
 
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (!selectedModel && bank.models.length) {
-      setModelId(bank.models[0].id);
+    if (!selectedBuilderModel && bank.models.length) {
+      setBuilderModelId(bank.models[0].id);
       return;
     }
-    if (selectedModel && model && model.id !== modelId) {
-      setModelId(model.id);
-      setPartId(model.parts[0]?.id || null);
+    if (selectedBuilderModel && builderModel && builderModel.id !== builderModelId) {
+      setBuilderModelId(builderModel.id);
+      setBuilderPartId(builderModel.parts[0]?.id || null);
     }
-  }, [bank.models, model, modelId, selectedModel]);
+  }, [bank.models, builderModel, builderModelId, selectedBuilderModel]);
 
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (model && !selectedPart) setPartId(model.parts[0]?.id || null);
-  }, [model, partId, selectedPart]);
+    if (builderModel && !selectedBuilderPart) setBuilderPartId(builderModel.parts[0]?.id || null);
+  }, [builderModel, builderPartId, selectedBuilderPart]);
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (part && !selectedQuestion) setQId(part.questions[0]?.id || null);
-  }, [part, qId, selectedQuestion]);
+    if (builderPart && !selectedBuilderQuestion) setBuilderQId(builderPart.questions[0]?.id || null);
+  }, [builderPart, builderQId, selectedBuilderQuestion]);
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
@@ -1016,23 +1022,24 @@ export default function App() {
     setQuestionShuffleSeed((seed) => seed + 1);
   }, [modelId, partId]);
   useEffect(() => {
-    if (!qId) return;
+    if (!builderQId) return;
     const chipTimer = setTimeout(() => {
-      builderQuestionChipRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      builderQuestionChipRefs.current[builderQId]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }, 40);
     if (suppressBuilderQuestionAutoScrollRef.current) {
       suppressBuilderQuestionAutoScrollRef.current = false;
       return () => clearTimeout(chipTimer);
     }
     const timer = setTimeout(() => {
-      builderQuestionRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+      builderQuestionRefs.current[builderQId]?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
     return () => {
       clearTimeout(chipTimer);
       clearTimeout(timer);
     };
-  }, [qId]);
+  }, [builderQId]);
 
+  const builderScoreFull = full(builderPart?.questions || []);
   const scoreFull = full(part?.questions || []);
   const answered = Object.keys(answers).length;
   const progress = part?.questions.length ? Math.round((answered / part.questions.length) * 100) : 0;
@@ -1992,9 +1999,9 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, [f]: v } : m)) }));
-  const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, [f]: v } : p)) })) }));
-  const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== partId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
+  const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, [f]: v } : m)) }));
+  const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, [f]: v } : p)) })) }));
+  const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== builderPartId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
   const patchChoice = (id, key, value, sourceChoices) => patchQ(id, { choices: { ...(sourceChoices || {}), [key]: value } });
   const isBankStructurallyValid = useCallback((candidateBank) => {
     const models = Array.isArray(candidateBank?.models) ? candidateBank.models : [];
@@ -2016,18 +2023,17 @@ export default function App() {
 
   const removeModel = () => {
     if (bank.models.length <= 1) return alert("ต้องมีอย่างน้อย 1 Model");
-    const remaining = bank.models.filter((m) => m.id !== model.id);
+    const remaining = bank.models.filter((m) => m.id !== builderModel?.id);
     setBank((b) => ({ ...b, models: remaining }));
-    setModelId(remaining[0].id);
-    setPartId(remaining[0].parts[0].id);
+    queueBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
   };
 
   const addPart = (event) => {
     event?.preventDefault?.();
-    if (model.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
-    const n = emptyPart(model.parts.length + 1, false);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
-    queueBuilderSelection(modelId, n.id, n.questions[0].id);
+    if (builderModel.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
+    const n = emptyPart(builderModel.parts.length + 1, false);
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)) }));
+    queueBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
   };
 
@@ -2041,57 +2047,56 @@ export default function App() {
   };
 
   const removePart = () => {
-    if (model.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
-    const remaining = model.parts.filter((p) => p.id !== part.id);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: remaining } : m)) }));
-    setPartId(remaining[0].id);
-    setQId(remaining[0].questions[0].id);
+    if (builderModel.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
+    const remaining = builderModel.parts.filter((p) => p.id !== builderPart.id);
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)) }));
+    queueBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
   };
   const addQ = (event) => {
     event?.preventDefault?.();
-    const n = emptyQ(part.questions.length + 1);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
+    const n = emptyQ(builderPart.questions.length + 1);
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    queueBuilderSelection(modelId, partId, n.id);
+    queueBuilderSelection(builderModelId, builderPartId, n.id);
     setBuilderQuestionSearch("");
   };
 
-  const dupQ = (sourceQuestion = question) => {
+  const dupQ = (sourceQuestion = builderQuestion) => {
     if (!sourceQuestion) return;
-    const n = { ...sourceQuestion, id: uid(), questionNo: part.questions.length + 1 };
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
+    const n = { ...sourceQuestion, id: uid(), questionNo: builderPart.questions.length + 1 };
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    queueBuilderSelection(modelId, partId, n.id);
+    queueBuilderSelection(builderModelId, builderPartId, n.id);
     setBuilderQuestionSearch("");
   };
 
-  const delQ = (questionId = question?.id) => {
+  const delQ = (questionId = builderQuestion?.id) => {
     if (!questionId) return;
-    const remaining = reorder(part.questions.filter((q) => q.id !== questionId));
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: remaining } : p)) })) }));
-    setQId(remaining[0]?.id || null);
+    const remaining = reorder(builderPart.questions.filter((q) => q.id !== questionId));
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: remaining } : p)) })) }));
+    queueBuilderSelection(builderModelId, builderPartId, remaining[0]?.id || null);
   };
 
-  const moveQ = (d, questionId = question?.id) => {
+  const moveQ = (d, questionId = builderQuestion?.id) => {
     if (!questionId) return;
-    const i = part.questions.findIndex((q) => q.id === questionId);
+    const i = builderPart.questions.findIndex((q) => q.id === questionId);
     const ni = i + d;
-    if (ni < 0 || ni >= part.questions.length) return;
-    const arr = [...part.questions];
+    if (ni < 0 || ni >= builderPart.questions.length) return;
+    const arr = [...builderPart.questions];
     [arr[i], arr[ni]] = [arr[ni], arr[i]];
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder(arr) } : p)) })) }));
-    setQId(questionId);
+    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder(arr) } : p)) })) }));
+    queueBuilderSelection(builderModelId, builderPartId, questionId);
   };
 
   const jumpQuestion = (direction) => {
-    if (!part?.questions?.length || !question) return;
-    const currentIndex = part.questions.findIndex((entry) => entry.id === question.id);
+    if (!builderPart?.questions?.length || !builderQuestion) return;
+    const currentIndex = builderPart.questions.findIndex((entry) => entry.id === builderQuestion.id);
     const nextIndex = currentIndex + direction;
-    if (nextIndex < 0 || nextIndex >= part.questions.length) return;
-    setQId(part.questions[nextIndex].id);
+    if (nextIndex < 0 || nextIndex >= builderPart.questions.length) return;
+    setBuilderQId(builderPart.questions[nextIndex].id);
   };
 
-  const uploadImg = (file, questionId = question?.id) => {
+  const uploadImg = (file, questionId = builderQuestion?.id) => {
     if (!file) return;
     const r = new FileReader();
     r.onload = (e) => patchQ(questionId, { imageUrl: String(e.target?.result || "") });
@@ -3406,20 +3411,20 @@ export default function App() {
                     <div className="form-stack">
                       <Label>ชื่อระบบ</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
                       <Label>Model</Label>
-                      <select value={modelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); setModelId(e.target.value); setPartId(nextModel?.parts?.[0]?.id || null); setQId(nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
+                      <select value={builderModelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); queueBuilderSelection(e.target.value, nextModel?.parts?.[0]?.id || null, nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
                       <div className="button-row"><Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model</Button></div>
-                      <Label>Model Code</Label><Input value={model.modelCode} onChange={(e) => patchModel("modelCode", e.target.value)} />
-                      <Label>Model Name</Label><Input value={model.modelName} onChange={(e) => patchModel("modelName", e.target.value)} />
+                      <Label>Model Code</Label><Input value={builderModel?.modelCode || ""} onChange={(e) => patchModel("modelCode", e.target.value)} />
+                      <Label>Model Name</Label><Input value={builderModel?.modelName || ""} onChange={(e) => patchModel("modelName", e.target.value)} />
                       <Label>Part</Label>
-                      <select value={partId || ""} onChange={(e) => { const nextPart = model?.parts.find((p) => p.id === e.target.value); setPartId(e.target.value); setQId(nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(model?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
-                      <div className="button-row"><Button disabled={model.parts.length >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
-                      <div className="mini-note">Model นี้มี {model.parts.length} Part (สูงสุด 20)</div>
-                      <Label>Part Code</Label><Input value={part.partCode} onChange={(e) => patchPart("partCode", e.target.value)} />
-                      <Label>Part Name</Label><Input value={part.partName} onChange={(e) => patchPart("partName", e.target.value)} />
-                      <Label>คำอธิบาย</Label><Input value={part.subtitle} onChange={(e) => patchPart("subtitle", e.target.value)} />
-                      <div className="two-col"><div><Label>Pass Score</Label><Input value={`${FIXED_PASS_SCORE}/${scoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>Full Score</Label><Input type="number" value={scoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
-                      <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={part.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !part.randomizeQuestions)}>{part.randomizeQuestions ? "ON" : "OFF"}</Button></div>
-                      <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={part.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !part.showResultImmediately)}>{part.showResultImmediately ? "ON" : "OFF"}</Button></div>
+                      <select value={builderPartId || ""} onChange={(e) => { const nextPart = builderModel?.parts.find((p) => p.id === e.target.value); queueBuilderSelection(builderModelId, e.target.value, nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(builderModel?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
+                      <div className="button-row"><Button disabled={(builderModel?.parts?.length || 0) >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
+                      <div className="mini-note">Model นี้มี {builderModel?.parts?.length || 0} Part (สูงสุด 20)</div>
+                      <Label>Part Code</Label><Input value={builderPart?.partCode || ""} onChange={(e) => patchPart("partCode", e.target.value)} />
+                      <Label>Part Name</Label><Input value={builderPart?.partName || ""} onChange={(e) => patchPart("partName", e.target.value)} />
+                      <Label>คำอธิบาย</Label><Input value={builderPart?.subtitle || ""} onChange={(e) => patchPart("subtitle", e.target.value)} />
+                      <div className="two-col"><div><Label>Pass Score</Label><Input value={`${FIXED_PASS_SCORE}/${builderScoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>Full Score</Label><Input type="number" value={builderScoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
+                      <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={builderPart?.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !builderPart?.randomizeQuestions)}>{builderPart?.randomizeQuestions ? "ON" : "OFF"}</Button></div>
+                      <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={builderPart?.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !builderPart?.showResultImmediately)}>{builderPart?.showResultImmediately ? "ON" : "OFF"}</Button></div>
                       <div className="builder-question-tools">
                         <div>
                           <Label>ค้นหาข้อสอบ</Label>
@@ -3431,8 +3436,8 @@ export default function App() {
                         </div>
                         <div>
                           <Label>ไปที่ข้อ</Label>
-                          <select value={question?.id || ""} onChange={(e) => setQId(e.target.value)} style={S.input}>
-                            {(part?.questions || []).map((q, i) => (
+                          <select value={builderQuestion?.id || ""} onChange={(e) => setBuilderQId(e.target.value)} style={S.input}>
+                            {(builderPart?.questions || []).map((q, i) => (
                               <option key={q.id} value={q.id}>
                                 ข้อ {i + 1} - {(q.questionText || "ยังไม่ได้กรอกคำถาม").slice(0, 60)}
                               </option>
@@ -3441,15 +3446,15 @@ export default function App() {
                         </div>
                       </div>
                       <div className="question-list-meta">
-                        <span>ทั้งหมด {part.questions.length} ข้อ</span>
+                        <span>ทั้งหมด {builderPart?.questions?.length || 0} ข้อ</span>
                         <span>แสดง {filteredBuilderQuestions.length} ข้อ</span>
-                        <span>กำลังแก้ข้อ {question?.questionNo || "-"}</span>
+                        <span>กำลังแก้ข้อ {builderQuestion?.questionNo || "-"}</span>
                       </div>
                       <div className="question-list">
                         {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q, i) => {
-                          const actualIndex = part.questions.findIndex((entry) => entry.id === q.id);
+                          const actualIndex = builderPart.questions.findIndex((entry) => entry.id === q.id);
                           return (
-                            <button key={q.id} ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}>
+                            <button key={q.id} ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }} onClick={() => setBuilderQId(q.id)} className={`question-chip ${q.id === builderQuestion?.id ? "is-active" : ""}`}>
                               <span className="question-chip-no">ข้อ {actualIndex + 1}</span>
                               <strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong>
                               <small>{q.score} คะแนน</small>
@@ -3475,17 +3480,17 @@ export default function App() {
                         </button>
                       </div>
                     ) : null}
-                    {!part?.questions?.length ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : (
+                    {!builderPart?.questions?.length ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : (
                       <div className="editor-layout">
                         <div className="button-row">
                           <Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button>
-                          <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={part.questions.findIndex((entry) => entry.id === question?.id) <= 0}>เลื่อนไปข้อก่อนหน้า</Button>
-                          <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={part.questions.findIndex((entry) => entry.id === question?.id) >= part.questions.length - 1}>เลื่อนไปข้อถัดไป</Button>
+                          <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) <= 0}>เลื่อนไปข้อก่อนหน้า</Button>
+                          <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) >= builderPart.questions.length - 1}>เลื่อนไปข้อถัดไป</Button>
                         </div>
                         <div className="builder-question-stack">
                           {filteredBuilderQuestions.map((editingQuestion, visibleIndex) => {
-                            const actualIndex = part.questions.findIndex((entry) => entry.id === editingQuestion.id);
-                            const active = editingQuestion.id === question?.id;
+                            const actualIndex = builderPart.questions.findIndex((entry) => entry.id === editingQuestion.id);
+                            const active = editingQuestion.id === builderQuestion?.id;
                             return (
                               <div
                                 key={editingQuestion.id}
@@ -3500,14 +3505,14 @@ export default function App() {
                                     <strong>{editingQuestion.questionText || `ข้อใหม่ ${visibleIndex + 1}`}</strong>
                                   </div>
                                   <div className="button-row">
-                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); moveQ(-1, editingQuestion.id); }} disabled={actualIndex <= 0}>ขึ้น</Button>
-                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); moveQ(1, editingQuestion.id); }} disabled={actualIndex >= part.questions.length - 1}>ลง</Button>
-                                    <Button variant="outline" onClick={() => { setQId(editingQuestion.id); dupQ(editingQuestion); }}>คัดลอก</Button>
-                                    <Button variant="destructive" onClick={() => { setQId(editingQuestion.id); delQ(editingQuestion.id); }}><Trash2 size={16} /> ลบ</Button>
+                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); moveQ(-1, editingQuestion.id); }} disabled={actualIndex <= 0}>ขึ้น</Button>
+                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); moveQ(1, editingQuestion.id); }} disabled={actualIndex >= builderPart.questions.length - 1}>ลง</Button>
+                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); dupQ(editingQuestion); }}>คัดลอก</Button>
+                                    <Button variant="destructive" onClick={() => { setBuilderQId(editingQuestion.id); delQ(editingQuestion.id); }}><Trash2 size={16} /> ลบ</Button>
                                   </div>
                                 </div>
                                 <Label>คำถาม</Label>
-                                <Textarea rows={4} value={editingQuestion.questionText} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { questionText: e.target.value }); }} />
+                                <Textarea rows={4} value={editingQuestion.questionText} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { questionText: e.target.value }); }} />
                                 <div className="two-col">
                                   <div>
                                     <Label>คะแนน</Label>
@@ -3515,7 +3520,7 @@ export default function App() {
                                   </div>
                                   <div>
                                     <Label>คำตอบที่ถูก</Label>
-                                    <select value={editingQuestion.correctAnswer} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: e.target.value }); }} style={S.input}>
+                                    <select value={editingQuestion.correctAnswer} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: e.target.value }); }} style={S.input}>
                                       <option value="A">A</option>
                                       <option value="B">B</option>
                                       <option value="C">C</option>
@@ -3524,7 +3529,7 @@ export default function App() {
                                   </div>
                                 </div>
                                 <Label>ลิงก์รูปภาพ</Label>
-                                <Input value={editingQuestion.imageUrl} onChange={(e) => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { imageUrl: e.target.value }); }} />
+                                <Input value={editingQuestion.imageUrl} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { imageUrl: e.target.value }); }} />
                                 <label className="upload-button">
                                   <ImagePlus size={16} /> เลือกรูป
                                   <input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0], editingQuestion.id)} />
@@ -3539,11 +3544,11 @@ export default function App() {
                                           rows={3}
                                           value={editingQuestion.choices[key]}
                                           onChange={(e) => {
-                                            setQId(editingQuestion.id);
+                                            setBuilderQId(editingQuestion.id);
                                             patchChoice(editingQuestion.id, key, e.target.value, editingQuestion.choices);
                                           }}
                                         />
-                                        <Button variant="outline" onClick={() => { setQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: key }); }}>ตั้งเป็นคำตอบที่ถูก</Button>
+                                        <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: key }); }}>ตั้งเป็นคำตอบที่ถูก</Button>
                                       </CardContent>
                                     </Card>
                                   ))}
