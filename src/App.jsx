@@ -636,6 +636,7 @@ export default function App() {
   const [skillMatrixError, setSkillMatrixError] = useState("");
   const [skillMatrixModelFilter, setSkillMatrixModelFilter] = useState("ALL");
   const [skillMatrixSearch, setSkillMatrixSearch] = useState("");
+  const [skillMatrixPartsPerPage, setSkillMatrixPartsPerPage] = useState(6);
   const [skillMatrixPartPage, setSkillMatrixPartPage] = useState(0);
   const skillMatrixWrapRef = useRef(null);
   const skillMatrixTopScrollRef = useRef(null);
@@ -1394,18 +1395,21 @@ export default function App() {
   );
 
   const skillMatrixPartPageCount = useMemo(
-    () => Math.max(1, Math.ceil(filteredSkillMatrixParts.length / 10)),
-    [filteredSkillMatrixParts.length],
+    () => Math.max(1, Math.ceil(filteredSkillMatrixParts.length / skillMatrixPartsPerPage)),
+    [filteredSkillMatrixParts.length, skillMatrixPartsPerPage],
   );
 
   const visibleSkillMatrixParts = useMemo(
-    () => filteredSkillMatrixParts.slice(skillMatrixPartPage * 10, (skillMatrixPartPage * 10) + 10),
-    [filteredSkillMatrixParts, skillMatrixPartPage],
+    () => filteredSkillMatrixParts.slice(
+      skillMatrixPartPage * skillMatrixPartsPerPage,
+      (skillMatrixPartPage * skillMatrixPartsPerPage) + skillMatrixPartsPerPage,
+    ),
+    [filteredSkillMatrixParts, skillMatrixPartPage, skillMatrixPartsPerPage],
   );
 
   useEffect(() => {
     setSkillMatrixPartPage(0);
-  }, [skillMatrixModelFilter, skillMatrixSearch]);
+  }, [skillMatrixModelFilter, skillMatrixSearch, skillMatrixPartsPerPage]);
 
   useEffect(() => {
     if (skillMatrixPartPage > skillMatrixPartPageCount - 1) {
@@ -2780,6 +2784,18 @@ export default function App() {
                     onChange={(e) => setSkillMatrixSearch(e.target.value)}
                     placeholder="พิมพ์ชื่อหรือรหัส Part"
                   />
+                </div>
+                <div>
+                  <Label>แสดงต่อหน้า</Label>
+                  <select
+                    value={skillMatrixPartsPerPage}
+                    onChange={(e) => setSkillMatrixPartsPerPage(Number(e.target.value) || 6)}
+                    style={S.input}
+                  >
+                    <option value={6}>6 Part</option>
+                    <option value={10}>10 Part</option>
+                    <option value={12}>12 Part</option>
+                  </select>
                 </div>
                 <div className="skill-matrix-summary-chips">
                   <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} จาก {filteredSkillMatrixParts.length} Part</span>
