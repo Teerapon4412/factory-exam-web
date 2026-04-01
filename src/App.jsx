@@ -912,7 +912,7 @@ export default function App() {
 
     hydrateSession();
     return () => { ignore = true; };
-  }, [fetchSharedData, session]);
+  }, [fetchSharedData, modelId, partId, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || isAdmin || !["portal", "news"].includes(entryPoint)) return;
