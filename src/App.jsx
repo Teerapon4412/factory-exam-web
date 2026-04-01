@@ -708,6 +708,7 @@ export default function App() {
   const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
   const suppressBuilderQuestionAutoScrollRef = useRef(false);
+  const builderPendingSelectionRef = useRef(null);
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
   const lastTabSessionKeyRef = useRef("");
   const examSelectionTouchedRef = useRef(false);
@@ -983,15 +984,50 @@ export default function App() {
     });
   }, [part, builderQuestionSearch]);
 
+  const queueBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
+    builderPendingSelectionRef.current = {
+      modelId: nextModelId || null,
+      partId: nextPartId || null,
+      qId: nextQuestionId || null,
+    };
+    setModelId(nextModelId || null);
+    setPartId(nextPartId || null);
+    setQId(nextQuestionId || null);
+  }, []);
+
   useEffect(() => {
+    const pendingSelection = builderPendingSelectionRef.current;
+    if (!pendingSelection) return;
+
+    const selectedModel = bank.models.find((entry) => entry.id === pendingSelection.modelId);
+    if (!selectedModel) return;
+
+    const selectedPart = selectedModel.parts.find((entry) => entry.id === pendingSelection.partId) || selectedModel.parts[0] || null;
+    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === pendingSelection.qId) || selectedPart?.questions[0] || null;
+
+    if (modelId !== selectedModel.id) setModelId(selectedModel.id);
+    if ((selectedPart?.id || null) !== partId) setPartId(selectedPart?.id || null);
+    if ((selectedQuestion?.id || null) !== qId) setQId(selectedQuestion?.id || null);
+
+    builderPendingSelectionRef.current = null;
+  }, [bank, modelId, partId, qId]);
+
+  useEffect(() => {
+    if (builderPendingSelectionRef.current) return;
     if (model && model.id !== modelId) {
       setModelId(model.id);
       setPartId(model.parts[0]?.id || null);
     }
   }, [model, modelId]);
 
-  useEffect(() => { if (part && part.id !== partId) setPartId(part.id); }, [part, partId]);
-  useEffect(() => { if (question && question.id !== qId) setQId(question.id); }, [question, qId]);
+  useEffect(() => {
+    if (builderPendingSelectionRef.current) return;
+    if (part && part.id !== partId) setPartId(part.id);
+  }, [part, partId]);
+  useEffect(() => {
+    if (builderPendingSelectionRef.current) return;
+    if (question && question.id !== qId) setQId(question.id);
+  }, [question, qId]);
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
@@ -1792,14 +1828,16 @@ export default function App() {
   const reloadBuilderFromServer = useCallback(() => {
     if (!pendingBuilderBank) return;
     setBank(pendingBuilderBank);
-    setModelId(pendingBuilderBank.models[0]?.id || null);
-    setPartId(pendingBuilderBank.models[0]?.parts[0]?.id || null);
-    setQId(pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null);
+    queueBuilderSelection(
+      pendingBuilderBank.models[0]?.id || null,
+      pendingBuilderBank.models[0]?.parts[0]?.id || null,
+      pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null,
+    );
     lastSyncedBankRef.current = JSON.stringify(pendingBuilderBank);
     setBuilderServerUpdate(false);
     setPendingBuilderBank(null);
     setSyncStatus("synced");
-  }, [pendingBuilderBank]);
+  }, [pendingBuilderBank, queueBuilderSelection]);
 
   const resetEmployeeForm = () => {
     setEmployeeForm(emptyEmployeeForm);
@@ -1975,9 +2013,7 @@ export default function App() {
   const addModel = () => {
     const n = emptyModel(bank.models.length + 1, false);
     setBank((b) => ({ ...b, models: [...b.models, n] }));
-    setModelId(n.id);
-    setPartId(n.parts[0].id);
-    setQId(n.parts[0].questions[0].id);
+    queueBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
   };
 
   const removeModel = () => {
@@ -1992,8 +2028,7 @@ export default function App() {
     if (model.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(model.parts.length + 1, false);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
-    setPartId(n.id);
-    setQId(n.questions[0].id);
+    queueBuilderSelection(modelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
   };
 
@@ -2017,7 +2052,7 @@ export default function App() {
     const n = emptyQ(part.questions.length + 1);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    setQId(n.id);
+    queueBuilderSelection(modelId, partId, n.id);
     setBuilderQuestionSearch("");
   };
 
@@ -2026,7 +2061,7 @@ export default function App() {
     const n = { ...sourceQuestion, id: uid(), questionNo: part.questions.length + 1 };
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    setQId(n.id);
+    queueBuilderSelection(modelId, partId, n.id);
     setBuilderQuestionSearch("");
   };
 
@@ -2161,16 +2196,14 @@ export default function App() {
     setSubmitError("");
   };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
-  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0].id); setPartId(n.models[0].parts[0].id); setQId(n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
+  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); queueBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
   const importJSONFile = async (file) => {
     if (!file) return;
     try {
       const text = await file.text();
       const n = normalize(JSON.parse(text));
       setBank(n);
-      setModelId(n.models[0].id);
-      setPartId(n.models[0].parts[0].id);
-      setQId(n.models[0].parts[0].questions[0]?.id || null);
+      queueBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null);
       setImportText(JSON.stringify(n, null, 2));
       reset();
     } catch (e) {
