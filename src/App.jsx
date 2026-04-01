@@ -2042,7 +2042,6 @@ export default function App() {
     setBank(nextBank);
     applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
     setBuilderQuestionSearch("");
-    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const removeModel = () => {
@@ -2051,7 +2050,6 @@ export default function App() {
     const nextBank = { ...bank, models: remaining };
     setBank(nextBank);
     applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
-    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const addPart = (event) => {
@@ -2065,7 +2063,6 @@ export default function App() {
     setBank(nextBank);
     applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
-    void saveLocal({ silent: true, bankOverride: nextBank });
   };
 
   const uploadEmployeePhoto = (file) => {
@@ -2086,7 +2083,6 @@ export default function App() {
     };
     setBank(nextBank);
     applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
-    void saveLocal({ silent: true, bankOverride: nextBank });
   };
   const addQ = (event) => {
     event?.preventDefault?.();
