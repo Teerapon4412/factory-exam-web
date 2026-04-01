@@ -977,6 +977,16 @@ export default function App() {
     };
   }, []);
 
+  const applyBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
+    currentBuilderModelIdRef.current = nextModelId || null;
+    currentBuilderPartIdRef.current = nextPartId || null;
+    currentBuilderQIdRef.current = nextQuestionId || null;
+    setBuilderModelId(nextModelId || null);
+    setBuilderPartId(nextPartId || null);
+    setBuilderQId(nextQuestionId || null);
+    queueBuilderSelection(nextModelId, nextPartId, nextQuestionId);
+  }, [queueBuilderSelection]);
+
   useEffect(() => {
     const pendingSelection = builderPendingSelectionRef.current;
     if (!pendingSelection) return;
@@ -2016,7 +2026,7 @@ export default function App() {
     event?.preventDefault?.();
     const n = emptyModel(bank.models.length + 1, false);
     setBank((b) => ({ ...b, models: [...b.models, n] }));
-    queueBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
+    applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
     setBuilderQuestionSearch("");
   };
 
@@ -2024,7 +2034,7 @@ export default function App() {
     if (bank.models.length <= 1) return alert("ต้องมีอย่างน้อย 1 Model");
     const remaining = bank.models.filter((m) => m.id !== builderModel?.id);
     setBank((b) => ({ ...b, models: remaining }));
-    queueBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
+    applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
   };
 
   const addPart = (event) => {
@@ -2032,7 +2042,7 @@ export default function App() {
     if (builderModel.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(builderModel.parts.length + 1, false);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)) }));
-    queueBuilderSelection(builderModelId, n.id, n.questions[0].id);
+    applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
   };
 
@@ -2049,7 +2059,7 @@ export default function App() {
     if (builderModel.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
     const remaining = builderModel.parts.filter((p) => p.id !== builderPart.id);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)) }));
-    queueBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
+    applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
   };
   const addQ = (event) => {
     event?.preventDefault?.();
