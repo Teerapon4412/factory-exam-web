@@ -2271,9 +2271,13 @@ export default function App() {
       const savedState = await res.json().catch(() => null);
       const savedBank = normalize(savedState?.bank ?? bankToSave);
       const savedResults = Array.isArray(savedState?.results) ? savedState.results : resultHistory;
+      const nextSelectedModelId = currentBuilderModelIdRef.current;
+      const nextSelectedPartId = currentBuilderPartIdRef.current;
+      const nextSelectedQuestionId = currentBuilderQIdRef.current;
       if (!silent) {
         setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
       }
+      queueBuilderSelection(nextSelectedModelId, nextSelectedPartId, nextSelectedQuestionId);
       setBank(savedBank);
       setResultHistory(savedResults);
       lastSyncedBankRef.current = JSON.stringify(savedBank);
@@ -2292,7 +2296,7 @@ export default function App() {
     } finally {
       builderSaveInFlightRef.current = false;
     }
-  }, [bank, isBankStructurallyValid, pauseBuilderSync, resultHistory, session]);
+  }, [bank, isBankStructurallyValid, pauseBuilderSync, queueBuilderSelection, resultHistory, session]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
