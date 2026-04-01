@@ -812,7 +812,6 @@ export default function App() {
 
       setModelId(defaultModel?.id || null);
       setPartId(defaultPart?.id || null);
-      setQId(defaultPart?.questions?.[0]?.id || null);
       return;
     }
 
@@ -931,7 +930,7 @@ export default function App() {
       ignore = true;
       clearInterval(timer);
     };
-  }, [dataReady, entryPoint, fetchSharedData, isAdmin, modelId, partId, qId, session]);
+  }, [dataReady, entryPoint, fetchSharedData, isAdmin, modelId, partId, session]);
 
   const selectedModel = useMemo(() => bank.models.find((m) => m.id === modelId) || null, [bank.models, modelId]);
   const model = useMemo(() => selectedModel || bank.models[0] || null, [bank.models, selectedModel]);
@@ -1785,7 +1784,7 @@ export default function App() {
       ignore = true;
       clearInterval(timer);
     };
-  }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, qId, fetchSharedData]);
+  }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, fetchSharedData]);
 
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
