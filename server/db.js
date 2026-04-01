@@ -671,7 +671,6 @@ function openDb() {
       adminSeed.fullName,
       adminSeed.department,
       adminSeed.position,
-      "",
       adminSeed.role,
       1,
       timestamp,
