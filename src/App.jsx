@@ -270,24 +270,25 @@ const sanitizeBank = (rawBank) => {
     .map((model, modelIndex) => {
       const parts = (model.parts || [])
         .map((part, partIndex) => {
+          const rawQuestions = Array.isArray(part.questions) && part.questions.length
+            ? part.questions
+            : [emptyQ(1)];
+          const contentQuestions = rawQuestions.filter(hasQuestionContent);
+          const sourceQuestions = contentQuestions.length ? contentQuestions : [rawQuestions[0] || emptyQ(1)];
           const questions = reorder(
-            (part.questions || [])
-              .filter(hasQuestionContent)
-              .map((q, qIndex) => ({
-                ...emptyQ(qIndex + 1),
-                ...q,
-                id: q.id || uid(),
-                score: FIXED_QUESTION_SCORE,
-                choices: {
-                  A: q.choices?.A || "",
-                  B: q.choices?.B || "",
-                  C: q.choices?.C || "",
-                  D: q.choices?.D || "",
-                },
-              })),
+            sourceQuestions.map((q, qIndex) => ({
+              ...emptyQ(qIndex + 1),
+              ...q,
+              id: q.id || uid(),
+              score: FIXED_QUESTION_SCORE,
+              choices: {
+                A: q.choices?.A || "",
+                B: q.choices?.B || "",
+                C: q.choices?.C || "",
+                D: q.choices?.D || "",
+              },
+            })),
           );
-
-          if (!questions.length) return null;
 
           return {
             ...emptyPart(partIndex + 1),
@@ -304,13 +305,13 @@ const sanitizeBank = (rawBank) => {
         })
         .filter(Boolean);
 
-      if (!parts.length) return null;
+      const safeParts = parts.length ? parts : [emptyPart(1)];
 
       return {
         id: model.id || uid(),
         modelCode: model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`,
         modelName: model.modelName || `Model ${modelIndex + 1}`,
-        parts,
+        parts: safeParts,
       };
     })
     .filter(Boolean);
