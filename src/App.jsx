@@ -3456,115 +3456,231 @@ export default function App() {
 
           {isAdmin ? (
             <TabsContent value="builder">
-              <div className="split-grid">
-                <Card>
-                  <CardHeader><div className="section-heading"><BookOpen size={18} /><div><h3>ตั้งค่า Model / Part</h3><p>กำหนดโครงสร้างข้อสอบและเงื่อนไขของแต่ละ Part</p></div></div></CardHeader>
+              <div className="builder-v2-layout">
+                <Card className="builder-v2-sidebar">
+                  <CardHeader>
+                    <div className="section-heading">
+                      <BookOpen size={18} />
+                      <div>
+                        <h3>Admin Builder v2</h3>
+                        <p>จัดการ Model, Part และข้อสอบจาก state ชุดเดียวที่อ่านง่ายกว่าเดิม</p>
+                      </div>
+                    </div>
+                  </CardHeader>
                   <CardContent>
                     <div className="form-stack">
-                      <Label>ชื่อระบบ</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
-                      <Label>Model</Label>
-                      <select value={builderModelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); applyBuilderSelection(e.target.value, nextModel?.parts?.[0]?.id || null, nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
-                      <div className="button-row"><Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model</Button></div>
-                      <Label>Model Code</Label><Input value={builderModel?.modelCode || ""} onChange={(e) => patchModel("modelCode", e.target.value)} />
-                      <Label>Model Name</Label><Input value={builderModel?.modelName || ""} onChange={(e) => patchModel("modelName", e.target.value)} />
-                      <Label>Part</Label>
-                      <select value={builderPartId || ""} onChange={(e) => { const nextPart = builderModel?.parts.find((p) => p.id === e.target.value); applyBuilderSelection(builderModelId, e.target.value, nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(builderModel?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
-                      <div className="button-row"><Button disabled={(builderModel?.parts?.length || 0) >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
-                      <div className="mini-note">Model นี้มี {builderModel?.parts?.length || 0} Part (สูงสุด 20)</div>
-                      <Label>Part Code</Label><Input value={builderPart?.partCode || ""} onChange={(e) => patchPart("partCode", e.target.value)} />
-                      <Label>Part Name</Label><Input value={builderPart?.partName || ""} onChange={(e) => patchPart("partName", e.target.value)} />
-                      <Label>คำอธิบาย</Label><Input value={builderPart?.subtitle || ""} onChange={(e) => patchPart("subtitle", e.target.value)} />
-                      <div className="two-col"><div><Label>Pass Score</Label><Input value={`${FIXED_PASS_SCORE}/${builderScoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div><div><Label>Full Score</Label><Input type="number" value={builderScoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} /></div></div>
-                      <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={builderPart?.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !builderPart?.randomizeQuestions)}>{builderPart?.randomizeQuestions ? "ON" : "OFF"}</Button></div>
-                      <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={builderPart?.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !builderPart?.showResultImmediately)}>{builderPart?.showResultImmediately ? "ON" : "OFF"}</Button></div>
-                      <div className="builder-question-tools">
+                      <Label>ชื่อระบบ</Label>
+                      <Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
+
+                      <div className="builder-v2-section-head">
                         <div>
-                          <Label>ค้นหาข้อสอบ</Label>
-                          <Input
-                            value={builderQuestionSearch}
-                            onChange={(e) => setBuilderQuestionSearch(e.target.value)}
-                            placeholder="พิมพ์เลขข้อหรือคำบางส่วนของคำถาม"
-                          />
+                          <div className="mini-note">Models</div>
+                          <strong>{bank.models.length} รายการ</strong>
                         </div>
+                        <Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button>
+                      </div>
+                      <div className="builder-v2-list">
+                        {bank.models.map((entry) => (
+                          <button
+                            key={entry.id}
+                            type="button"
+                            className={`builder-v2-list-item ${entry.id === builderModelId ? "is-active" : ""}`.trim()}
+                            onClick={() => applyBuilderSelection(entry.id, entry.parts?.[0]?.id || null, entry.parts?.[0]?.questions?.[0]?.id || null)}
+                          >
+                            <strong>{entry.modelCode}</strong>
+                            <span>{entry.modelName}</span>
+                            <small>{entry.parts?.length || 0} Part</small>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="button-row">
+                        <Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model ที่เลือก</Button>
+                      </div>
+
+                      <Label>Model Code</Label>
+                      <Input value={builderModel?.modelCode || ""} onChange={(e) => patchModel("modelCode", e.target.value)} />
+                      <Label>Model Name</Label>
+                      <Input value={builderModel?.modelName || ""} onChange={(e) => patchModel("modelName", e.target.value)} />
+
+                      <div className="builder-v2-section-head">
                         <div>
-                          <Label>ไปที่ข้อ</Label>
-                          <select value={builderQuestion?.id || ""} onChange={(e) => setBuilderQId(e.target.value)} style={S.input}>
-                            {(builderPart?.questions || []).map((q, i) => (
-                              <option key={q.id} value={q.id}>
-                                ข้อ {i + 1} - {(q.questionText || "ยังไม่ได้กรอกคำถาม").slice(0, 60)}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="mini-note">Parts</div>
+                          <strong>{builderModel?.parts?.length || 0} / 20</strong>
                         </div>
+                        <Button disabled={(builderModel?.parts?.length || 0) >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button>
                       </div>
-                      <div className="question-list-meta">
-                        <span>ทั้งหมด {builderPart?.questions?.length || 0} ข้อ</span>
-                        <span>แสดง {filteredBuilderQuestions.length} ข้อ</span>
-                        <span>กำลังแก้ข้อ {builderQuestion?.questionNo || "-"}</span>
+                      <div className="builder-v2-list">
+                        {(builderModel?.parts || []).map((entry) => (
+                          <button
+                            key={entry.id}
+                            type="button"
+                            className={`builder-v2-list-item ${entry.id === builderPartId ? "is-active" : ""}`.trim()}
+                            onClick={() => applyBuilderSelection(builderModelId, entry.id, entry.questions?.[0]?.id || null)}
+                          >
+                            <strong>{entry.partCode}</strong>
+                            <span>{entry.partName}</span>
+                            <small>{entry.questions?.length || 0} ข้อ</small>
+                          </button>
+                        ))}
                       </div>
-                      <div className="question-list">
-                        {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q, i) => {
-                          const actualIndex = builderPart.questions.findIndex((entry) => entry.id === q.id);
-                          return (
-                            <button key={q.id} ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }} onClick={() => setBuilderQId(q.id)} className={`question-chip ${q.id === builderQuestion?.id ? "is-active" : ""}`}>
-                              <span className="question-chip-no">ข้อ {actualIndex + 1}</span>
-                              <strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong>
-                              <small>{q.score} คะแนน</small>
-                            </button>
-                          );
-                        }) : <div className="empty-state">ไม่พบข้อสอบตามคำค้นหา</div>}
+
+                      <div className="button-row">
+                        <Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part ที่เลือก</Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader><div className="section-heading"><ClipboardCheck size={18} /><div><h3>แก้ไขข้อสอบ</h3><p>ปรับคำถาม ตัวเลือก รูปประกอบ และคะแนนในจุดเดียว</p></div></div></CardHeader>
-                  <CardContent>
-                    {builderServerUpdate ? (
-                      <div className="alert-error" style={{ marginBottom: 16 }}>
-                        New exam data is available on the server from another device. Click {" "}
-                        <button
-                          type="button"
-                          onClick={reloadBuilderFromServer}
-                          style={{ background: "none", border: "none", color: "inherit", textDecoration: "underline", cursor: "pointer", fontWeight: 700, padding: 0 }}
-                        >
-                          Load latest data
-                        </button>
+
+                <div className="builder-v2-main">
+                  <Card>
+                    <CardContent className="builder-v2-toolbar">
+                      <div className="builder-v2-toolbar-copy">
+                        <p className="section-kicker">Builder Workspace</p>
+                        <h2>{builderModel?.modelCode || "-"} / {builderPart?.partCode || "-"}</h2>
+                        <p>{builderPart?.partName || "เลือก Part เพื่อเริ่มแก้ไขข้อสอบ"}</p>
                       </div>
-                    ) : null}
-                    {!builderPart?.questions?.length ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : (
-                      <div className="editor-layout">
-                        <div className="button-row">
-                          <Button onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบใหม่</Button>
-                          <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) <= 0}>เลื่อนไปข้อก่อนหน้า</Button>
-                          <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) >= builderPart.questions.length - 1}>เลื่อนไปข้อถัดไป</Button>
+                      <div className="builder-v2-toolbar-actions">
+                        <Badge outline>{builderPart?.questions?.length || 0} Questions</Badge>
+                        <Badge outline>{builderScoreFull} คะแนนเต็ม</Badge>
+                        <Button variant="outline" onClick={addQ}><Plus size={16} /> เพิ่มข้อสอบ</Button>
+                        <Button onClick={saveLocal} disabled={syncStatus === "saving"}>
+                          <Save size={16} /> {syncStatus === "saving" ? "กำลังบันทึก..." : "บันทึก"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {builderServerUpdate ? (
+                    <div className="alert-error">
+                      พบข้อมูลข้อสอบเวอร์ชันใหม่บน Server จากการแก้ไขที่อื่น
+                      {" "}
+                      <button
+                        type="button"
+                        onClick={reloadBuilderFromServer}
+                        style={{ background: "none", border: "none", color: "inherit", textDecoration: "underline", cursor: "pointer", fontWeight: 700, padding: 0 }}
+                      >
+                        โหลดข้อมูลล่าสุด
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {builderSaveMessage.text ? (
+                    <div className={builderSaveMessage.type === "error" ? "alert-error" : "alert-success"}>
+                      {builderSaveMessage.text}
+                    </div>
+                  ) : null}
+
+                  <div className="builder-v2-content">
+                    <Card className="builder-v2-part-card">
+                      <CardHeader>
+                        <div className="section-heading">
+                          <Settings2 size={18} />
+                          <div>
+                            <h3>Part Settings</h3>
+                            <p>แก้ไขรหัส, ชื่อ, คำอธิบาย และเงื่อนไขของ Part ที่เลือก</p>
+                          </div>
                         </div>
-                        <div className="builder-question-stack">
-                          {filteredBuilderQuestions.map((editingQuestion, visibleIndex) => {
-                            const actualIndex = builderPart.questions.findIndex((entry) => entry.id === editingQuestion.id);
-                            const active = editingQuestion.id === builderQuestion?.id;
-                            return (
-                              <div
-                                key={editingQuestion.id}
-                                ref={(node) => {
-                                  if (node) builderQuestionRefs.current[editingQuestion.id] = node;
-                                }}
-                                className={`builder-question-panel ${active ? "is-active" : ""}`}
-                              >
+                      </CardHeader>
+                      <CardContent>
+                        <div className="form-stack">
+                          <Label>Part Code</Label>
+                          <Input value={builderPart?.partCode || ""} onChange={(e) => patchPart("partCode", e.target.value)} />
+                          <Label>Part Name</Label>
+                          <Input value={builderPart?.partName || ""} onChange={(e) => patchPart("partName", e.target.value)} />
+                          <Label>คำอธิบาย</Label>
+                          <Input value={builderPart?.subtitle || ""} onChange={(e) => patchPart("subtitle", e.target.value)} />
+                          <div className="two-col">
+                            <div>
+                              <Label>Pass Score</Label>
+                              <Input value={`${FIXED_PASS_SCORE}/${builderScoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
+                            </div>
+                            <div>
+                              <Label>Full Score</Label>
+                              <Input type="number" value={builderScoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
+                            </div>
+                          </div>
+                          <div className="toggle-row"><span>สุ่มลำดับข้อสอบ</span><Button variant={builderPart?.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !builderPart?.randomizeQuestions)}>{builderPart?.randomizeQuestions ? "ON" : "OFF"}</Button></div>
+                          <div className="toggle-row"><span>แสดงผลทันทีหลังส่ง</span><Button variant={builderPart?.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !builderPart?.showResultImmediately)}>{builderPart?.showResultImmediately ? "ON" : "OFF"}</Button></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="builder-v2-question-card">
+                      <CardHeader>
+                        <div className="section-heading">
+                          <ClipboardCheck size={18} />
+                          <div>
+                            <h3>Question Editor</h3>
+                            <p>เลือกข้อเดียวแล้วแก้จากจุดเดียว ลดการสลับ state ที่ไม่จำเป็น</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {!builderPart?.questions?.length ? <div className="empty-state">ยังไม่มีข้อสอบ</div> : (
+                          <div className="builder-v2-question-layout">
+                            <div className="builder-v2-question-nav">
+                              <div className="builder-question-tools">
+                                <div>
+                                  <Label>ค้นหาข้อสอบ</Label>
+                                  <Input
+                                    value={builderQuestionSearch}
+                                    onChange={(e) => setBuilderQuestionSearch(e.target.value)}
+                                    placeholder="พิมพ์เลขข้อหรือคำบางส่วนของคำถาม"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>ไปที่ข้อ</Label>
+                                  <select value={builderQuestion?.id || ""} onChange={(e) => setBuilderQId(e.target.value)} style={S.input}>
+                                    {(builderPart?.questions || []).map((q, i) => (
+                                      <option key={q.id} value={q.id}>
+                                        ข้อ {i + 1} - {(q.questionText || "ยังไม่ได้กรอกคำถาม").slice(0, 60)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="question-list-meta">
+                                <span>ทั้งหมด {builderPart?.questions?.length || 0} ข้อ</span>
+                                <span>แสดง {filteredBuilderQuestions.length} ข้อ</span>
+                                <span>กำลังแก้ข้อ {builderQuestion?.questionNo || "-"}</span>
+                              </div>
+                              <div className="question-list">
+                                {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q) => {
+                                  const actualIndex = builderPart.questions.findIndex((entry) => entry.id === q.id);
+                                  return (
+                                    <button
+                                      key={q.id}
+                                      type="button"
+                                      ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }}
+                                      onClick={() => setBuilderQId(q.id)}
+                                      className={`question-chip ${q.id === builderQuestion?.id ? "is-active" : ""}`}
+                                    >
+                                      <span className="question-chip-no">ข้อ {actualIndex + 1}</span>
+                                      <strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong>
+                                      <small>{q.score} คะแนน</small>
+                                    </button>
+                                  );
+                                }) : <div className="empty-state">ไม่พบข้อสอบตามคำค้นหา</div>}
+                              </div>
+                            </div>
+
+                            <div className="builder-v2-question-editor">
+                              <div className="builder-question-panel is-active">
                                 <div className="builder-question-panel-header">
                                   <div>
-                                    <div className="question-chip-no">ข้อ {actualIndex + 1}</div>
-                                    <strong>{editingQuestion.questionText || `ข้อใหม่ ${visibleIndex + 1}`}</strong>
+                                    <div className="question-chip-no">ข้อ {builderQuestion?.questionNo || "-"}</div>
+                                    <strong>{builderQuestion?.questionText || "ข้อใหม่"}</strong>
                                   </div>
                                   <div className="button-row">
-                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); moveQ(-1, editingQuestion.id); }} disabled={actualIndex <= 0}>ขึ้น</Button>
-                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); moveQ(1, editingQuestion.id); }} disabled={actualIndex >= builderPart.questions.length - 1}>ลง</Button>
-                                    <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); dupQ(editingQuestion); }}>คัดลอก</Button>
-                                    <Button variant="destructive" onClick={() => { setBuilderQId(editingQuestion.id); delQ(editingQuestion.id); }}><Trash2 size={16} /> ลบ</Button>
+                                    <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) <= 0}>ขึ้น</Button>
+                                    <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) >= builderPart.questions.length - 1}>ลง</Button>
+                                    <Button variant="outline" onClick={() => dupQ(builderQuestion)}>คัดลอก</Button>
+                                    <Button variant="destructive" onClick={() => delQ(builderQuestion?.id)}><Trash2 size={16} /> ลบ</Button>
                                   </div>
                                 </div>
                                 <Label>คำถาม</Label>
-                                <Textarea rows={4} value={editingQuestion.questionText} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { questionText: e.target.value }); }} />
+                                <Textarea rows={4} value={builderQuestion?.questionText || ""} onChange={(e) => patchQ(builderQuestion.id, { questionText: e.target.value })} />
                                 <div className="two-col">
                                   <div>
                                     <Label>คะแนน</Label>
@@ -3572,7 +3688,7 @@ export default function App() {
                                   </div>
                                   <div>
                                     <Label>คำตอบที่ถูก</Label>
-                                    <select value={editingQuestion.correctAnswer} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: e.target.value }); }} style={S.input}>
+                                    <select value={builderQuestion?.correctAnswer || "A"} onChange={(e) => patchQ(builderQuestion.id, { correctAnswer: e.target.value })} style={S.input}>
                                       <option value="A">A</option>
                                       <option value="B">B</option>
                                       <option value="C">C</option>
@@ -3581,12 +3697,12 @@ export default function App() {
                                   </div>
                                 </div>
                                 <Label>ลิงก์รูปภาพ</Label>
-                                <Input value={editingQuestion.imageUrl} onChange={(e) => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { imageUrl: e.target.value }); }} />
+                                <Input value={builderQuestion?.imageUrl || ""} onChange={(e) => patchQ(builderQuestion.id, { imageUrl: e.target.value })} />
                                 <label className="upload-button">
                                   <ImagePlus size={16} /> เลือกรูป
-                                  <input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0], editingQuestion.id)} />
+                                  <input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0], builderQuestion.id)} />
                                 </label>
-                                {editingQuestion.imageUrl ? <img src={editingQuestion.imageUrl} alt="question" className="question-image" /> : null}
+                                {builderQuestion?.imageUrl ? <img src={builderQuestion.imageUrl} alt="question" className="question-image" /> : null}
                                 <div className="choice-grid">
                                   {["A", "B", "C", "D"].map((key) => (
                                     <Card key={key} className="choice-card">
@@ -3594,44 +3710,22 @@ export default function App() {
                                         <Label>ตัวเลือก {key}</Label>
                                         <Textarea
                                           rows={3}
-                                          value={editingQuestion.choices[key]}
-                                          onChange={(e) => {
-                                            setBuilderQId(editingQuestion.id);
-                                            patchChoice(editingQuestion.id, key, e.target.value, editingQuestion.choices);
-                                          }}
+                                          value={builderQuestion?.choices?.[key] || ""}
+                                          onChange={(e) => patchChoice(builderQuestion.id, key, e.target.value, builderQuestion.choices)}
                                         />
-                                        <Button variant="outline" onClick={() => { setBuilderQId(editingQuestion.id); patchQ(editingQuestion.id, { correctAnswer: key }); }}>ตั้งเป็นคำตอบที่ถูก</Button>
+                                        <Button variant="outline" onClick={() => patchQ(builderQuestion.id, { correctAnswer: key })}>ตั้งเป็นคำตอบที่ถูก</Button>
                                       </CardContent>
                                     </Card>
                                   ))}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                        <div className="builder-save-footer">
-                          <div>
-                            <div className="result-label">
-                              <Save size={16} /> ยืนยันการบันทึกข้อมูล
                             </div>
-                            <p className="mini-note">กดปุ่มนี้หลังแก้ไขข้อสอบข้อสุดท้าย เพื่อบันทึกคลังข้อสอบลง Server ทันที</p>
-                            {builderSaveMessage.text ? (
-                              <div className={builderSaveMessage.type === "error" ? "alert-error" : "alert-success"} style={{ marginTop: 10 }}>
-                                {builderSaveMessage.text}
-                              </div>
-                            ) : null}
                           </div>
-                          <Button
-                            onClick={saveLocal}
-                            disabled={syncStatus === "saving"}
-                          >
-                            <Save size={16} /> {syncStatus === "saving" ? "กำลังบันทึก..." : "บันทึกข้อมูลลง Server"}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           ) : null}
