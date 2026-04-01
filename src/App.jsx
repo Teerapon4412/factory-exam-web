@@ -635,6 +635,8 @@ export default function App() {
   const [skillMatrixStatus, setSkillMatrixStatus] = useState("idle");
   const [skillMatrixError, setSkillMatrixError] = useState("");
   const [skillMatrixModelFilter, setSkillMatrixModelFilter] = useState("ALL");
+  const [skillMatrixSearch, setSkillMatrixSearch] = useState("");
+  const [skillMatrixPartPage, setSkillMatrixPartPage] = useState(0);
   const skillMatrixWrapRef = useRef(null);
   const skillMatrixTopScrollRef = useRef(null);
   const skillMatrixScrollSyncingRef = useRef(false);
@@ -1372,14 +1374,44 @@ export default function App() {
     [bank.models],
   );
 
-  const visibleSkillMatrixParts = useMemo(
+  const filteredSkillMatrixParts = useMemo(
     () => (
-      skillMatrixModelFilter === "ALL"
+      (skillMatrixModelFilter === "ALL"
         ? skillMatrixParts
-        : skillMatrixParts.filter((entry) => entry.modelCode === skillMatrixModelFilter)
+        : skillMatrixParts.filter((entry) => entry.modelCode === skillMatrixModelFilter))
+        .filter((entry) => {
+          const keyword = skillMatrixSearch.trim().toLowerCase();
+          if (!keyword) return true;
+          return [
+            entry.modelCode,
+            entry.modelName,
+            entry.partCode,
+            entry.partName,
+          ].some((value) => String(value || "").toLowerCase().includes(keyword));
+        })
     ),
-    [skillMatrixModelFilter, skillMatrixParts],
+    [skillMatrixModelFilter, skillMatrixParts, skillMatrixSearch],
   );
+
+  const skillMatrixPartPageCount = useMemo(
+    () => Math.max(1, Math.ceil(filteredSkillMatrixParts.length / 10)),
+    [filteredSkillMatrixParts.length],
+  );
+
+  const visibleSkillMatrixParts = useMemo(
+    () => filteredSkillMatrixParts.slice(skillMatrixPartPage * 10, (skillMatrixPartPage * 10) + 10),
+    [filteredSkillMatrixParts, skillMatrixPartPage],
+  );
+
+  useEffect(() => {
+    setSkillMatrixPartPage(0);
+  }, [skillMatrixModelFilter, skillMatrixSearch]);
+
+  useEffect(() => {
+    if (skillMatrixPartPage > skillMatrixPartPageCount - 1) {
+      setSkillMatrixPartPage(Math.max(0, skillMatrixPartPageCount - 1));
+    }
+  }, [skillMatrixPartPage, skillMatrixPartPageCount]);
 
   const skillMatrixEntryMap = useMemo(() => {
     const map = new Map();
@@ -2741,9 +2773,25 @@ export default function App() {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <Label>ค้นหา Part</Label>
+                  <Input
+                    value={skillMatrixSearch}
+                    onChange={(e) => setSkillMatrixSearch(e.target.value)}
+                    placeholder="พิมพ์ชื่อหรือรหัส Part"
+                  />
+                </div>
                 <div className="skill-matrix-summary-chips">
-                  <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} Part</span>
+                  <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} จาก {filteredSkillMatrixParts.length} Part</span>
                   <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
+                  <span className="skill-matrix-summary-chip">หน้า {skillMatrixPartPage + 1} / {skillMatrixPartPageCount}</span>
+                  <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.max(0, prev - 1))} disabled={skillMatrixPartPage === 0}>
+                    <ArrowLeft size={16} />
+                    ก่อนหน้า
+                  </Button>
+                  <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.min(skillMatrixPartPageCount - 1, prev + 1))} disabled={skillMatrixPartPage >= skillMatrixPartPageCount - 1}>
+                    ถัดไป
+                  </Button>
                   <Button variant="outline" onClick={exportSkillMatrixPdf}>
                     <FileSpreadsheet size={16} />
                     Export PDF
