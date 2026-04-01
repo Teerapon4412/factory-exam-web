@@ -249,7 +249,7 @@ const emptyModel = (i = 1, starter = false) => ({
   id: uid(),
   modelCode: `RG${String(i).padStart(2, "0")}`,
   modelName: `Model ${i}`,
-  parts: Array.from({ length: 10 }, (_, idx) => emptyPart(idx + 1, starter && idx === 0)),
+  parts: [emptyPart(1, starter)],
 });
 
 const emptyStarterBank = () => ({ title: "Factory Online Exam", models: [emptyModel(1, true)] });
@@ -931,9 +931,12 @@ export default function App() {
     };
   }, [dataReady, entryPoint, fetchSharedData, isAdmin, modelId, partId, qId, session]);
 
-  const model = useMemo(() => bank.models.find((m) => m.id === modelId) || bank.models[0], [bank.models, modelId]);
-  const part = useMemo(() => model?.parts.find((p) => p.id === partId) || model?.parts[0], [model, partId]);
-  const question = useMemo(() => part?.questions.find((q) => q.id === qId) || part?.questions[0] || null, [part, qId]);
+  const selectedModel = useMemo(() => bank.models.find((m) => m.id === modelId) || null, [bank.models, modelId]);
+  const model = useMemo(() => selectedModel || bank.models[0] || null, [bank.models, selectedModel]);
+  const selectedPart = useMemo(() => model?.parts.find((p) => p.id === partId) || null, [model, partId]);
+  const part = useMemo(() => selectedPart || model?.parts[0] || null, [model, selectedPart]);
+  const selectedQuestion = useMemo(() => part?.questions.find((q) => q.id === qId) || null, [part, qId]);
+  const question = useMemo(() => selectedQuestion || part?.questions[0] || null, [part, selectedQuestion]);
   const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
   const syncStatusLabel = effectiveSyncStatus === "saving"
     ? "Saving..."
@@ -991,20 +994,24 @@ export default function App() {
 
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (model && model.id !== modelId) {
+    if (!selectedModel && bank.models.length) {
+      setModelId(bank.models[0].id);
+      return;
+    }
+    if (selectedModel && model && model.id !== modelId) {
       setModelId(model.id);
       setPartId(model.parts[0]?.id || null);
     }
-  }, [model, modelId]);
+  }, [bank.models, model, modelId, selectedModel]);
 
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (part && part.id !== partId) setPartId(part.id);
-  }, [part, partId]);
+    if (model && !selectedPart) setPartId(model.parts[0]?.id || null);
+  }, [model, partId, selectedPart]);
   useEffect(() => {
     if (builderPendingSelectionRef.current) return;
-    if (question && question.id !== qId) setQId(question.id);
-  }, [question, qId]);
+    if (part && !selectedQuestion) setQId(part.questions[0]?.id || null);
+  }, [part, qId, selectedQuestion]);
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
@@ -3402,12 +3409,12 @@ export default function App() {
                     <div className="form-stack">
                       <Label>ชื่อระบบ</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
                       <Label>Model</Label>
-                      <select value={model.id} onChange={(e) => { setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
+                      <select value={modelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); setModelId(e.target.value); setPartId(nextModel?.parts?.[0]?.id || null); setQId(nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
                       <div className="button-row"><Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model</Button></div>
                       <Label>Model Code</Label><Input value={model.modelCode} onChange={(e) => patchModel("modelCode", e.target.value)} />
                       <Label>Model Name</Label><Input value={model.modelName} onChange={(e) => patchModel("modelName", e.target.value)} />
                       <Label>Part</Label>
-                      <select value={part.id} onChange={(e) => setPartId(e.target.value)} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
+                      <select value={partId || ""} onChange={(e) => { const nextPart = model?.parts.find((p) => p.id === e.target.value); setPartId(e.target.value); setQId(nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(model?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
                       <div className="button-row"><Button disabled={model.parts.length >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
                       <div className="mini-note">Model นี้มี {model.parts.length} Part (สูงสุด 20)</div>
                       <Label>Part Code</Label><Input value={part.partCode} onChange={(e) => patchPart("partCode", e.target.value)} />
