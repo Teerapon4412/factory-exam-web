@@ -2224,13 +2224,17 @@ export default function App() {
       alert(`เปิดไฟล์ไม่สำเร็จ: ${e.message}`);
     }
   };
-  const saveLocal = async () => {
+  const saveLocal = useCallback(async ({ silent = false } = {}) => {
     try {
+      const nextBankJson = JSON.stringify(bank);
+      if (nextBankJson === lastSyncedBankRef.current) return true;
       if (!isBankStructurallyValid(bank)) {
-        setBuilderSaveMessage({ type: "error", text: "บันทึกไม่ได้ เนื่องจากมี Model หรือ Part ที่ยังไม่มีข้อสอบอย่างน้อย 1 ข้อ" });
-        return;
+        if (!silent) {
+          setBuilderSaveMessage({ type: "error", text: "บันทึกไม่ได้ เนื่องจากมี Model หรือ Part ที่ยังไม่มีข้อสอบอย่างน้อย 1 ข้อ" });
+        }
+        return false;
       }
-      setBuilderSaveMessage({ type: "", text: "" });
+      if (!silent) setBuilderSaveMessage({ type: "", text: "" });
       setSyncStatus("saving");
       const res = await fetch(`${API_BASE}/state`, {
         method: "PUT",
@@ -2238,17 +2242,35 @@ export default function App() {
         body: JSON.stringify({ bank, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
-      lastSyncedBankRef.current = JSON.stringify(bank);
+      if (!silent) {
+        setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
+      }
+      lastSyncedBankRef.current = nextBankJson;
       setBuilderServerUpdate(false);
       setPendingBuilderBank(null);
       setSyncStatus("synced");
+      return true;
     } catch (error) {
       console.error(error);
       setSyncStatus("offline");
-      setBuilderSaveMessage({ type: "error", text: error?.message === "HTTP 400" ? "บันทึกไม่ได้ เนื่องจากโครงสร้างข้อสอบยังไม่ครบ" : "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
+      if (!silent) {
+        setBuilderSaveMessage({ type: "error", text: error?.message === "HTTP 400" ? "บันทึกไม่ได้ เนื่องจากโครงสร้างข้อสอบยังไม่ครบ" : "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
+      }
+      return false;
     }
-  };
+  }, [bank, isBankStructurallyValid, resultHistory, session]);
+
+  useEffect(() => {
+    if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
+    if (!isBankStructurallyValid(bank)) return;
+    if (JSON.stringify(bank) === lastSyncedBankRef.current) return;
+
+    const timer = setTimeout(() => {
+      void saveLocal({ silent: true });
+    }, 900);
+
+    return () => clearTimeout(timer);
+  }, [activeTab, bank, dataReady, entryPoint, isAdmin, isBankStructurallyValid, saveLocal, session]);
 
   const exportCSV = () => {
     if (!submitted) return alert("กรุณาส่งคำตอบก่อนจึงจะบันทึกผลสอบได้");
