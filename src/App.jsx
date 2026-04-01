@@ -970,9 +970,6 @@ export default function App() {
       partId: nextPartId || null,
       qId: nextQuestionId || null,
     };
-    setModelId(nextModelId || null);
-    setPartId(nextPartId || null);
-    setQId(nextQuestionId || null);
   }, []);
 
   useEffect(() => {
