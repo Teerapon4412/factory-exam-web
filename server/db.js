@@ -233,6 +233,12 @@ function normalizeBankForStorage(bank) {
   };
 }
 
+function isBankStructurallyValid(bank) {
+  const normalized = normalizeBankForStorage(bank);
+  if (!Array.isArray(normalized.models) || normalized.models.length === 0) return false;
+  return normalized.models.every((model) => Array.isArray(model.parts) && model.parts.length > 0 && model.parts.every((part) => Array.isArray(part.questions) && part.questions.length > 0));
+}
+
 function readBankFromTables(db) {
   const models = db.prepare(`
     SELECT id, model_code, model_name, sort_order
@@ -723,6 +729,11 @@ export async function loadState() {
 export async function saveState(state) {
   const db = await getDb();
   const current = await loadState();
+  if (state.bank !== undefined && !isBankStructurallyValid(state.bank)) {
+    const error = new Error("INVALID_BANK_STRUCTURE");
+    error.code = "INVALID_BANK_STRUCTURE";
+    throw error;
+  }
   const protectedBank = getProtectedBank(state.bank, current.bank);
   const safeState = {
     bank: protectedBank,

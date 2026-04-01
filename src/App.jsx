@@ -707,6 +707,7 @@ export default function App() {
   const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
   const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
+  const builderQuestionChipRefs = useRef({});
   const suppressBuilderQuestionAutoScrollRef = useRef(false);
   const builderPendingSelectionRef = useRef(null);
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
@@ -905,31 +906,6 @@ export default function App() {
   }, [fetchSharedData, session]);
 
   useEffect(() => {
-    if (!dataReady || !session?.token || !isAdmin) return;
-
-    const timer = setTimeout(async () => {
-      try {
-        setSyncStatus("saving");
-        const res = await fetch(`${API_BASE}/state`, {
-          method: "PUT",
-          headers: authHeaders(session, { "Content-Type": "application/json" }),
-          body: JSON.stringify({ bank, results: resultHistory }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        lastSyncedBankRef.current = JSON.stringify(bank);
-        setBuilderServerUpdate(false);
-        setPendingBuilderBank(null);
-        setSyncStatus("synced");
-      } catch (error) {
-        console.error(error);
-        setSyncStatus("offline");
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [bank, resultHistory, dataReady, isAdmin, session]);
-
-  useEffect(() => {
     if (!dataReady || !session?.token || isAdmin || !["portal", "news"].includes(entryPoint)) return;
 
     let ignore = false;
@@ -1036,14 +1012,20 @@ export default function App() {
   }, [modelId, partId]);
   useEffect(() => {
     if (!qId) return;
+    const chipTimer = setTimeout(() => {
+      builderQuestionChipRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }, 40);
     if (suppressBuilderQuestionAutoScrollRef.current) {
       suppressBuilderQuestionAutoScrollRef.current = false;
-      return;
+      return () => clearTimeout(chipTimer);
     }
     const timer = setTimeout(() => {
       builderQuestionRefs.current[qId]?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(chipTimer);
+      clearTimeout(timer);
+    };
   }, [qId]);
 
   const scoreFull = full(part?.questions || []);
@@ -2009,11 +1991,21 @@ export default function App() {
   const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, [f]: v } : p)) })) }));
   const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== partId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
   const patchChoice = (id, key, value, sourceChoices) => patchQ(id, { choices: { ...(sourceChoices || {}), [key]: value } });
+  const isBankStructurallyValid = useCallback((candidateBank) => {
+    const models = Array.isArray(candidateBank?.models) ? candidateBank.models : [];
+    if (!models.length) return false;
+    return models.every((candidateModel) => {
+      const parts = Array.isArray(candidateModel?.parts) ? candidateModel.parts : [];
+      if (!parts.length) return false;
+      return parts.every((candidatePart) => Array.isArray(candidatePart?.questions) && candidatePart.questions.length > 0);
+    });
+  }, []);
 
   const addModel = () => {
     const n = emptyModel(bank.models.length + 1, false);
     setBank((b) => ({ ...b, models: [...b.models, n] }));
     queueBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
+    setBuilderQuestionSearch("");
   };
 
   const removeModel = () => {
@@ -2212,6 +2204,10 @@ export default function App() {
   };
   const saveLocal = async () => {
     try {
+      if (!isBankStructurallyValid(bank)) {
+        setBuilderSaveMessage({ type: "error", text: "บันทึกไม่ได้ เนื่องจากมี Model หรือ Part ที่ยังไม่มีข้อสอบอย่างน้อย 1 ข้อ" });
+        return;
+      }
       setBuilderSaveMessage({ type: "", text: "" });
       setSyncStatus("saving");
       const res = await fetch(`${API_BASE}/state`, {
@@ -2221,11 +2217,14 @@ export default function App() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
+      lastSyncedBankRef.current = JSON.stringify(bank);
+      setBuilderServerUpdate(false);
+      setPendingBuilderBank(null);
       setSyncStatus("synced");
     } catch (error) {
       console.error(error);
       setSyncStatus("offline");
-      setBuilderSaveMessage({ type: "error", text: "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
+      setBuilderSaveMessage({ type: "error", text: error?.message === "HTTP 400" ? "บันทึกไม่ได้ เนื่องจากโครงสร้างข้อสอบยังไม่ครบ" : "บันทึกลง Server ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออีกครั้ง" });
     }
   };
 
@@ -3442,7 +3441,7 @@ export default function App() {
                         {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q, i) => {
                           const actualIndex = part.questions.findIndex((entry) => entry.id === q.id);
                           return (
-                            <button key={q.id} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}>
+                            <button key={q.id} ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }} onClick={() => setQId(q.id)} className={`question-chip ${q.id === question?.id ? "is-active" : ""}`}>
                               <span className="question-chip-no">ข้อ {actualIndex + 1}</span>
                               <strong>{q.questionText || "ยังไม่ได้กรอกคำถาม"}</strong>
                               <small>{q.score} คะแนน</small>

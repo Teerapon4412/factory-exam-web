@@ -119,6 +119,9 @@ app.put("/api/state", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     res.json(await saveState(req.body ?? {}));
   } catch (error) {
+    if (error?.code === "INVALID_BANK_STRUCTURE" || error?.message === "INVALID_BANK_STRUCTURE") {
+      return res.status(400).json({ error: "Exam bank structure is incomplete" });
+    }
     next(error);
   }
 });
