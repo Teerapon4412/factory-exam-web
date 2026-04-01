@@ -1831,7 +1831,7 @@ export default function App() {
   const reloadBuilderFromServer = useCallback(() => {
     if (!pendingBuilderBank) return;
     setBank(pendingBuilderBank);
-    queueBuilderSelection(
+    applyBuilderSelection(
       pendingBuilderBank.models[0]?.id || null,
       pendingBuilderBank.models[0]?.parts[0]?.id || null,
       pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null,
@@ -1840,7 +1840,7 @@ export default function App() {
     setBuilderServerUpdate(false);
     setPendingBuilderBank(null);
     setSyncStatus("synced");
-  }, [pendingBuilderBank, queueBuilderSelection]);
+  }, [applyBuilderSelection, pendingBuilderBank]);
 
   const resetEmployeeForm = () => {
     setEmployeeForm(emptyEmployeeForm);
@@ -2210,14 +2210,14 @@ export default function App() {
     setSubmitError("");
   };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
-  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); queueBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
+  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); applyBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ไม่สำเร็จ: ${e.message}`); } };
   const importJSONFile = async (file) => {
     if (!file) return;
     try {
       const text = await file.text();
       const n = normalize(JSON.parse(text));
       setBank(n);
-      queueBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null);
+      applyBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null);
       setImportText(JSON.stringify(n, null, 2));
       reset();
     } catch (e) {
@@ -3442,12 +3442,12 @@ export default function App() {
                     <div className="form-stack">
                       <Label>ชื่อระบบ</Label><Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
                       <Label>Model</Label>
-                      <select value={builderModelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); queueBuilderSelection(e.target.value, nextModel?.parts?.[0]?.id || null, nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
+                      <select value={builderModelId || ""} onChange={(e) => { const nextModel = bank.models.find((x) => x.id === e.target.value); applyBuilderSelection(e.target.value, nextModel?.parts?.[0]?.id || null, nextModel?.parts?.[0]?.questions?.[0]?.id || null); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select>
                       <div className="button-row"><Button onClick={addModel}><Plus size={16} /> เพิ่ม Model</Button><Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ลบ Model</Button></div>
                       <Label>Model Code</Label><Input value={builderModel?.modelCode || ""} onChange={(e) => patchModel("modelCode", e.target.value)} />
                       <Label>Model Name</Label><Input value={builderModel?.modelName || ""} onChange={(e) => patchModel("modelName", e.target.value)} />
                       <Label>Part</Label>
-                      <select value={builderPartId || ""} onChange={(e) => { const nextPart = builderModel?.parts.find((p) => p.id === e.target.value); queueBuilderSelection(builderModelId, e.target.value, nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(builderModel?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
+                      <select value={builderPartId || ""} onChange={(e) => { const nextPart = builderModel?.parts.find((p) => p.id === e.target.value); applyBuilderSelection(builderModelId, e.target.value, nextPart?.questions?.[0]?.id || null); }} style={S.input}>{(builderModel?.parts || []).map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select>
                       <div className="button-row"><Button disabled={(builderModel?.parts?.length || 0) >= 20} onClick={addPart}><Plus size={16} /> เพิ่ม Part</Button><Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ลบ Part</Button></div>
                       <div className="mini-note">Model นี้มี {builderModel?.parts?.length || 0} Part (สูงสุด 20)</div>
                       <Label>Part Code</Label><Input value={builderPart?.partCode || ""} onChange={(e) => patchPart("partCode", e.target.value)} />
