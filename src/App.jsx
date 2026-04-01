@@ -448,9 +448,13 @@ const deriveWeightedSkillSummary = (exam, evaluation) => {
   const combinedScore = examWeightedScore + evaluationWeightedScore;
   const combinedFullScore = SKILL_MATRIX_TOTAL_WEIGHT;
   const combinedPct = Math.round((combinedScore / combinedFullScore) * 100);
-  const skillPct = combinedPct >= 100
-    ? 100
-    : Math.max(0, Math.min(100, Math.floor(combinedPct / 25) * 25));
+  const skillPct = combinedPct <= 25
+    ? 0
+    : combinedPct <= 50
+      ? 50
+      : combinedPct <= 75
+        ? 75
+        : 100;
   return {
     examWeightedScore,
     evaluationWeightedScore,
@@ -459,6 +463,13 @@ const deriveWeightedSkillSummary = (exam, evaluation) => {
     combinedPct,
     skillPct,
   };
+};
+
+const skillCircleColor = (skillPct) => {
+  if (skillPct >= 100) return "#16a34a";
+  if (skillPct >= 75) return "#f59e0b";
+  if (skillPct >= 25) return "#dc2626";
+  return "transparent";
 };
 
 const openPrintDocument = (title, html) => {
@@ -2347,10 +2358,10 @@ export default function App() {
             .skill-circle::after { height: 2px; left: 6px; right: 6px; top: 50%; transform: translateY(-50%); }
             .skill-circle span { position: absolute; inset: 12px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 999px; font-size: 12px; font-weight: 700; z-index: 1; }
             .skill-0 { background: conic-gradient(#e2e8f0 0 100%); }
-            .skill-25 { background: conic-gradient(#f59e0b 0 25%, #e2e8f0 25% 100%); }
-            .skill-50 { background: conic-gradient(#f59e0b 0 50%, #e2e8f0 50% 100%); }
-            .skill-75 { background: conic-gradient(#10b981 0 75%, #e2e8f0 75% 100%); }
-            .skill-100 { background: conic-gradient(#10b981 0 100%); }
+            .skill-25 { background: conic-gradient(#dc2626 0 25%, #e2e8f0 25% 100%); }
+            .skill-50 { background: conic-gradient(#dc2626 0 50%, #e2e8f0 50% 100%); }
+            .skill-75 { background: conic-gradient(#f59e0b 0 75%, #e2e8f0 75% 100%); }
+            .skill-100 { background: conic-gradient(#16a34a 0 100%); }
             .score-note { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
             .score-source { font-size: 10px; color: #64748b; }
           </style>
@@ -2378,11 +2389,10 @@ export default function App() {
             </table>
           </div>
           <div class="legend">
-            <span>0-24% = 0%</span>
-            <span>25-49% = 25%</span>
-            <span>50-74% = 50%</span>
-            <span>75-99% = 75%</span>
-            <span>100% = 100%</span>
+            <span>0-25 = 0%</span>
+            <span>26-50 = 50%</span>
+            <span>51-75 = 75%</span>
+            <span>76-100 = 100%</span>
           </div>
           <table>
             <thead>
@@ -2745,7 +2755,7 @@ export default function App() {
                 <ClipboardCheck size={18} />
                 <div className="skill-matrix-header-text">
                   <h3>Skill Matrix by employee and part</h3>
-                  <p>คะแนนรวมจะถูกแบ่งเป็น 4 ส่วน ส่วนละ 25% และปัดลงตามช่วงคะแนน เช่น 90/100 = 75%</p>
+                  <p>คะแนนรวมจะถูกแมปเป็น 4 ระดับตามช่วงคะแนน 0-25 = 0%, 26-50 = 50%, 51-75 = 75%, 76-100 = 100%</p>
                 </div>
               </div>
             </CardHeader>
@@ -2754,11 +2764,10 @@ export default function App() {
               <div className="skill-matrix-legend">
                 <div className="skill-matrix-legend-title">เกณฑ์ระดับวงกลม</div>
                 <div className="skill-matrix-legend-items">
-                  <span className="skill-matrix-legend-item"><strong>0-24%</strong> = 0%</span>
-                  <span className="skill-matrix-legend-item"><strong>25-49%</strong> = 25%</span>
-                  <span className="skill-matrix-legend-item"><strong>50-74%</strong> = 50%</span>
-                  <span className="skill-matrix-legend-item"><strong>75-99%</strong> = 75%</span>
-                  <span className="skill-matrix-legend-item"><strong>100%</strong> = 100%</span>
+                  <span className="skill-matrix-legend-item"><strong>0-25</strong> = 0%</span>
+                  <span className="skill-matrix-legend-item"><strong>26-50</strong> = 50%</span>
+                  <span className="skill-matrix-legend-item"><strong>51-75</strong> = 75%</span>
+                  <span className="skill-matrix-legend-item"><strong>76-100</strong> = 100%</span>
                 </div>
               </div>
               <div className="skill-matrix-controls">
@@ -2882,7 +2891,9 @@ export default function App() {
                                 <span
                                   className="skill-matrix-circle"
                                   style={{
-                                    background: `conic-gradient(var(--accent) 0 ${pct}%, rgba(255,255,255,0.16) ${pct}% 100%)`,
+                                    background: pct <= 0
+                                      ? "conic-gradient(rgba(226,232,240,0.95) 0 100%)"
+                                      : `conic-gradient(${skillCircleColor(pct)} 0 ${pct}%, rgba(226,232,240,0.95) ${pct}% 100%)`,
                                   }}
                                 >
                                   <span className="skill-matrix-circle-core">{pct}%</span>
