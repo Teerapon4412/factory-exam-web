@@ -980,6 +980,16 @@ export default function App() {
     });
   }, [builderPart, builderQuestionSearch]);
 
+  useEffect(() => {
+    if (!isAdmin || entryPoint !== "exam" || activeTab !== "builder" || !builderHasUnsavedChanges) return undefined;
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [activeTab, builderHasUnsavedChanges, entryPoint, isAdmin]);
+
   const queueBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
     builderPendingSelectionRef.current = {
       modelId: nextModelId || null,
@@ -2042,6 +2052,7 @@ export default function App() {
     setBank(nextBank);
     applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
     setBuilderQuestionSearch("");
+    setBuilderSaveMessage({ type: "success", text: "เพิ่ม Model แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
 
   const removeModel = () => {
@@ -2050,6 +2061,7 @@ export default function App() {
     const nextBank = { ...bank, models: remaining };
     setBank(nextBank);
     applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
+    setBuilderSaveMessage({ type: "success", text: "ลบ Model แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
 
   const addPart = (event) => {
@@ -2063,6 +2075,7 @@ export default function App() {
     setBank(nextBank);
     applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
+    setBuilderSaveMessage({ type: "success", text: "เพิ่ม Part แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
 
   const uploadEmployeePhoto = (file) => {
@@ -2083,6 +2096,7 @@ export default function App() {
     };
     setBank(nextBank);
     applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
+    setBuilderSaveMessage({ type: "success", text: "ลบ Part แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
   const addQ = (event) => {
     event?.preventDefault?.();
