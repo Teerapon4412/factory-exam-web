@@ -2257,10 +2257,15 @@ export default function App() {
         body: JSON.stringify({ bank: bankToSave, results: resultHistory }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const savedState = await res.json().catch(() => null);
+      const savedBank = normalize(savedState?.bank ?? bankToSave);
+      const savedResults = Array.isArray(savedState?.results) ? savedState.results : resultHistory;
       if (!silent) {
         setBuilderSaveMessage({ type: "success", text: "บันทึกสำเร็จแล้ว ข้อมูลข้อสอบถูกส่งขึ้น Server เรียบร้อย" });
       }
-      lastSyncedBankRef.current = nextBankJson;
+      setBank(savedBank);
+      setResultHistory(savedResults);
+      lastSyncedBankRef.current = JSON.stringify(savedBank);
       setBuilderServerUpdate(false);
       setPendingBuilderBank(null);
       setSyncStatus("synced");
