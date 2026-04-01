@@ -129,7 +129,7 @@ const Badge = ({ children, outline = false }) => (
   <span className={`badge ${outline ? "badge-outline" : "badge-solid"}`}>{children}</span>
 );
 
-const Button = ({ children, onClick, variant = "default", disabled = false, className = "", style, ...props }) => {
+const Button = ({ children, onClick, type = "button", variant = "default", disabled = false, className = "", style, ...props }) => {
   const palette = variant === "default"
     ? {
         background: "linear-gradient(135deg, var(--accent), var(--accent-strong))",
@@ -154,6 +154,7 @@ const Button = ({ children, onClick, variant = "default", disabled = false, clas
   return (
     <button
       {...props}
+      type={type}
       disabled={disabled}
       onClick={onClick}
       className={`app-button ${className}`.trim()}
@@ -2001,7 +2002,8 @@ export default function App() {
     });
   }, []);
 
-  const addModel = () => {
+  const addModel = (event) => {
+    event?.preventDefault?.();
     const n = emptyModel(bank.models.length + 1, false);
     setBank((b) => ({ ...b, models: [...b.models, n] }));
     queueBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
@@ -2016,7 +2018,8 @@ export default function App() {
     setPartId(remaining[0].parts[0].id);
   };
 
-  const addPart = () => {
+  const addPart = (event) => {
+    event?.preventDefault?.();
     if (model.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
     const n = emptyPart(model.parts.length + 1, false);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === modelId ? { ...m, parts: [...m.parts, n] } : m)) }));
@@ -2040,7 +2043,8 @@ export default function App() {
     setPartId(remaining[0].id);
     setQId(remaining[0].questions[0].id);
   };
-  const addQ = () => {
+  const addQ = (event) => {
+    event?.preventDefault?.();
     const n = emptyQ(part.questions.length + 1);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== modelId ? m : { ...m, parts: m.parts.map((p) => (p.id === partId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
