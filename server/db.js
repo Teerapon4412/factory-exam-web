@@ -8,6 +8,16 @@ import fallbackExamBankSeed from "../scripts/exam-bank.seed.json" with { type: "
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), "data"));
 const dbPath = path.join(dataDir, "factory-exam.sqlite");
 const SESSION_TTL_DAYS = Number(process.env.SESSION_TTL_DAYS || 14);
+const DEFAULT_PART_SUBTITLE = "ระบบข้อสอบออนไลน์พนักงาน";
+
+function stripControlCharacters(value) {
+  return Array.from(String(value ?? ""))
+    .filter((character) => {
+      const code = character.charCodeAt(0);
+      return !((code >= 0 && code <= 8) || (code >= 11 && code <= 31) || code === 127);
+    })
+    .join("");
+}
 
 function createFallbackBank() {
   if (fallbackExamBankSeed && Array.isArray(fallbackExamBankSeed.models) && fallbackExamBankSeed.models.length) {
@@ -57,20 +67,46 @@ function parseBoolish(value, fallback = false) {
   return fallback;
 }
 
+function cleanInlineText(value, fallback = "") {
+  const text = stripControlCharacters(value)
+    .replaceAll("\r", " ")
+    .replaceAll("\n", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text || fallback;
+}
+
+function cleanMultilineText(value, fallback = "") {
+  const text = stripControlCharacters(value)
+    .replaceAll("\r", "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return text || fallback;
+}
+
+function normalizePartSubtitle(value) {
+  const text = cleanInlineText(value, DEFAULT_PART_SUBTITLE);
+  if (/^เธ[ฃฐ]/.test(text) || text.includes("เนเธญเธชเธญเธ")) {
+    return DEFAULT_PART_SUBTITLE;
+  }
+  return text;
+}
+
 function normalizeBankForStorage(bank) {
   const source = hasBankContent(bank) ? clone(bank) : createFallbackBank();
   return {
     title: String(source.title || "Factory Online Exam"),
     models: (source.models || []).map((model, modelIndex) => ({
       id: String(model.id || crypto.randomUUID()),
-      modelCode: String(model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`),
-      modelName: String(model.modelName || `Model ${modelIndex + 1}`),
+      modelCode: cleanInlineText(model.modelCode, `RG${String(modelIndex + 1).padStart(2, "0")}`),
+      modelName: cleanInlineText(model.modelName, `Model ${modelIndex + 1}`),
       sortOrder: Number(model.sortOrder ?? modelIndex),
       parts: (model.parts || []).map((part, partIndex) => ({
         id: String(part.id || crypto.randomUUID()),
-        partCode: String(part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`),
-        partName: String(part.partName || `Part ${partIndex + 1}`),
-        subtitle: String(part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน"),
+        partCode: cleanInlineText(part.partCode, `Part${String(partIndex + 1).padStart(2, "0")}`),
+        partName: cleanInlineText(part.partName, `Part ${partIndex + 1}`),
+        subtitle: normalizePartSubtitle(part.subtitle),
         passScore: Number(part.passScore || 0),
         randomizeQuestions: parseBoolish(part.randomizeQuestions, false),
         showResultImmediately: parseBoolish(part.showResultImmediately, true),
@@ -78,16 +114,16 @@ function normalizeBankForStorage(bank) {
         questions: (part.questions || []).map((question, questionIndex) => ({
           id: String(question.id || crypto.randomUUID()),
           questionNo: Number(question.questionNo || questionIndex + 1),
-          questionText: String(question.questionText || ""),
+          questionText: cleanMultilineText(question.questionText),
           imageUrl: String(question.imageUrl || ""),
           score: Number(question.score || 0),
           correctAnswer: String(question.correctAnswer || "A"),
           sortOrder: Number(question.sortOrder ?? questionIndex),
           choices: {
-            A: String(question.choices?.A || ""),
-            B: String(question.choices?.B || ""),
-            C: String(question.choices?.C || ""),
-            D: String(question.choices?.D || ""),
+            A: cleanInlineText(question.choices?.A),
+            B: cleanInlineText(question.choices?.B),
+            C: cleanInlineText(question.choices?.C),
+            D: cleanInlineText(question.choices?.D),
           },
         })),
       })),
@@ -157,7 +193,7 @@ function readBankFromTables(db) {
       id: part.id,
       partCode: part.part_code || "",
       partName: part.part_name || "",
-      subtitle: part.subtitle || "ระบบข้อสอบออนไลน์พนักงาน",
+      subtitle: normalizePartSubtitle(part.subtitle),
       passScore: Number(part.pass_score || 0),
       randomizeQuestions: Boolean(part.randomize_questions),
       showResultImmediately: part.show_result_immediately == null ? true : Boolean(part.show_result_immediately),

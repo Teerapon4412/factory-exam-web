@@ -69,6 +69,14 @@ const evaluationAssignedEvaluators = [
 
 const FIXED_QUESTION_SCORE = 5;
 const FIXED_PASS_SCORE = 35;
+const DEFAULT_PART_SUBTITLE = "ระบบข้อสอบออนไลน์พนักงาน";
+
+const stripControlCharacters = (value) => Array.from(String(value ?? ""))
+  .filter((character) => {
+    const code = character.charCodeAt(0);
+    return !((code >= 0 && code <= 8) || (code >= 11 && code <= 31) || code === 127);
+  })
+  .join("");
 
 const S = {
   card: {
@@ -239,7 +247,7 @@ const emptyPart = (i = 1, starter = false) => ({
   id: uid(),
   partCode: `Part${String(i).padStart(2, "0")}`,
   partName: `Part ${i}`,
-  subtitle: "????????????????????????",
+  subtitle: DEFAULT_PART_SUBTITLE,
   passScore: FIXED_PASS_SCORE,
   randomizeQuestions: false,
   showResultImmediately: true,
@@ -257,6 +265,32 @@ const emptyStarterBank = () => ({ title: "Factory Online Exam", models: [emptyMo
 const reorder = (qs) => qs.map((q, i) => ({ ...q, questionNo: i + 1 }));
 const full = (qs) => qs.reduce((s, q) => s + Number(q.score || 0), 0);
 const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+
+const cleanInlineText = (value, fallback = "") => {
+  const text = stripControlCharacters(value)
+    .replaceAll("\r", " ")
+    .replaceAll("\n", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text || fallback;
+};
+
+const cleanMultilineText = (value, fallback = "") => {
+  const text = stripControlCharacters(value)
+    .replaceAll("\r", "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return text || fallback;
+};
+
+const normalizePartSubtitle = (value) => {
+  const text = cleanInlineText(value, DEFAULT_PART_SUBTITLE);
+  if (/^เธ[ฃฐ]/.test(text) || text.includes("เนเธญเธชเธญเธ")) {
+    return DEFAULT_PART_SUBTITLE;
+  }
+  return text;
+};
 
 const hasQuestionContent = (q) => {
   const text = String(q?.questionText || "").trim();
@@ -295,13 +329,22 @@ const sanitizeBank = (rawBank) => {
             ...emptyPart(partIndex + 1),
             ...part,
             id: part.id || uid(),
-            partCode: part.partCode || `Part${String(partIndex + 1).padStart(2, "0")}`,
-            partName: part.partName || `Part ${partIndex + 1}`,
-            subtitle: part.subtitle || "????????????????????????",
+            partCode: cleanInlineText(part.partCode, `Part${String(partIndex + 1).padStart(2, "0")}`),
+            partName: cleanInlineText(part.partName, `Part ${partIndex + 1}`),
+            subtitle: normalizePartSubtitle(part.subtitle),
             passScore: FIXED_PASS_SCORE,
             randomizeQuestions: Boolean(part.randomizeQuestions),
             showResultImmediately: part.showResultImmediately !== false,
-            questions,
+            questions: questions.map((question) => ({
+              ...question,
+              questionText: cleanMultilineText(question.questionText),
+              choices: {
+                A: cleanInlineText(question.choices?.A),
+                B: cleanInlineText(question.choices?.B),
+                C: cleanInlineText(question.choices?.C),
+                D: cleanInlineText(question.choices?.D),
+              },
+            })),
           };
         })
         .filter(Boolean);
@@ -310,15 +353,15 @@ const sanitizeBank = (rawBank) => {
 
       return {
         id: model.id || uid(),
-        modelCode: model.modelCode || `RG${String(modelIndex + 1).padStart(2, "0")}`,
-        modelName: model.modelName || `Model ${modelIndex + 1}`,
+        modelCode: cleanInlineText(model.modelCode, `RG${String(modelIndex + 1).padStart(2, "0")}`),
+        modelName: cleanInlineText(model.modelName, `Model ${modelIndex + 1}`),
         parts: safeParts,
       };
     })
     .filter(Boolean);
 
   return {
-    title: normalizedBank.title || "Factory Online Exam",
+    title: cleanInlineText(normalizedBank.title, "Factory Online Exam"),
     models: models.length ? models : emptyStarterBank().models,
   };
 };
@@ -510,13 +553,13 @@ function normalize(raw) {
       title: raw.title || "Factory Online Exam",
       models: raw.models.map((m, mi) => ({
         id: m.id || uid(),
-        modelCode: m.modelCode || `RG${String(mi + 1).padStart(2, "0")}`,
-        modelName: m.modelName || `Model ${mi + 1}`,
+        modelCode: cleanInlineText(m.modelCode, `RG${String(mi + 1).padStart(2, "0")}`),
+        modelName: cleanInlineText(m.modelName, `Model ${mi + 1}`),
         parts: (Array.isArray(m.parts) && m.parts.length ? m.parts : [emptyPart(1)]).map((p, pi) => ({
           id: p.id || uid(),
-          partCode: p.partCode || `Part${String(pi + 1).padStart(2, "0")}`,
-          partName: p.partName || `Part ${pi + 1}`,
-          subtitle: p.subtitle || "????????????????????????",
+          partCode: cleanInlineText(p.partCode, `Part${String(pi + 1).padStart(2, "0")}`),
+          partName: cleanInlineText(p.partName, `Part ${pi + 1}`),
+          subtitle: normalizePartSubtitle(p.subtitle),
           passScore: FIXED_PASS_SCORE,
           randomizeQuestions: Boolean(p.randomizeQuestions),
           showResultImmediately: p.showResultImmediately !== false,
@@ -525,7 +568,13 @@ function normalize(raw) {
               ...emptyQ(qi + 1),
               ...q,
               id: q.id || uid(),
-              choices: { A: q.choices?.A || "", B: q.choices?.B || "", C: q.choices?.C || "", D: q.choices?.D || "" },
+              questionText: cleanMultilineText(q.questionText),
+              choices: {
+                A: cleanInlineText(q.choices?.A),
+                B: cleanInlineText(q.choices?.B),
+                C: cleanInlineText(q.choices?.C),
+                D: cleanInlineText(q.choices?.D),
+              },
             })),
           ),
         })),
@@ -539,9 +588,9 @@ function normalize(raw) {
     b.models[0].modelCode = raw.modelCode || b.models[0].modelCode;
     b.models[0].parts = [{
       ...emptyPart(1),
-      partCode: raw.partCode || "Part01",
-      partName: raw.partName || "Part 1",
-      subtitle: raw.subtitle || "????????????????????????",
+      partCode: cleanInlineText(raw.partCode, "Part01"),
+      partName: cleanInlineText(raw.partName, "Part 1"),
+      subtitle: normalizePartSubtitle(raw.subtitle),
       passScore: FIXED_PASS_SCORE,
       randomizeQuestions: Boolean(raw.randomizeQuestions),
       showResultImmediately: raw.showResultImmediately !== false,
@@ -549,7 +598,13 @@ function normalize(raw) {
         ...emptyQ(i + 1),
         ...q,
         id: q.id || uid(),
-        choices: { A: q.choices?.A || "", B: q.choices?.B || "", C: q.choices?.C || "", D: q.choices?.D || "" },
+        questionText: cleanMultilineText(q.questionText),
+        choices: {
+          A: cleanInlineText(q.choices?.A),
+          B: cleanInlineText(q.choices?.B),
+          C: cleanInlineText(q.choices?.C),
+          D: cleanInlineText(q.choices?.D),
+        },
       }))),
     }];
     return sanitizeBank(b);
@@ -707,8 +762,6 @@ export default function App() {
   const [evaluationSearch, setEvaluationSearch] = useState("");
   const [evaluationPartFilter, setEvaluationPartFilter] = useState("ALL");
   const [evaluationEvaluatorFilter, setEvaluationEvaluatorFilter] = useState("ALL");
-  const [builderServerUpdate, setBuilderServerUpdate] = useState(false);
-  const [pendingBuilderBank, setPendingBuilderBank] = useState(null);
   const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
   const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
   const builderQuestionRefs = useRef({});
@@ -796,8 +849,6 @@ export default function App() {
     setResultHistory(nextResults);
     setNewsItems(nextNews);
     lastSyncedBankRef.current = JSON.stringify(nextBank);
-    setBuilderServerUpdate(false);
-    setPendingBuilderBank(null);
 
     if (!preserveSelection) {
       let defaultModel = nextBank.models[0] || null;
@@ -1824,54 +1875,6 @@ export default function App() {
     };
   }, [dataReady, session, isAdmin, entryPoint, activeTab, modelId, partId, fetchSharedData]);
 
-  useEffect(() => {
-    if (!dataReady || !session?.token || !isAdmin || entryPoint !== "exam" || activeTab !== "builder") return;
-
-    let ignore = false;
-
-    const checkBuilderServerState = async () => {
-      if (builderSaveInFlightRef.current) return;
-      if (Date.now() < builderSyncPauseUntilRef.current) return;
-      try {
-        const stateRes = await fetch(`${API_BASE}/state`, {
-          headers: authHeaders(session),
-        });
-        if (!stateRes.ok) throw new Error(`HTTP ${stateRes.status}`);
-        const data = await stateRes.json();
-        if (ignore) return;
-        const remoteBank = normalize(data.bank ?? starterBank());
-        const remoteBankJson = JSON.stringify(remoteBank);
-        const hasRemoteUpdate = remoteBankJson !== lastSyncedBankRef.current;
-        setBuilderServerUpdate(hasRemoteUpdate);
-        setPendingBuilderBank(hasRemoteUpdate ? remoteBank : null);
-      } catch (error) {
-        console.error(error);
-        if (!ignore) setSyncStatus("offline");
-      }
-    };
-
-    checkBuilderServerState();
-    const timer = setInterval(checkBuilderServerState, 15000);
-    return () => {
-      ignore = true;
-      clearInterval(timer);
-    };
-  }, [dataReady, session, isAdmin, entryPoint, activeTab]);
-
-  const reloadBuilderFromServer = useCallback(() => {
-    if (!pendingBuilderBank) return;
-    setBank(pendingBuilderBank);
-    applyBuilderSelection(
-      pendingBuilderBank.models[0]?.id || null,
-      pendingBuilderBank.models[0]?.parts[0]?.id || null,
-      pendingBuilderBank.models[0]?.parts[0]?.questions[0]?.id || null,
-    );
-    lastSyncedBankRef.current = JSON.stringify(pendingBuilderBank);
-    setBuilderServerUpdate(false);
-    setPendingBuilderBank(null);
-    setSyncStatus("synced");
-  }, [applyBuilderSelection, pendingBuilderBank]);
-
   const resetEmployeeForm = () => {
     setEmployeeForm(emptyEmployeeForm);
     setEditingEmployeeId(null);
@@ -2298,20 +2301,12 @@ export default function App() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const savedState = await res.json().catch(() => null);
-      const savedBank = normalize(savedState?.bank ?? bankToSave);
       const savedResults = Array.isArray(savedState?.results) ? savedState.results : resultHistory;
-      const nextSelectedModelId = currentBuilderModelIdRef.current;
-      const nextSelectedPartId = currentBuilderPartIdRef.current;
-      const nextSelectedQuestionId = currentBuilderQIdRef.current;
       if (!silent) {
         setBuilderSaveMessage({ type: "success", text: "???????????????? ?????????????????????? Server ?????????" });
       }
-      queueBuilderSelection(nextSelectedModelId, nextSelectedPartId, nextSelectedQuestionId);
-      setBank(savedBank);
       setResultHistory(savedResults);
-      lastSyncedBankRef.current = JSON.stringify(savedBank);
-      setBuilderServerUpdate(false);
-      setPendingBuilderBank(null);
+      lastSyncedBankRef.current = nextBankJson;
       setSyncStatus("synced");
       pauseBuilderSync();
       return true;
@@ -2325,7 +2320,7 @@ export default function App() {
     } finally {
       builderSaveInFlightRef.current = false;
     }
-  }, [bank, isBankStructurallyValid, pauseBuilderSync, queueBuilderSelection, resultHistory, session]);
+  }, [bank, isBankStructurallyValid, pauseBuilderSync, resultHistory, session]);
 
   const exportCSV = () => {
     if (!submitted) return alert("????????????????????????????????????");
@@ -3496,8 +3491,8 @@ export default function App() {
                     <div className="section-heading">
                       <BookOpen size={18} />
                       <div>
-                        <h3>Admin Builder v2</h3>
-                        <p>?????? Model, Part ???????????? state ???????????????????????????</p>
+                        <h3>Admin Builder</h3>
+                        <p>แก้ไขคลังข้อสอบแบบร่างในหน้านี้ก่อน แล้วกดบันทึกขึ้น Server เมื่อพร้อม</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -3572,7 +3567,7 @@ export default function App() {
                       <div className="builder-v2-toolbar-copy">
                         <p className="section-kicker">Builder Workspace</p>
                         <h2>{builderModel?.modelCode || "-"} / {builderPart?.partCode || "-"}</h2>
-                        <p>{builderPart?.partName || "????? Part ?????????????????????"}</p>
+                        <p>{builderPart?.partName || "เลือก Part เพื่อเริ่มแก้ไขข้อสอบ"} | ระบบจะไม่บันทึกอัตโนมัติ</p>
                       </div>
                       <div className="builder-v2-toolbar-actions">
                         <Badge outline>{builderPart?.questions?.length || 0} Questions</Badge>
@@ -3585,20 +3580,6 @@ export default function App() {
                       </div>
                     </CardContent>
                   </Card>
-
-                  {builderServerUpdate ? (
-                    <div className="alert-error">
-                      ???????????????????????????? Server ??????????????????
-                      {" "}
-                      <button
-                        type="button"
-                        onClick={reloadBuilderFromServer}
-                        style={{ background: "none", border: "none", color: "inherit", textDecoration: "underline", cursor: "pointer", fontWeight: 700, padding: 0 }}
-                      >
-                        ????????????????
-                      </button>
-                    </div>
-                  ) : null}
 
                   {builderSaveMessage.text ? (
                     <div className={builderSaveMessage.type === "error" ? "alert-error" : "alert-success"}>
