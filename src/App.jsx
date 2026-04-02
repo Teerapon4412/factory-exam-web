@@ -1008,6 +1008,12 @@ export default function App() {
     queueBuilderSelection(nextModelId, nextPartId, nextQuestionId);
   }, [queueBuilderSelection]);
 
+  const deferBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
+    currentBuilderModelIdRef.current = nextModelId || null;
+    currentBuilderPartIdRef.current = nextPartId || null;
+    currentBuilderQIdRef.current = nextQuestionId || null;
+    queueBuilderSelection(nextModelId, nextPartId, nextQuestionId);
+  }, [queueBuilderSelection]);
   useEffect(() => {
     const pendingSelection = builderPendingSelectionRef.current;
     if (!pendingSelection) return;
@@ -2050,7 +2056,7 @@ export default function App() {
     const n = emptyModel(bank.models.length + 1, false);
     const nextBank = { ...bank, models: [...bank.models, n] };
     setBank(nextBank);
-    applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
+    deferBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
     setBuilderQuestionSearch("");
     setBuilderSaveMessage({ type: "success", text: "เพิ่ม Model แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
@@ -2060,7 +2066,7 @@ export default function App() {
     const remaining = bank.models.filter((m) => m.id !== builderModel?.id);
     const nextBank = { ...bank, models: remaining };
     setBank(nextBank);
-    applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
+    deferBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
     setBuilderSaveMessage({ type: "success", text: "ลบ Model แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
 
@@ -2073,7 +2079,7 @@ export default function App() {
       models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)),
     };
     setBank(nextBank);
-    applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
+    deferBuilderSelection(builderModelId, n.id, n.questions[0].id);
     setBuilderQuestionSearch("");
     setBuilderSaveMessage({ type: "success", text: "เพิ่ม Part แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
@@ -2095,7 +2101,7 @@ export default function App() {
       models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)),
     };
     setBank(nextBank);
-    applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
+    deferBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
     setBuilderSaveMessage({ type: "success", text: "ลบ Part แล้ว แต่ยังไม่ได้บันทึกลง Server" });
   };
   const addQ = (event) => {
@@ -2103,7 +2109,7 @@ export default function App() {
     const n = emptyQ(builderPart.questions.length + 1);
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    queueBuilderSelection(builderModelId, builderPartId, n.id);
+    deferBuilderSelection(builderModelId, builderPartId, n.id);
     setBuilderQuestionSearch("");
   };
 
@@ -2112,7 +2118,7 @@ export default function App() {
     const n = { ...sourceQuestion, id: uid(), questionNo: builderPart.questions.length + 1 };
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
     suppressBuilderQuestionAutoScrollRef.current = true;
-    queueBuilderSelection(builderModelId, builderPartId, n.id);
+    deferBuilderSelection(builderModelId, builderPartId, n.id);
     setBuilderQuestionSearch("");
   };
 
@@ -2120,7 +2126,7 @@ export default function App() {
     if (!questionId) return;
     const remaining = reorder(builderPart.questions.filter((q) => q.id !== questionId));
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: remaining } : p)) })) }));
-    queueBuilderSelection(builderModelId, builderPartId, remaining[0]?.id || null);
+    deferBuilderSelection(builderModelId, builderPartId, remaining[0]?.id || null);
   };
 
   const moveQ = (d, questionId = builderQuestion?.id) => {
@@ -2131,7 +2137,7 @@ export default function App() {
     const arr = [...builderPart.questions];
     [arr[i], arr[ni]] = [arr[ni], arr[i]];
     setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder(arr) } : p)) })) }));
-    queueBuilderSelection(builderModelId, builderPartId, questionId);
+    deferBuilderSelection(builderModelId, builderPartId, questionId);
   };
 
   const jumpQuestion = (direction) => {
