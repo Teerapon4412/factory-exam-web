@@ -11,7 +11,7 @@
           "partCode": "RG 01",
           "partName": "INST Panel UPR Base Grade (REG) LHD RG01 ",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -27,7 +27,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "D",
-              "score": 2
+              "score": 5
             },
             {
               "id": "dzakzzoc",
@@ -41,12 +41,12 @@
                 "D": "TPO TT875NT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "i78btwd9",
               "questionNo": 3,
-              "questionText": "C\u0019 1 A#\u0004 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "questionText": " ใน 1 แรค สามารถบรรจุชิ้นงาน INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 ได้กี่ชิ้น ?",
               "imageUrl": "",
               "choices": {
                 "A": "20 ชิ้น",
@@ -55,7 +55,7 @@
                 "D": "50 ชิ้น"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             },
             {
               "id": "hbil2ntx",
@@ -69,7 +69,7 @@
                 "D": "2.022 - 2.060   kg."
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "kk79nmqk",
@@ -83,12 +83,12 @@
                 "D": "1.800 - 1.890   kg."
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "d8zxp5x8",
               "questionNo": 6,
-              "questionText": "\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 \u00173\u00012#\u001c%4\u0015\u00175H@\u0004#7H-\u0007\t5\u0014-0D# ?",
+              "questionText": "งาน INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 ทำการผลิตที่เครื่องฉีดอะไร ?",
               "imageUrl": "",
               "choices": {
                 "A": "MC 19",
@@ -97,7 +97,7 @@
                 "D": "MC 15"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "ud8754sx",
@@ -111,12 +111,12 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "ymfn921s",
               "questionNo": 8,
-              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019 INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "questionText": "ด้านหลังชิ้นงาน INST Panel UPR Base Grade (REG) LHD (W-FCW)-(WO-FCW) RG01 ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
               "imageUrl": "",
               "choices": {
                 "A": "ปากกาเมจิก",
@@ -125,7 +125,7 @@
                 "D": "ดินสอมาร์ค"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -134,7 +134,7 @@
           "partCode": "RG01",
           "partName": "INST Panel LWR Base RHD RG01",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -150,7 +150,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "D",
-              "score": 2
+              "score": 5
             },
             {
               "id": "wumqfsl8",
@@ -164,12 +164,12 @@
                 "D": " PP RJ920T K701"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "96bs3iv8",
               "questionNo": 3,
-              "questionText": "C\u0019 1 A#\u0004 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 INST PANEL LWR BASE RHD RG01 D\u0014I\u00015H\n4I\u0019 ?\n*",
+              "questionText": " ใน 1 แรค สามารถบรรจุชิ้นงาน INST PANEL LWR BASE RHD RG01 ได้กี่ชิ้น ?\n",
               "imageUrl": "",
               "choices": {
                 "A": "15 ชิ้น",
@@ -178,7 +178,7 @@
                 "D": "24 ชิ้น"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "il6kj1np",
@@ -192,7 +192,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "D",
-              "score": 2
+              "score": 5
             },
             {
               "id": "brylwi64",
@@ -206,7 +206,7 @@
                 "D": "1.620 - 1.680   kg."
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "kuxxfc5i",
@@ -220,7 +220,7 @@
                 "D": " ชิ้นงาน INST PANEL LWR BASE RHD RG01 ไม่มีการใช้ Valve Gate"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "9yvkkqjo",
@@ -234,12 +234,12 @@
                 "D": "AAT"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             },
             {
               "id": "wgg6m6n2",
               "questionNo": 8,
-              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  INST PANEL LWR BASE RHD RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "questionText": " ด้านหลังชิ้นงาน  INST PANEL LWR BASE RHD RG01 ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
               "imageUrl": "",
               "choices": {
                 "A": "ปากกาเมจิก",
@@ -248,7 +248,7 @@
                 "D": " ดินสอมาร์ค"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -257,7 +257,7 @@
           "partCode": "RG01",
           "partName": "PANEL INST UPR PAD RHD SOFT RG01",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -273,7 +273,7 @@
                 "D": " จุด  4"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "a0btu0t9",
@@ -287,7 +287,7 @@
                 "D": " PP X509T K701"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "4odx31h3",
@@ -301,7 +301,7 @@
                 "D": "30 ชิ้น"
               },
               "correctAnswer": "D",
-              "score": 2
+              "score": 5
             },
             {
               "id": "l8moa7gv",
@@ -315,7 +315,7 @@
                 "D": "0.980 - 0.990   kg."
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "6ozqhycf",
@@ -329,7 +329,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "e6zggesw",
@@ -343,12 +343,12 @@
                 "D": "NMT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "ux7dfgd5",
               "questionNo": 7,
-              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  PANEL INST UPR PAD RHD SOFT \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "questionText": " ด้านหลังชิ้นงาน  PANEL INST UPR PAD RHD SOFT ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
               "imageUrl": "",
               "choices": {
                 "A": "เหล็กแหลม",
@@ -357,7 +357,7 @@
                 "D": "ดินสอมาร์ค"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "fj53q59o",
@@ -371,7 +371,7 @@
                 "D": "น้ำธรรมดา"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -380,7 +380,7 @@
           "partCode": "RG01",
           "partName": "INST PANEL UPR BASE LHD (W-FCW) - (WO-FCW) ",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -396,7 +396,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "93nujafs",
@@ -410,7 +410,7 @@
                 "D": "TPO TT875NT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "w81ub2io",
@@ -424,7 +424,7 @@
                 "D": "27 ชิ้น"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "m5j3rmwl",
@@ -438,7 +438,7 @@
                 "D": "W-FCW = 1.830 - 1.920 kg. / WO-FCW = 1.870 - 1.950 kg."
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "y2p91wbb",
@@ -452,7 +452,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "e4lqniaq",
@@ -466,7 +466,7 @@
                 "D": "NMT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "vxcbxt8q",
@@ -480,7 +480,7 @@
                 "D": "ปากกาเมจิก"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "19d2qsqk",
@@ -494,7 +494,7 @@
                 "D": "ไม่มีข้อถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "ps79hm6p",
@@ -508,7 +508,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             },
             {
               "id": "muizircx",
@@ -522,7 +522,7 @@
                 "D": "4"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -531,7 +531,7 @@
           "partCode": "RG01",
           "partName": "FRT DR MNL RH/LH RG01  ",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -547,7 +547,7 @@
                 "D": " Black dot (จุดดำ)"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "ns5lqaeo",
@@ -561,12 +561,12 @@
                 "D": "PP RJ920T N052"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "8bjwgfz5",
               "questionNo": 3,
-              "questionText": "C\u0019\u00012#\u00151\u0014@\u0001\u0017\n4I\u0019\u00072\u0019 FRT DR MNL RG01 *2!2#\u0016\u00151\u0014@\u0002I2@\u00197I-\n4I\u0019\u00072\u0019D\u0014ID!H@\u00014\u0019@\u0017H2D# ?",
+              "questionText": "ในการตัดเกทชิ้นงาน FRT DR MNL RG01 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?\n",
               "imageUrl": "",
               "choices": {
                 "A": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด",
@@ -575,13 +575,13 @@
                 "D": "0.2 mm."
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "nr4jtwp2",
               "questionNo": 4,
-              "questionText": "Container *3+#1\u001aC*H\u00072\u0019 FRT DR MNL RG01 !5 Code 'H2-0D#A%0 1 container C*H\u00072\u0019D\u0014I\u00015H\n4I\u0019  ?",
-              "imageUrl": "",
+              "questionText": "Container สำหรับใส่งาน FRT DR MNL RG01 มี Code ว่าอะไรและ 1 container ใส่งานได้กี่ชิ้น  ?",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVDL6aAsdT2mm4sHGDeofxw4de0Ri3MFL9HwaAaPDleZSat1ElWbuLtU_JuBUSsSWlMr9Sp_wtneAtzkTBr3tFCtFDZoX2fOGCjyrV27PwlmxZlafGKwyyN2X1j9z1RbyX9uY6OTYXgfYuNjgTDo8hjOgc9wSKWQfc5sgawzB-hoaZTZD-p6Gby07yD8M4OTnC8kUEe-YDicmZQ=w95?key=SD26BkSa7JijtytgchRb13eo",
               "choices": {
                 "A": "PK190038/12 ชิ้น",
                 "B": "PK190039/12 ชิ้น",
@@ -589,7 +589,7 @@
                 "D": "PK190038/15 ชิ้น"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             },
             {
               "id": "9nyqlnc2",
@@ -603,12 +603,12 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "t4c4vhwi",
               "questionNo": 6,
-              "questionText": "\u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  FRT DR MNL RG01 \u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "questionText": "ด้านหลังชิ้นงาน  FRT DR MNL RG01 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
               "imageUrl": "",
               "choices": {
                 "A": "สติ๊กเกอร์",
@@ -617,12 +617,12 @@
                 "D": "ดินสอมาร์ค"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "kfdlxxgu",
               "questionNo": 7,
-              "questionText": "#0\u001a\u001a\u0019I3 2\"C\u0019A!H\u001e4!\u001eL\u0002-\u0007  FRT DR MNL RG01 \u0015I-\u0007C\nI\u0019I3\n\u00194\u0014C\u0014 ?",
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  FRT DR MNL RG01 ต้องใช้น้ำชนิดใด ?\n*",
               "imageUrl": "",
               "choices": {
                 "A": "น้ำเย็น",
@@ -631,7 +631,7 @@
                 "D": "น้ำมัน"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "78r9w8sw",
@@ -645,7 +645,7 @@
                 "D": " งาน FRT DR MNL RG01 ฉีดงานออกมา 2 cavity"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -654,7 +654,7 @@
           "partCode": "RG01",
           "partName": "Air Bag Chute PAB LHD SOFT RG01",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -670,7 +670,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "1ypo19qh",
@@ -684,12 +684,12 @@
                 "D": "PP X509T K701"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "6fw8b4i7",
               "questionNo": 3,
-              "questionText": "C\u0019 1 \u0001%H-\u0007 *2!2#\u0016\u001a##\b8\n4I\u0019\u00072\u0019 Air Bag Chute PAB LHD SOFT RG01 D\u0014I\u00015H\n4I\u0019 ?",
+              "questionText": " ใน 1 กล่อง สามารถบรรจุชิ้นงาน Air Bag Chute PAB RHD HARD RG01 ได้กี่ชิ้น ?\n*",
               "imageUrl": "",
               "choices": {
                 "A": "15 ชิ้น",
@@ -698,7 +698,7 @@
                 "D": "17 ชิ้น"
               },
               "correctAnswer": "B",
-              "score": 2
+              "score": 5
             },
             {
               "id": "8925m9es",
@@ -712,7 +712,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "56gcrifu",
@@ -726,7 +726,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             },
             {
               "id": "idqms1cq",
@@ -740,12 +740,12 @@
                 "D": "AAT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "4h9crtii",
               "questionNo": 7,
-              "questionText": " \u0014I2\u0019+%1\u0007\n4I\u0019\u00072\u0019  Air Bag Chute PAB LHD SOFT RG01 \u00152!\u00175H\u00013+\u0019\u0014\u0015I-\u0007C\nI*4H\u0007C\u0014#0\u001a8 %3\u00141\u001a\n4I\u0019\u00072\u0019 '1\u0019\u00175H/@\u00147-\u0019 #+1*\u001e\u00191\u0001\u00072\u0019A%0\u00010 ?",
+              "questionText": "ด้านหลังชิ้นงาน  Air Bag Chute PAB RHD HARD RG01 ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
               "imageUrl": "",
               "choices": {
                 "A": "สติ๊กเกอร์",
@@ -754,7 +754,7 @@
                 "D": "ดินสอมาร์ค"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "8if5btp8",
@@ -768,7 +768,7 @@
                 "D": " 3 กับ 4"
               },
               "correctAnswer": "C",
-              "score": 2
+              "score": 5
             }
           ]
         }
@@ -784,7 +784,7 @@
           "partCode": "RG01",
           "partName": "Air Bag Chute PAB RHD HARD RG01",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -800,7 +800,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "eov9kovh",
@@ -814,7 +814,7 @@
                 "D": "PP X509T K701"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "tz3f1396",
@@ -828,7 +828,7 @@
                 "D": "30 ชิ้น"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "vmvcm6jy",
@@ -842,7 +842,7 @@
                 "D": "ไม่มีข้อใดถูก"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "hujrisds",
@@ -856,7 +856,7 @@
                 "D": "ถูกทุกข้อ"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "eimsl7e3",
@@ -870,7 +870,7 @@
                 "D": "NMT"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "w9c5czfi",
@@ -884,7 +884,7 @@
                 "D": "ทุกด้านของชิ้นงาน"
               },
               "correctAnswer": "D",
-              "score": 2
+              "score": 5
             },
             {
               "id": "mdr0437f",
@@ -898,7 +898,7 @@
                 "D": "3 กับ 4"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             }
           ]
         },
@@ -907,7 +907,7 @@
           "partCode": "RG01",
           "partName": "PANEL INST UPR PAD RHD SOFT RG01",
           "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
-          "passScore": 14,
+          "passScore": 35,
           "randomizeQuestions": false,
           "showResultImmediately": true,
           "questions": [
@@ -923,7 +923,7 @@
                 "D": "จุด  4"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
             },
             {
               "id": "5p2i7wjk",
@@ -937,7 +937,2073 @@
                 "D": "PP X509T K701"
               },
               "correctAnswer": "A",
-              "score": 2
+              "score": 5
+            },
+            {
+              "id": "7zucjr1x",
+              "questionNo": 3,
+              "questionText": "ใน 1 แรค สามารถบรรจุชิ้นงาน PANEL INST UPR RHD HARD RG01 ได้กี่ชิ้น ?\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "25 ชิ้น",
+                "B": " 30 ชิ้น",
+                "C": "35 ชิ้น",
+                "D": "40 ชิ้น"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "2vegu89y",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน PANEL INST UPR RHD HARD RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.001 - 1.052   kg.",
+                "B": "1.701 - 1.741   kg.",
+                "C": "1.050 - 1.070   kg.",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "fgni0tfr",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  PANEL INST UPR RHD HARD RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คัทเตอร์",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "l0ldrbt7",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน PANEL INST UPR RHD HARD RG01 เป็นงานของลูกค้าใด\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "IMCT",
+                "B": " NMT",
+                "C": "AAT",
+                "D": "NMT"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "9vrb1mkf",
+              "questionNo": 7,
+              "questionText": "ด้านหลังชิ้นงาน  PANEL INST UPR RHD HARD ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " เหล็กแหลม",
+                "B": "ดินสอมาร์ค",
+                "C": " สติ๊กเกอร์",
+                "D": "ปากกาเมจิก"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "s64o3nzi",
+              "questionNo": 8,
+              "questionText": " แม่พิมพ์ของ PANEL INST UPR RHD HARD RG01 ใช้น้ำหล่อเย็นชนิดใด\n",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "rp43oqji",
+          "partCode": "RG01",
+          "partName": "PANEL INST UPR LHD HARD RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "zfph179e",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 เกทรันเนอร์ Pokayoke บริเวณใดคือจุดที่ต้องตัดเกทรันเนอร์ออก\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVB430PR2ZXU8ii95wUs9jVVXE-NJdM7xueD9HD7ZZZgnwFM4p6N9QTpO4xyPPi15Jxo4k2hZ10Rrp54De4yntJj_TejdHTD2ZQSi-SR0vBh70U-8wHCG9E6FQ-XIujL2-Oi9Jq7kwKYBDkTpjRn3-s-itkvikrvdxdG1gDYfIHEttu-Kx7U0nHsWQluXwlwTkguXFfkKc8Aig2g=w305?key=UF24vRRBKUut2VSIgyEOSqBA",
+              "choices": {
+                "A": " จุด 1",
+                "B": " จุด 2",
+                "C": " จุด 3",
+                "D": " จุด 4"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "5ajgmkt9",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน PANEL INST UPR LHD HARD RG01 ใช้เม็ดพลาสติกใดในการผลิต\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": " PP X509T K701",
+                "B": "PP H960T K701",
+                "C": "ASA S210B",
+                "D": "TPO TT875NT"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "l8e67ghl",
+              "questionNo": 3,
+              "questionText": "ใน 1 rack สามารถบรรจุชิ้นงาน PANEL INST UPR LHD HARD RG01 ได้กี่ชิ้น ?\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "25 ชิ้น",
+                "B": "30 ชิ้น",
+                "C": "35 ชิ้น",
+                "D": "32 ชิ้น"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "5xhceqfv",
+              "questionNo": 4,
+              "questionText": "น้ำหนักชิ้นงาน PANEL INST UPR LHD HARD RG01 มีค่าต่ำสุด และสูงสุดที่กำหนดไว้ใน WI คือเท่าไหร่",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.000 - 1.040   kg",
+                "B": "1.050 - 1.070   kg.",
+                "C": "1.000 - 1.030   kg.",
+                "D": "ไม่มีข้อใดถูก"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "w9w22yy9",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  PANEL INST UPR LHD HARD RG01 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "มีดตัดแต่งชิ้นงาน",
+                "B": "คีม",
+                "C": " คัทเตอร์",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "8g6cx8a9",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน PANEL INST UPR LHD HARD RG01 เป็นงานของลูกค้าใด\n*",
+              "imageUrl": "",
+              "choices": {
+                "A": "IMCT\n",
+                "B": "NMT",
+                "C": "AAT",
+                "D": "GM"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "rgq4cunh",
+              "questionNo": 7,
+              "questionText": "ด้านหลังชิ้นงาน  PANEL INST UPR LHD HARD ตามที่กำหนดต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ",
+              "imageUrl": "",
+              "choices": {
+                "A": "สติ๊กเกอร์",
+                "B": "ปากกาเมจิก",
+                "C": "เหล็กแหลม",
+                "D": "ดินสอมาร์ค"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "5up2dojd",
+              "questionNo": 8,
+              "questionText": "แม่พิมพ์ของ PANEL INST UPR LHD HARD RG01 ใช้น้ำหล่อเย็นชนิดใด และใช้อุณหภูมิหล่อเย็นกี่องศา",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำเย็น 24°C",
+                "B": "น้ำร้อน 50°C",
+                "C": "น้ำธรรมดา 30°C",
+                "D": "น้ำมัน 80°C"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "blzpbdsz",
+          "partCode": "RG01",
+          "partName": "Belt Reinforcement RR RG01 LH",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "7yeadimm",
+              "questionNo": 1,
+              "questionText": "แม่พิมพ์ Belt Reinforcement RR RG01 LH  ใช้เม็ดพลาสติกใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP RJ920T N052",
+                "B": "ASA S210B N817",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "kemeoiav",
+              "questionNo": 2,
+              "questionText": "Corrugated Box สำหรับใส่งานBelt Reinforcement RR RG01 LH มี Code ว่าอะไรและ 1 กล่องใส่งานได้กี่ชิ้น  ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " HCI292/60 ชิ้น",
+                "B": " HCI293/60 ชิ้น",
+                "C": "HCI292/50 ชิ้น",
+                "D": "HCI293/50 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "ya4tlkxf",
+              "questionNo": 3,
+              "questionText": "ในการตัดเกทชิ้นงาน Belt Reinforcement RR LH RG01 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": "0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "2.0 cm"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "yer6t5cn",
+              "questionNo": 4,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Belt Reinforcement RR  RG01 LH ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "มีดตัดแต่งชิ้นงาน",
+                "B": "กรรไกร",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "8m5mwthy",
+              "questionNo": 5,
+              "questionText": "ชิ้นงาน  Belt Reinforcement RR RG01 LH ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอมาร์ค",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "t2bpxsz4",
+              "questionNo": 6,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Belt Reinforcement RR RG01 RH ต้องใช้น้ำชนิดใด ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "gn7vhqhl",
+              "questionNo": 7,
+              "questionText": "น้ำหนักของงาน  Belt Reinforcement RR  LH RG 01ข้อใดกล่าวถูก เครื่อง 15",
+              "imageUrl": "",
+              "choices": {
+                "A": "0.115 - 0.125",
+                "B": "0.118  - 0.130",
+                "C": " 0.113 - 0.135",
+                "D": "0.116 - 0.125"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "az6aink4",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  Belt Reinforcement RR RG01 LH ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Belt Reinforcement RR RG01 ให้บรรจุใส่ PE Foam ก่อนบรรจุใส่ Corrugated Box",
+                "B": "งาน Belt Reinforcement RR RG01 ฉีดงาน 1 ครั้ง ได้งาน 2 ชิ้น",
+                "C": "งาน Belt Reinforcement RR RG01 ไม่ได้ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน Belt Reinforcement RR RG01 ทำการผลิตที่เครื่องฉีด 12"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "yjgdzrr9",
+          "partCode": "RG01",
+          "partName": "Guard  Fender Lwr RH",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "80m9qaa2",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพ  Guard  Fender Lwr RH   ใน Condition คือรหัสข้อใดกล่าวถูก",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVD6qT4neWTEIhoBFDvFlHDOS7b_DDTqoFG_cGlrLZ2aRMbsHBkpeuIKC3f5vhG8tVGQ29tJushiaWUGj3bSGKNY_I7yhht9ADZG6I1C-XvJ_42ymlxf6As_d6FZ9cK8jeep58buRjSQLMx16ZUl-OipqbnsqKg-1n6Itz75w4Js2w1xebbR4DylvIqUvXyCiNvkapDuNViomrA-=w160?key=E88bGHMNBI3lf0Ed-FKW1UtB",
+              "choices": {
+                "A": "FA6000003670",
+                "B": "FA6000010030",
+                "C": "FA6000010020",
+                "D": "FA6000002510"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "gw7iup7z",
+              "questionNo": 2,
+              "questionText": "ชื่อเม็ด Guard Fender ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " PP RJ920T N052",
+                "B": "PP X966T K701",
+                "C": "PP H960T N052",
+                "D": "PP X508T K701"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "ilxq1sjl",
+              "questionNo": 3,
+              "questionText": "น้ำหนักตามมารตฐานตาม Wi ของงาน Guard Fender LH ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.702 - 0.723",
+                "B": "0.700 - 0.720",
+                "C": " 0.750  -  0.780",
+                "D": "0.730  -  0. 755"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "uynh3t80",
+              "questionNo": 4,
+              "questionText": "งาน Guard Fender LH บรรจุใส่ Container เท่าไรตามมาตรฐาน Wi",
+              "imageUrl": "",
+              "choices": {
+                "A": "10",
+                "B": "12",
+                "C": "15",
+                "D": "20"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "09v8gqny",
+              "questionNo": 5,
+              "questionText": "งาน Guard Fender LH มีเกทที่ต้องตัดทั้งหมดกี่เกท",
+              "imageUrl": "",
+              "choices": {
+                "A": "1",
+                "B": "2",
+                "C": "3",
+                "D": "4"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "qoc3fj8w",
+              "questionNo": 6,
+              "questionText": "เมื่อผลิตงานเสร็จงาน Guard  Fender LH ส่งต่อไปเก็บที่ใด",
+              "imageUrl": "",
+              "choices": {
+                "A": ". Assy",
+                "B": "Inj F2",
+                "C": "Warehouse",
+                "D": "พื้นที่เก็บงาน Inj F1"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "arln5kxp",
+              "questionNo": 7,
+              "questionText": " งาน Guard Fender LH ใน App Check Point จุดใส่คลิป ให้ระวังปัญหาอะไรที่อาจจะเกิด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คราบน้ำมัน",
+                "B": "งานด้วน",
+                "C": " เส้นใย",
+                "D": " น้ำหนักเบา"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "saz4840x",
+              "questionNo": 8,
+              "questionText": "งาน Guard Fender LH  ขึ้นผลิตเครื่องใดได้บ้าง",
+              "imageUrl": "",
+              "choices": {
+                "A": "MC 11",
+                "B": "MC 16",
+                "C": "MC 18",
+                "D": "MC 19"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "4q9bdocv",
+          "partCode": "RG01",
+          "partName": "FRT UPR RG01 LH",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "6o6mnrbk",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ชิ้นงาน FRT UPR RG LH ใช้เม็ดใดในการผลิต\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBkwDxclJP03hYdp_Bw4K8SHakfbHiAAtm2AEP5BBrbkC5oTGQhwG_PY2ug91f7sJHo1v54KPI0mpFrByC08wDyLLO2FEsZz1hfMNdxjucMmXfj1X47bRenSq009_-zAg-fFaVDevesZChYOZK5juAy7pG9-9xfAyO7z4gvtrsNBVCT3fs4TQuzSSWEvMHcPQUOvvZr3TibykPM=w289?key=MZBm6-4B7Sp7YpsDgaQb0aKh",
+              "choices": {
+                "A": "PP RJ920T N052",
+                "B": "ASA S210B N817",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "wvp51fgc",
+              "questionNo": 2,
+              "questionText": "งาน FRT UPR RG01 LH ตาม WI 1 Container ใส่ชิ้นงานเท่าไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "15",
+                "B": "20",
+                "C": "30",
+                "D": "35"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "zm9fk2fb",
+              "questionNo": 3,
+              "questionText": "น้ำหนักตามมารตฐานของงาน FRT UPR RG LH มีน้ำหนักตามมารตฐานที่ถูกต้องเท่าไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "1.166  - 1.170   kg.",
+                "B": "1.180 - 1.190  kg.",
+                "C": "1.160 - 1.175   kg.",
+                "D": "1.155 - 1.175 kg."
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "immddm18",
+              "questionNo": 4,
+              "questionText": "รหัสงาน FRT  UPR RG01 LH ในใบบันทึกคุณภาพคือรหัสงานข้อใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "WN6000003240",
+                "B": "WN6000003260",
+                "C": "WN6000003250",
+                "D": "WN6000003270"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "7xzuwyj6",
+              "questionNo": 5,
+              "questionText": "งาน FRT UPR RG01 LH สามารถผลิตได้กี่เครื่อละเครื่องใดบ้างที่ทำการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " 1 เครื่อง 16",
+                "B": "2 เครื่อง 11กับ เครื่อง 18",
+                "C": " 2 เครื่อง 7 กับ เครื่อง 19",
+                "D": "1 เครื่อง 7"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "q779ih4j",
+              "questionNo": 6,
+              "questionText": "จากรูปภาพด้านบน จุดที่่ 2 ในขณะตัดงานต้องระวังปัญหาอะไรที่จะเกิดกับชิ้นงาน",
+              "imageUrl": "",
+              "choices": {
+                "A": "สีด่าง",
+                "B": "งานด้วน  งานเงา",
+                "C": "ยุบ",
+                "D": "ก๊าช"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "arzgsc79",
+              "questionNo": 7,
+              "questionText": "งาน FRT UPR RG01 LH หลังจากผลิตออกจากหน้าเครื่องแล้วขั้นตอนต่อไป",
+              "imageUrl": "",
+              "choices": {
+                "A": "ส่งไปลาย ASSY ทำการผลิตต่อ",
+                "B": "ส่งไปพ่นสีในแผนก INJ",
+                "C": "ส่งให้ลูกค้า",
+                "D": "รอเซ็ตตัว 4 ชั่วโมง"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "rl6m4r0i",
+              "questionNo": 8,
+              "questionText": " งาน FRT UPR RG1 LH Container แตกต่างกับ FRT UPR RGRH  ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " FRT UPR RG01 LH หัวสีเหลือง",
+                "B": ".FRT UPR RG01 RH หัวสีแดง",
+                "C": "FRT UPR RG 01 RH หัวสีฟ้า",
+                "D": "FRT UPR RG01 LH หัวสีครีม"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "u4qdifri",
+          "partCode": "RG01",
+          "partName": "FRT DR PWR LWR RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "9szuqorx",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 รูป A และ รูป B เรียกว่าอะไร",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVDpTfAijrrg4AFJbWOq6CAYKLSbrQzqgmox8jz5lJqm3SHw--LDGnHOwqxjl_KEb0BFYIXWM5qVfqwkfK5yiNAA75Ie_Fg7Hfccvn5s5fuYsMVDe6oHEcZcQpc9Tmxd0IVPSjGpzeAiVT8zErJ47pwdpx5pEBWhj-mp1O0sdrM-4RM1T5E8HoxXDvAgrAGuzBQYBdPDRVkY9MpI=w197?key=4It7-grSltWWOToWMBK7Qj7t",
+              "choices": {
+                "A": " A คือ Lower และ B คือ Upper",
+                "B": "A คือ Upper และ B คือ Lower",
+                "C": "A คือ RH และ B คือ LH",
+                "D": "A คือ LH และ B คือ RH"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "znikscsp",
+              "questionNo": 2,
+              "questionText": "งาน FRT DR PWR LWR RG01  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " PP RJ920T N052",
+                "B": "ASA S210B N817",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "l96a7wi5",
+              "questionNo": 3,
+              "questionText": "ในการตัดเกทชิ้นงาน FRT DR PWR LWR RG01 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": "0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "0.02 cm"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "oma6x0d9",
+              "questionNo": 4,
+              "questionText": "Container สำหรับใส่งาน FRT DR PWR LWR RG01 มี Code ว่าอะไรและ 1 container ใส่งานได้กี่ชิ้น  ?",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCdREbj2OlHr_OVCvG6zxohsisQsQhypqagq50kMtj_RElBQFLBnFQZiBZxmDjbmVOMWFCNLVKkMS6MJdSgYchEcJcH89_ueae793lqzb3OJ6H7_oAoeoxDCQ-rcraYGZi29pr8s4Dm8aAYf29uxn5Hi6RlXbkorXR3UfPUfjX-7zVlKp-XyxE2oOGJm4H6iuQ2XSkKJ37dFFVw=w168?key=4It7-grSltWWOToWMBK7Qj7t",
+              "choices": {
+                "A": "RH=HCI305, LH=HCI306/15 ชิ้น",
+                "B": "RH=HCI303, LH=HCI304/20 ชิ้น",
+                "C": "RH=HCI305, LH=HCI306/20 ชิ้น",
+                "D": "RH=HCI303, LH=HCI304/15 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "u4a49xg7",
+              "questionNo": 5,
+              "questionText": "ในกระบวนการตัดรันเนอร์เกทของ  FRT DR PWR LWR RG01 ใช้เครื่องมือชนิดใดบ้างในกระบวนการ",
+              "imageUrl": "",
+              "choices": {
+                "A": "คัทเตอร์",
+                "B": "ไม้แต่งคีบ",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "u92ipmta",
+              "questionNo": 6,
+              "questionText": "ด้านหลังชิ้นงาน  FRT DR PWR LWR RG01 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " ดินสอมาร์ค",
+                "B": " เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "230intbv",
+              "questionNo": 7,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  FRT DR PWR LWR RG01 ต้องใช้น้ำชนิดใด ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "i65iql9m",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  FRT DR PWR LWR RG01 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " งาน FRT DR PWR LWR RG01 No.1 มีโมล 2 โมลแยก RH กับ LH",
+                "B": "งาน FRT DR PWR LWR RG01 ไม่ได้ใช้ Valve Gate",
+                "C": "งาน FRT DR PWR LWR RG01 ไม่ได้ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน FRT DR PWR LWR RG01 No.1 ข้าง RH ผลิตที่เครื่องฉีด 16 / ข้าง LH ผลิตที่เครื่องฉีด 18"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "lvt5lbnk",
+          "partCode": "RG01",
+          "partName": "Grille Speaker RR LH RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "epg4hr62",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพ งาน Grille Speaker RR LH RG01 รหัสใน Condition ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVC2lOaQWmbGNJW9g3a3WuyEBUc7VO0iIK-dnhbN90y4ZkNY-gCjBkFgGKTXXuoa0Mh74b_46xZpGXee_CA5KUvV5-eTkIci9CWmlB2XYm5dlmlkZKQL420a5OBNqs39_2hDx_kXVO3tZWcLAz8mvw0ic3rN9pLFED23VwSfAsxxQTPdJ2Hj0KdFTFkI5kkuBOeI112TQsGiiYA=w140?key=uvWCQFm0at7M5WiKWJTjoVAl",
+              "choices": {
+                "A": "WN6000003160",
+                "B": "WN6000003170",
+                "C": "WN6000003180",
+                "D": "WN6000003190"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "31dmswbx",
+              "questionNo": 2,
+              "questionText": "งาน Grille Speaker RR LH RG01 บรรจุใส่กล่องใน 1 กล่องข้อใดถูกต้อง ",
+              "imageUrl": "",
+              "choices": {
+                "A": "34 Pcs",
+                "B": "36 Pcs",
+                "C": "42 Pcs",
+                "D": "52 Pcs"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "rwlxuf8z",
+              "questionNo": 3,
+              "questionText": " น้ำหนักมาตรฐานของงาน Grille Speaker RR LH RG01ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.144 - 0.156",
+                "B": "0.145 - 0.155",
+                "C": " 0.146  -  0.147",
+                "D": "0.144  -  0. 148"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "yjeidltb",
+              "questionNo": 4,
+              "questionText": "งาน Grille Speaker RR LH RG01 สามารถขึ้นเดินงานเครื่องใดได้บ้างข้อใดกล่าวถูก",
+              "imageUrl": "",
+              "choices": {
+                "A": " เครื่อง 10 และ เครื่อง 12",
+                "B": "เครื่อง 12 และ เครื่อง 13",
+                "C": "เครื่อง 13 และ เครื่อง 15",
+                "D": "ไม่มีข้อถูก"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "y5uf23ze",
+              "questionNo": 5,
+              "questionText": "แม่พิมพ์ Grille Speaker Rear RG01  ใช้เม็ดพลาสติกใด",
+              "imageUrl": "",
+              "choices": {
+                "A": " PP RJ920T N052",
+                "B": "ASA S210B N817",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "2g64hv9f",
+              "questionNo": 6,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille Speaker Rear RG01 ต้องใช้น้ำชนิดใด ?",
+              "imageUrl": "",
+              "choices": {
+                "A": ".น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "v6165q6s",
+              "questionNo": 7,
+              "questionText": "ด้านหลังชิ้นงาน  Grille Speaker Rear RG01 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอมาร์ค",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "pd0e96k0",
+              "questionNo": 8,
+              "questionText": "ในการตัดเกทชิ้นงาน Grille Speaker Rear RG01 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": "0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "t1tq7390",
+          "partCode": "RG01",
+          "partName": "Grille Speaker RR RH RG01",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "fbz4laqh",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพ งาน Grille Speaker RR RH RG01 รหัสใน Condition ข้อใดกล่าวถูกต้อง\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCHtKXdZxZHUjmmYdcS8GaAoX_6Ia7IboE8LI7AdBm3FwB--OW4kSr5sFOAErlfJd1qsCGVmfNnF5rakO9kswRlRml0z4oOu0NaT4n_3RYMEOwSMrtM3f0HFP7IswzytnT9oq1FJHTllBjSNMdnx4EDSa1vN0B6-zUsdD_ZRURJJceW1SyTpTmMG3OFNdBffe8nW8xDJaf8YToH=w125?key=bDuKSEaEzXqQXsfB-jL9dlHh",
+              "choices": {
+                "A": "WN6000003160",
+                "B": "WN6000003170",
+                "C": "WN6000003180",
+                "D": "WN6000003190"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "x2lhuuea",
+              "questionNo": 2,
+              "questionText": "งาน Grille Speaker RR RH RG01 บรรจุใส่กล่องใน 1 กล่องข้อใดถูกต้อง ",
+              "imageUrl": "",
+              "choices": {
+                "A": "34 Pcs",
+                "B": "36 Pcs",
+                "C": " 42 Pcs",
+                "D": "52 Pcs"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "80pqjbcn",
+              "questionNo": 3,
+              "questionText": "น้ำหนักมาตรฐานของงาน Grille Speaker RR RH RG01ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.144 - 0.156",
+                "B": "0.145 - 0.155",
+                "C": "0.146  -  0.147",
+                "D": "0.144  -  0. 148"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "nl35lraf",
+              "questionNo": 4,
+              "questionText": "งาน Grille Speaker RR RH RG01 สามารถขึ้นเดินงานเครื่องใดได้บ้างข้อใดกล่าวถูก",
+              "imageUrl": "",
+              "choices": {
+                "A": "เครื่อง 10 และ เครื่อง 12",
+                "B": "เครื่อง 12 และ เครื่อง 13",
+                "C": "เครื่อง 13 และ เครื่อง 15",
+                "D": "ไม่มีข้อถูก"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "ndq1qmd9",
+              "questionNo": 5,
+              "questionText": "แม่พิมพ์ Grille Speaker Rear RG01  ใช้เม็ดพลาสติกใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP RJ920T N052",
+                "B": " ASA S210B N817",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "hgfgphdx",
+              "questionNo": 6,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille Speaker Rear RG01 ต้องใช้น้ำชนิดใด ?",
+              "imageUrl": "",
+              "choices": {
+                "A": ".น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "333jjn28",
+              "questionNo": 7,
+              "questionText": " ด้านหลังชิ้นงาน  Grille Speaker Rear RG01 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอมาร์ค",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "a7445r6p",
+              "questionNo": 8,
+              "questionText": "ในการตัดเกทชิ้นงาน Grille Speaker Rear RG01 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": " 0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "kwpriy91",
+          "partCode": "RG01",
+          "partName": "RR Pocket RG01RH",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "lwrfwqra",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพ RR Pocket RG01RH มีเกจที่ต้องตัดทั้งหมดกี่เกจ\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVAR0Z9xTeQHOUY7FS7kR-9u0cyWXPOypVDfzOI1XLSNozt1up1SLXcHyq8rPyeXdBLNcYUZDOJBNJQCF-AIfbCXjHmnc9QfxS5bhCL45KzDoMRpZSZsxO8i0Q60Q8OlHcu_TWNwSX_hD4l929QzHWmBFTSnecPgUxVM0yGE25PuIcHBZ7voUf5UXTP9X_0frGvmTlQnyZh4jQA=w144?key=e9_gMCu3yp6jqvCwLIoWHVrD",
+              "choices": {
+                "A": "1",
+                "B": "2",
+                "C": "3",
+                "D": "4"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "yq0rzko8",
+              "questionNo": 2,
+              "questionText": "ในการผลิตชิ้นงาน  RR  Pocket RG01  ใช้เม็ดพลาสติกชนิดใดบ้างในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " PC-ABS  PX10-X06",
+                "B": "RJ 920 T N052",
+                "C": "RJ 920 T  K701",
+                "D": "PC-ABS Cycoloy*Resin XCY620"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "s5kl4k7c",
+              "questionNo": 3,
+              "questionText": "รหัส Condition ตาม WI ของงาน RR Pocket RG01 RH ข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "WN600004820",
+                "B": "WN600004830",
+                "C": "WN600002510",
+                "D": "WN600002570"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "ecjr5e7t",
+              "questionNo": 4,
+              "questionText": "กล่องบรรจุชิ้นงาน RR Pocket RG01 RH ใช้กล่องสีอะไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "สีเขียว",
+                "B": "สีเทา",
+                "C": "สีน้ำเงิน",
+                "D": "สีเหลือง"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "6huvbmtb",
+              "questionNo": 5,
+              "questionText": "กล่องบรรจุงาน RR Pocket RG01 RH  1 กล่องสามารถใส่ชิ้นงานได้กล่องละกี่ตัว",
+              "imageUrl": "",
+              "choices": {
+                "A": "5 Pcs",
+                "B": "6 Pcs",
+                "C": "8 Pcs",
+                "D": "10 Pcs"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "ivx5iaet",
+              "questionNo": 6,
+              "questionText": "น้ำหนักมารตฐาน RR Pocket RG01 RH  ตามWI  ข้อใดกล่าวถูก",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.170  -  0.184",
+                "B": "0. 175  -  0.180",
+                "C": "0.170  -  0.188",
+                "D": "0.172  -  0.184"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "3gl1rb4o",
+              "questionNo": 7,
+              "questionText": "งาน RR Pocket RG01 RH เครื่องไหน ไม่สามารถ ขึ้นโมลตัวนี้ข้อใดกล่าวถูก",
+              "imageUrl": "",
+              "choices": {
+                "A": "เครื่อง 10.และ เครื่อง12",
+                "B": " เครื่อง 12 และ เครื่อง 13",
+                "C": " เครื่อง 13 และ เครื่อง 15",
+                "D": " ไม่มีข้อถูก"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "3vtsgw34",
+              "questionNo": 8,
+              "questionText": "งาน RR Pocket RG01 กำหนดหน้างานให้ผลิตซ้อนกล่องความสูงได้กี่กล่องในการผลิตแต่ละตั้ง",
+              "imageUrl": "",
+              "choices": {
+                "A": "4 กล่อง",
+                "B": "5 กล่อง",
+                "C": "6 กล่อง",
+                "D": "8 กล่อง"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a2lp1cwf",
+      "modelCode": "RG10",
+      "modelName": "Model 3",
+      "parts": [
+        {
+          "id": "7tv3rlqq",
+          "partCode": "RG10",
+          "partName": "Grille Radiator Molding CTR",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "ltmw1jah",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 รูป A และ รูป B เรียกว่าอะไร",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVA2MpC7LLDNNKGe15_S-8xLKwUeVE1jTsrXRFY5zGARn10a7g89phGcxMR0bN6lnxKNTLJp0q15sElGbZM9GsHw2EIIdJmnNYjVGKBKr98bcFG-KRWmqS8mSRHoLVz8DJX2StCNuBrJXTMfnF5xjvC7BSdVfOf4Y8RtNdgu8yM1nC9MFXJb_EWQ1zrDS9EUCa4kHP6gsKY0L5z6=w198?key=RWY-bhO-TO6WWa0MxLqZRhvm",
+              "choices": {
+                "A": "A คือ Lower และ B คือ Upper",
+                "B": "A คือ Upper และ B คือ Lower",
+                "C": "งาน A และ B เหมือนกัน",
+                "D": "A คือ LH และ B คือ RH"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "klqaj3u3",
+              "questionNo": 2,
+              "questionText": "งาน Grille FRT BMP Molding CTR RG10  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP RJ920T N052",
+                "B": " ABS 3001 MG2A",
+                "C": "ASA S210B K701",
+                "D": "ใช้ทั้งข้อ ข. และ ค."
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "2cmkmm2o",
+              "questionNo": 3,
+              "questionText": "Corrugated Box สำหรับใส่งาน Grille FRT BMP Molding CTR RG10 มี Code ว่าอะไรและ 1 กล่องใส่งานได้กี่ชิ้น  ?",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVCBtwXX7a9yOdtfTx2DDOvPciJL6kYvaJgkOcq9qoBR8LJFemsbo9bqQejSrDa9KMdCxXnHLnpq7-GX5PjjIt_6TIzvvvrdXUzNfDvDQI8OGNeCg5cQ55_VOcmLwGyzskFoxy0RkyKuSEVp4uyX7YQ1CEJdPTlCkSYVDHtLHQQleUvTSyvwgQ9a93btsYx9d7qaP-BHQKs9n1M=w237?key=RWY-bhO-TO6WWa0MxLqZRhvm",
+              "choices": {
+                "A": "HCI412/7 ชิ้น",
+                "B": " HCI410/ 7 ชิ้น",
+                "C": "HCI412/ 10 ชิ้น",
+                "D": "HCI410/ 10 ชิ้น"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "r6ajrpqv",
+              "questionNo": 4,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Grille FRT BMP Molding CTR RG10 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "กรรไกร",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ข้อ ข.และค. ถูกต้อง"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "zhph4cd7",
+              "questionNo": 5,
+              "questionText": "ด้านหลังชิ้นงาน  Grille FRT BMP Molding CTR RG10 สำหรับงานชุบโครเมี่ยม ( ABS Chrome ) ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอมาร์ค",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "wzlo7owc",
+              "questionNo": 6,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille FRT BMP Molding CTR RG10 ต้องใช้น้ำชนิดใด ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "Just Thermo น้ำร้อน",
+                "B": "Chiller โดยตรง น้ำเย็น",
+                "C": "ไม่ได้ใช้ระบบน้ำ",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "4hslube3",
+              "questionNo": 7,
+              "questionText": "จงพิจารณาข้อความต่อไปนี้ ข้อใดกล่าวถูกต้อง ",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Grille FRT BMP Molding CTR RG10 ไม่ต้องใส่ PE Foam สำหรับงานพ่นสี ( ABS Paint )",
+                "B": "งาน Grille FRT BMP Molding CTR RG10 ฉีดงานที่เครื่องฉีด หมายเลข 10",
+                "C": " งาน Grille FRT BMP Molding CTR RG10 ให้บรรจุใส่ PE Foam สีน้ำเงิน",
+                "D": "ถูกทั้งข้อ ข.และ ค"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "f89pff4v",
+              "questionNo": 8,
+              "questionText": "FREE",
+              "imageUrl": "",
+              "choices": {
+                "A": "A",
+                "B": "A",
+                "C": "A",
+                "D": "A"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qmr67k21",
+      "modelCode": "RG14",
+      "modelName": "Model 4",
+      "parts": [
+        {
+          "id": "ov7z0id2",
+          "partCode": "RG14",
+          "partName": "Grille INR Narrow RG14 ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "vy9o7uo1",
+              "questionNo": 1,
+              "questionText": "",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBJ8LceslNwvSTB_g1eayZnNYcDbD28GO5D3aua4pPW7BJeBHz1oXohOtLZPjby4AQeWos-tH2k5PwtKYir_RiuHAS66fWz6m6ZEEs4mno41toVDLypPpyS6k-nsPIJfhBIz9kgrd_ex17qRKk8h-hHSpM8N3IkdcE_yFz29R_UBFdMYr3wZj43JgC0AjlP4kVOWFRhv3KR1K5P=w170?key=VsFBRbhyfK2jCstpBWbh2CHP",
+              "choices": {
+                "A": "10 เกท",
+                "B": "12 เกท",
+                "C": "13 เกท",
+                "D": "14 เกท"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "f51juzef",
+              "questionNo": 2,
+              "questionText": "งาน Grille INR Narrow RG14  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP X509T K701",
+                "B": "PP X508T K701",
+                "C": "PP RJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "zqy5eckd",
+              "questionNo": 3,
+              "questionText": "ในการตัดเกทชิ้นงาน Grille INR Narrow RG14 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": " 0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "5rd4e8e9",
+              "questionNo": 4,
+              "questionText": "Container สำหรับใส่งาน Grille INR Narrow RG14 มี Code ว่าอะไรและ 1 container ใส่งานได้กี่ชิ้น",
+              "imageUrl": "",
+              "choices": {
+                "A": "PK230012/20 ชิ้น",
+                "B": "PK230012/18 ชิ้น",
+                "C": " PK230013 / 20 ชิ้น",
+                "D": " PK230013 / 18 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "83pjwud1",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Grille INR Narrow RG14 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": " คัทเตอร์",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": ".คีม",
+                "D": "ก และ ค ถูกต้อง"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "1qo3epun",
+              "questionNo": 6,
+              "questionText": " ด้านหลังชิ้นงาน  Grille INR Narrow RG14 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอมาร์ค",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "9q35f7fx",
+              "questionNo": 7,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille INR Narrow RG14 เป็นอย่างไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "Just Thermo",
+                "B": "Chiler โดยตรง",
+                "C": "ไม่ได้ใช้ระบบน้ำ",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "l5hxtrf3",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  Grille INR Narrow RG14 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Grille INR Narrow RG14 ฉีดงาน 1 ครั้ง ได้งานทั้ง 2 ข้าง",
+                "B": "งาน Grille INR Narrow RG14 ไม่ได้ใช้ Valve Gate",
+                "C": "งาน Grille INR Narrow RG14 ไม่ได้ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน Grille INR Narrow RG14 ทำการผลิตที่เครื่องฉีด 18"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "g471fs82",
+          "partCode": "RG14",
+          "partName": "Grille FRT Molding CTR RG14",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "4cngsma2",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 ชิ้นงาน Grille FRT Molding CTR RG14 เรียกว่าอะไร\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVACduysjQaFf2v3ikUYXUJXFCaTcdNyZiglTnmlhRSK80kJnL9mSRevqGfUQhMbB37jJclcC9M0TzS6dPmIRYoOC-UnYD43rixG-qQkQV9F859Gvn0E7GG-4p4MyeRlq3p55ekIjva1WlN7HGr_m4-QrNxGThG_3DE8rnSOCj9QjtOcOdnyt7B0mgLJU8mmY5q_Xzr15_zQQOQ=w243?key=q5-b-Txwq-Ji4iqlfyHmDwId",
+              "choices": {
+                "A": "Lower และ Upper",
+                "B": " Cavity 1 และ Cavity 2",
+                "C": "RH และ LH\n",
+                "D": "ถูกทั้ง ก และ ค"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "vt2r84le",
+              "questionNo": 2,
+              "questionText": "งาน Grille FRT Molding CTR RG14  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "ABS 3001 MG2A/ASA S210B K701",
+                "B": "ABS 3001 MG2A/ASA S210B N057",
+                "C": "ABS MF2/ASA S210B K701",
+                "D": " ABS MF2/ASA S210B N057"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "dx2s34sz",
+              "questionNo": 3,
+              "questionText": "ในการตัดเกทชิ้นงาน Grille FRT Molding CTR RG14  สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": " 0.2 mm.",
+                "B": "0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "k4eua6jg",
+              "questionNo": 4,
+              "questionText": "Corrugate สำหรับใส่งาน Grille FRT Molding CTR RG14  มี Code ว่าอะไรและ 1 container ใส่งานได้กี่ชิ้น  ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "PK230005 / 20 ชิ้น",
+                "B": "PK230005 / 40 ชิ้น",
+                "C": "PK230006 / 20 ชิ้น",
+                "D": "PK230006 / 40 ชิ้น"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "7thsmrz2",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Grille FRT Molding CTR RG14  ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คัทเตอร์",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ก และ ค ถูกต้อง"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "6wqw3qzl",
+              "questionNo": 6,
+              "questionText": "ด้านหลังชิ้นงาน  Grille FRT Molding CTR RG14  ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "สติ๊กเกอร์",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "ถูกทั้ง ก และ ข"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "fvyordu1",
+              "questionNo": 7,
+              "questionText": " ระบบน้ำภายในแม่พิมพ์ของ  Grille FRT Molding CTR RG14  เป็นอย่างไร ?",
+              "imageUrl": "",
+              "choices": {
+                "A": "Just Thermo",
+                "B": "Chiler โดยตรง",
+                "C": "ไม่ได้ใช้ระบบน้ำ",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "1hqlkl02",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  Grille FRT Molding CTR RG14 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Grille FRT Molding CTR RG14 ฉีดงาน 1 ครั้ง ได้งานทั้ง 2 ชิ้น",
+                "B": "งาน Grille FRT Molding CTR RG14  ใช้ Valve Gate",
+                "C": "งาน Grille FRT Molding CTR RG14 ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน Grille FRT Molding CTR RG14 ทำการผลิตที่เครื่องฉีด 12"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "950ymqi9",
+          "partCode": "RG14",
+          "partName": "Grille FRT Molding UPR RG14",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "row5cu04",
+              "questionNo": 1,
+              "questionText": "จากรูปภาพที่ 1 รูป A และ รูป B เรียกว่าอะไร\n*",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBk9dNinqYGub3OxWK00zeNpDGVQNeCIMYfc4KQUC9nHAF86ZxBG7l8d7kgdQS_Nx1RNx4gjwvAZWSXBks2EIoMAbhWDzwBBMcsrapkU8CiycHgUerQ2EwCbBabT21qC9fZG5Lc-BNU09yD0fJh5C8O6DdzRudYqPqU5RiBmaEbX1pT-0BpAwJvsxnH7qM9V8wFg-p3JwMtveeq=w463?key=xEThYXcsAvNazchcbGiFe9Dt",
+              "choices": {
+                "A": "A คือ Lower และ B คือ Upper",
+                "B": " A คือ Upper และ B คือ Lower",
+                "C": "A คือ RH และ B คือ LH",
+                "D": "A คือ LH และ B คือ RH"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "jssr36cc",
+              "questionNo": 2,
+              "questionText": "แม่พิมพ์ Grille FRT Molding UPR RG14  ใช้เม็ดพลาสติกใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "ABS 3001MG2A / ASA S210B N057",
+                "B": "ABS 3001MG2A / ASA S210B K701",
+                "C": "ABS MF2 / ASA S210B K701",
+                "D": "ABS MF2 / ASA S210B N057"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "domx5nib",
+              "questionNo": 3,
+              "questionText": " ในการตัดเกทชิ้นงาน Grille FRT Molding UPR RG14 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "0.2 mm.",
+                "B": " 0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "2.0 cm"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "ljzrql71",
+              "questionNo": 4,
+              "questionText": "Corrugated Box สำหรับใส่งานGrille FRT Molding UPR RG14 มี Code ว่าอะไรและ 1 กล่องใส่งานได้กี่ชิ้น",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBxbHmJiGR-Mab2BUSHcYisZ_2lpU-oL_ToN0yIFRH2l42F3RlyuqH-rWLxNebML30pwzS_Ie-8g4AqOtT-pX0b6oQG-dJ4kNDE6SdNQpmeCkxxSOd7gWjhSuo6fgVTkqRL2wZTZuZPLy4N3VUopnqYABMHcXVQMBb83SAeTAGLF74rnJavCpIWdV8WoYKIrUoxXxW7M568lh9_=w260?key=xEThYXcsAvNazchcbGiFe9Dt",
+              "choices": {
+                "A": "PK230004 / 40 ชิ้น",
+                "B": " PK230005 / 40 ชิ้น",
+                "C": "PK230006 / 40 ชิ้น",
+                "D": "PK230007 / 40 ชิ้น"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "s8kx2sl6",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Grille FRT Molding UPR RG14 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "กรรไกร",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ถูกทั้ง ก และ ค."
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "om54ed0q",
+              "questionNo": 6,
+              "questionText": " ชิ้นงาน  Grille FRT Molding UPR RG14 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ ",
+              "imageUrl": "",
+              "choices": {
+                "A": " ดินสอมาร์ค",
+                "B": " เหล็กแหลม Sprike",
+                "C": "สติ๊กเกอร์",
+                "D": "ถูกทั้ง ข และ ค."
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "9m5b90it",
+              "questionNo": 7,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille FRT Molding UPR RG14 ต้องใช้น้ำชนิดใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำธรรมดา",
+                "B": "น้ำร้อน",
+                "C": "น้ำเย็น",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "vhh5ajja",
+              "questionNo": 8,
+              "questionText": " พิจารณาเกี่ยวกับงาน  Grille FRT Molding UPR RG14 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Grille FRT Molding UPR RG14 ไม่ต้องบรรจุใส่ PE Foam ก่อนบรรจุใส่ Corrugated Box",
+                "B": "งาน Grille FRT Molding UPR RG14 ฉีดงาน 1 ครั้ง ได้งาน 2 ชิ้น",
+                "C": "งาน Grille FRT Molding UPR RG14 ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน Grille FRT Molding UPR RG14 ทำการผลิตที่เครื่องฉีด 12"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "savmkox1",
+          "partCode": "RG14",
+          "partName": "Grille Radiator INR Wide RG14",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "zjg0ipjz",
+              "questionNo": 1,
+              "questionText": "ชิ้นงาน Grille Radiator INR Wide RG14 มีเกทที่ต้องตัดทั้งหมดกี่เกท",
+              "imageUrl": "",
+              "choices": {
+                "A": "11",
+                "B": "12",
+                "C": "13",
+                "D": "14"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "s8oj9pbb",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน Grille Radiator INR Wide RG14 ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "PP X509T N057",
+                "B": "PP X509T K701",
+                "C": "PP PJ920T K701",
+                "D": "PP H960T K701"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "lsl0l62s",
+              "questionNo": 3,
+              "questionText": "ใน 1 แร็ค สามารถบรรจุชิ้นงาน Grille Radiator INR Wide RG14 ได้กี่ชิ้น และมีรหัสอะไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "18 ชิ้น / PK230011",
+                "B": "20 ชิ้น / PK230011",
+                "C": "18 ชิ้น / PK230012",
+                "D": "20 ชิ้น / PK230012"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "dq8sl76l",
+              "questionNo": 4,
+              "questionText": "ในการตัดเกทรันเนอร์สามารถตัดเข้าเนื้อชิ้นงานได้กี่มิลลิเมตรและสามารถเหลือความสูงของเกทหลังจากตัดกับตัวชิ้นงานได้กี่มิลลิเมตร งานจึงจะ \"OK\"",
+              "imageUrl": "data:image/png;base64,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",
+              "choices": {
+                "A": "น้อยกว่า 1.99 mm",
+                "B": "น้อยกว่า 2 mm",
+                "C": "มากกว่า 2 mm",
+                "D": "น้อยกว่า 0.2 mm"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "hikozevs",
+              "questionNo": 5,
+              "questionText": "น้ำหนักชิ้นงาน Grille Radiator INR Wide RG14 ที่ถูกระบุไว้ใน WI และ Check Sheet มีค่าอยู่ในช่วงใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "  2.124 - 2.184 kg.",
+                "B": "2.125 - 2.185 kg.",
+                "C": "2.210 - 2.440 kg.",
+                "D": "2.310 - 2.540 kg."
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "zm89oxc0",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน Grille Radiator INR Wide RG14 ต้องใช้สิ่งใดระบุ วันที่/เดือน/ปี รหัสพนักงานและกะ",
+              "imageUrl": "",
+              "choices": {
+                "A": "ดินสอสีเทียนและสติกเกอร์",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "สติ๊กเกอร์"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "3cyh382n",
+              "questionNo": 7,
+              "questionText": "ในการตัดรันเนอร์เกทของ Grille Radiator INR Wide RG14 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "กรรไกร",
+                "B": "คัตเตอร์",
+                "C": "คีม",
+                "D": " ถูกทั้ง ข. และ  ค."
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "grx8ne34",
+              "questionNo": 8,
+              "questionText": "แม่พิมพ์ของ Grille Radiator INR Wide RG14 ใช้น้ำหล่อเย็นชนิดใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำมัน",
+                "B": "น้ำร้อน(Justhermo)",
+                "C": "น้ำเย็น (Chiller)",
+                "D": "น้ำเดือด"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "wb10dg1t",
+          "partCode": "RG14",
+          "partName": "RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "chi7pucw",
+              "questionNo": 1,
+              "questionText": " ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH  มีเกทที่ต้องตัดทั้งหมดกี่เกท",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVD_SY7er2OGh4_8YwurHsgQlLwaccIkh1KLqSfaT7yzpfL3pxvGxZ1NCYlTz_85cRAUiJ7a7zBtdXFDEYyHhmi_uG1bV4_ZFbKynN2XareS4fK2ylkFTlz6k8OJvyZ-Kd3aR6psglnbxfD6upaX3XQDrWi5wHOsHPL7j2Q10U6_v0PllZQtfHYF5FxXpD6fXV79UWlzmLH3qWMX=w308?key=Ax25SJKQcD_kdmLMq6hCqiYM",
+              "choices": {
+                "A": "6",
+                "B": "5",
+                "C": "7",
+                "D": "4"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "0qbs1nhi",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " ABS 550Y MH5 B1 Blue",
+                "B": "PP X509T K701",
+                "C": "PP PG1100",
+                "D": "TOYOLAC TORAY ABS 450Y MH5 B1 Black"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "oqtkoqo9",
+              "questionNo": 3,
+              "questionText": "ใน 1 แร็ค สามารถบรรจุชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ได้กี่ชิ้น และมีรหัสอะไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "40 ชิ้น /  PK230020",
+                "B": "20 ชิ้น/  PK230030",
+                "C": "40 ชิ้น / PK230030",
+                "D": "30 ชิ้น/  PK230020"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "b3cmw101",
+              "questionNo": 4,
+              "questionText": "ในการตัดเกทรันเนอร์สามารถตัดเข้าเนื้อชิ้นงานได้กี่มิลลิเมตรและสามารถเหลือความสูงของเกทหลังจากตัดกับตัวชิ้นงานได้กี่มิลลิเมตร งานจึงจะ \"OK\"",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้อยกว่า 0.3 mm",
+                "B": " น้อยกว่า 2.5 mm",
+                "C": "มากกว่าหรือเท่ากับ 0.2 mm",
+                "D": "น้อยกว่าหรือเท่ากับ 0.2 mm"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "ovlhj97l",
+              "questionNo": 5,
+              "questionText": "น้ำหนักชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ที่ถูกระบุไว้ใน WI และ Check Sheet มีค่าอยู่ในช่วงใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "RH/LH = 1.990 - 2.150",
+                "B": "RH/LH = 0.550 - 0.780",
+                "C": "RH/LH = 1.190 - 1.240",
+                "D": "RH/LH = 0.990 - 1.030"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "apfmd7nb",
+              "questionNo": 6,
+              "questionText": "ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ต้องใช้สิ่งใดระบุ วันที่/เดือน/ปี รหัสพนักงานและกะ (ระบุที่ตัวชิ้นงาน)",
+              "imageUrl": "",
+              "choices": {
+                "A": "ปากกาลูกลื่น",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "ดินสอสีเทียนและสติกเกอร์ระบุ วัน/เดือน/ปี"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "ovo3e0sz",
+              "questionNo": 7,
+              "questionText": "ในการตัดรันเนอร์เกทของ RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "กรรไกร",
+                "B": "คัตเตอร์ใหญ่",
+                "C": "คีม",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "0ih6hg5z",
+              "questionNo": 8,
+              "questionText": "แม่พิมพ์ของ RG14 IAST CARGO SPOILER EXTENDER RR LWR RH-LH ใช้น้ำหล่อเย็นชนิดใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "น้ำมัน",
+                "B": "น้ำร้อน(Justhermo)",
+                "C": "น้ำเย็น (Chiller)",
+                "D": "น้ำเดือด"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "aq9wk7r5",
+          "partCode": "RG14",
+          "partName": "Grille FRT Molding LWR RG14",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "bnp2i9xs",
+              "questionNo": 1,
+              "questionText": " จากรูปภาพที่ 1 ชิ้นงาน Grille FRT Molding LWR RG14 รูป A และ B เรียกว่าอะไร\n",
+              "imageUrl": "https://lh7-rt.googleusercontent.com/formsz/AN7BsVBH9McG1vBY-YNTwsU7jHqGcAc1mREIea44f48ty0uHTVmCFLkgw7m7sGj75hcBTqnmtB5ZZXz_lQy1gHS40cswqZFihKQ4L45bIjGgQbVYtUWZyr-1W3edzCr3cKrJh-InkYT4v5HhW7gJtNSXxUxBob5sQhD4QB1VNhAGAyuc9V4fQYQ2Rz6vOSjH66W1GSbCJJpXgoY83SE=w226?key=tx8hGk-zIYSfp5kaBV7OG7Ex",
+              "choices": {
+                "A": "A คือ Lower และ B คือ Upper",
+                "B": "A คือ Upper และ B คือ Lower",
+                "C": " A คือ RH และ B คือ LH",
+                "D": "A คือ LH และ B คือ RH"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "woud7yfx",
+              "questionNo": 2,
+              "questionText": "งาน Grille FRT Molding LWR RG14  ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": "ABS 3001 MG2A/ASA S210B K701",
+                "B": "ABS 3001 MG2A/ASA S210B N057",
+                "C": " ABS MF2/ASA S210B K701",
+                "D": "ABS MF2/ASA S210B N057"
+              },
+              "correctAnswer": "B",
+              "score": 5
+            },
+            {
+              "id": "2e4t9z4f",
+              "questionNo": 3,
+              "questionText": "ในการตัดเกทชิ้นงาน Grille FRT Molding LWR RG14 สามารถตัดเข้าเนื้อชิ้นงานได้ไม่เกินเท่าไร ",
+              "imageUrl": "",
+              "choices": {
+                "A": "0.2 mm.",
+                "B": "0.2 cm.",
+                "C": "0.02 mm.",
+                "D": "ห้ามตัดเข้าเนื้อชิ้นงานเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "tc0t4xc5",
+              "questionNo": 4,
+              "questionText": "Corrugate สำหรับใส่งาน Grille FRT Molding LWR RG14 มี Code ว่าอะไรและ 1 container ใส่งานได้กี่ชิ้น",
+              "imageUrl": "",
+              "choices": {
+                "A": "PK230005 / 20 ชิ้น",
+                "B": "PK230005 / 40 ชิ้น",
+                "C": "PK230006 / 20 ชิ้น",
+                "D": "PK230006 / 40 ชิ้น"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "b39atlqp",
+              "questionNo": 5,
+              "questionText": "ในการตัดรันเนอร์เกทของ  Grille FRT Molding LWR RG14 ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "คัทเตอร์",
+                "B": "มีดตัดแต่งชิ้นงาน",
+                "C": "คีม",
+                "D": "ก และ ค ถูกต้อง"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "6dul0k88",
+              "questionNo": 6,
+              "questionText": "ด้านหลังชิ้นงาน  Grille FRT Molding LWR RG14 ต้องใช้สิ่งใดระบุ ลำดับชิ้นงาน วันที่/เดือน รหัสพนักงานและกะ",
+              "imageUrl": "",
+              "choices": {
+                "A": " สติ๊กเกอร์",
+                "B": "เหล็กแหลม Sprike",
+                "C": "ปากกาเมจิก",
+                "D": "ถูกทั้ง ก และ ข"
+              },
+              "correctAnswer": "D",
+              "score": 5
+            },
+            {
+              "id": "2l4hy94s",
+              "questionNo": 7,
+              "questionText": "ระบบน้ำภายในแม่พิมพ์ของ  Grille FRT Molding LWR RG14 เป็นอย่างไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "Just Thermo",
+                "B": "Chiler โดยตรง",
+                "C": "ไม่ได้ใช้ระบบน้ำ",
+                "D": "น้ำมัน"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "5pif1yvf",
+              "questionNo": 8,
+              "questionText": "พิจารณาเกี่ยวกับงาน  Grille FRT Molding LWR RG14 ข้อใดต่อไปนี้ถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "งาน Grille FRT Molding LWR RG14 ฉีดงาน 1 ครั้ง ได้งานทั้ง 2 ข้าง",
+                "B": "งาน Grille FRT Molding LWR RG14 ใช้ Valve Gate",
+                "C": "งาน Grille FRT Molding LWR RG14 ใช้ตู้ Hot Runner/Hot Chip",
+                "D": "งาน Grille FRT Molding LWR RG14 ทำการผลิตที่เครื่องฉีด 12"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            }
+          ]
+        },
+        {
+          "id": "17lt5rml",
+          "partCode": "RG14",
+          "partName": " IAST CARGO SPOILER EXTENDER RR UPR RH-LH ",
+          "subtitle": "ระบบข้อสอบออนไลน์พนักงาน",
+          "passScore": 35,
+          "randomizeQuestions": false,
+          "showResultImmediately": true,
+          "questions": [
+            {
+              "id": "f9yullew",
+              "questionNo": 1,
+              "questionText": "ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH  มีเกทที่ต้องตัดทั้งหมดกี่เกท",
+              "imageUrl": "data:image/png;base64,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",
+              "choices": {
+                "A": "6",
+                "B": "4",
+                "C": "3",
+                "D": "2"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "4jg4xvcp",
+              "questionNo": 2,
+              "questionText": "ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH ใช้เม็ดพลาสติกใดในการผลิต",
+              "imageUrl": "",
+              "choices": {
+                "A": " ABS 450Y MH5 Black",
+                "B": "PP X509T K701",
+                "C": "PP PG1100",
+                "D": "TOYOLAC TORAY ABS 550T MH5 B1 Pink"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "zp9idrsk",
+              "questionNo": 3,
+              "questionText": "ใน 1 แร็ค สามารถบรรจุชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH ได้กี่ชิ้น และมีรหัสอะไร",
+              "imageUrl": "",
+              "choices": {
+                "A": "40 ชิ้น /  PK230030",
+                "B": "20 ชิ้น/  PK230030",
+                "C": "40 ชิ้น / PK230020",
+                "D": "30 ชิ้น/  PK230020"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "8ro8cmn8",
+              "questionNo": 4,
+              "questionText": "ในการตัดเกทรันเนอร์สามารถตัดเข้าเนื้อชิ้นงานได้กี่มิลลิเมตรและสามารถเหลือความสูงของเกทหลังจากตัดกับตัวชิ้นงานได้กี่มิลลิเมตร งานจึงจะ \"OK\"",
+              "imageUrl": "",
+              "choices": {
+                "A": "  น้อยกว่า 1.99 mm",
+                "B": "น้อยกว่า 2 mm",
+                "C": "มากกว่า 2 mm",
+                "D": "ห้ามเข้าเนื้อเด็ดขาด"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "xzpo2mkn",
+              "questionNo": 5,
+              "questionText": "น้ำหนักชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH ที่ถูกระบุไว้ใน WI และ Check Sheet มีค่าอยู่ในช่วงใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "RH/LH = 0.860 - 0.920",
+                "B": "RH/LH = 0.550 - 0.780",
+                "C": "RH/LH = 1.130 - 1.320",
+                "D": "RH/LH = 0.990 - 1.030"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "lvgl9t84",
+              "questionNo": 6,
+              "questionText": " ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH ปัญหาของงานที่ควรระวังมากที่สุดคือข้อใด",
+              "imageUrl": "",
+              "choices": {
+                "A": "เม็ดผสม",
+                "B": ". น้ำหนักชิ้นงาน",
+                "C": "งานยุบ",
+                "D": "งานด้วน"
+              },
+              "correctAnswer": "A",
+              "score": 5
+            },
+            {
+              "id": "errcjecv",
+              "questionNo": 7,
+              "questionText": "ชิ้นงาน RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH เมื่อตัดชิ้นงานเสร็จมีการวัดความโก่งของชิ้นงานค่าความวัดกำหนดเท่าไรในการวัดข้อใดกล่าวถูกต้อง",
+              "imageUrl": "",
+              "choices": {
+                "A": "7.0 - 9.5",
+                "B": "7.5 - 9.0",
+                "C": "8.0 - 9.0",
+                "D": "7.5 - 9.5"
+              },
+              "correctAnswer": "C",
+              "score": 5
+            },
+            {
+              "id": "3rk209we",
+              "questionNo": 8,
+              "questionText": "ในการตัดรันเนอร์เกทของ RG14 IAST CARGO SPOILER EXTENDER RR UPR RH-LH ใช้เครื่องมือชนิดใดในการตัด",
+              "imageUrl": "",
+              "choices": {
+                "A": "กรรไกร",
+                "B": "มีด",
+                "C": "คีมแดงใหญ่",
+                "D": "ถูกทุกข้อ"
+              },
+              "correctAnswer": "C",
+              "score": 5
             }
           ]
         }
