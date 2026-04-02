@@ -24,6 +24,29 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import {
+  buildEvaluationCsvRows,
+  buildEvaluationEvaluatorOptions,
+  buildEvaluationPartFilterOptions,
+  buildEvaluationPayload,
+  calculateEvaluationMax,
+  calculateEvaluationTotal,
+  createEvaluationDraft,
+  createEvaluationRows,
+  evaluationAssignedEvaluators,
+  filterEvaluationHistory,
+  getLatestEvaluationExamResult,
+  getLearningStatusSummary,
+  hydrateEvaluationEmployeeDraft,
+  patchEvaluationRows,
+  resetEvaluationDraft,
+  scoreLevels,
+  selectEvaluationEmployeeByCodeDraft,
+  selectEvaluationEmployeeByNameDraft,
+  selectEvaluationModelDraft,
+  selectEvaluationPartDraft,
+  ensureEvaluationSelectionDraft,
+} from "./evaluation-logic";
 import "./App.css";
 
 const STORAGE_KEY = "factory_exam_builder_v2";
@@ -55,17 +78,6 @@ const emptyEmployeeForm = {
   role: "USER",
   isActive: true,
 };
-
-const evaluationAssignedEvaluators = [
-  "206006 ??????????? ??????",
-  "210027 ???????????? ????????",
-  "211075 ??????????? ??????????",
-  "204041 ??????????? ???????",
-  "206029 ??????????????? ???????????",
-  "199033 ???????????? ???????????",
-  "197036 ????????? ??????",
-  "203009 ???????? ???????",
-];
 
 const FIXED_QUESTION_SCORE = 5;
 const FIXED_PASS_SCORE = 35;
@@ -368,48 +380,6 @@ const sanitizeBank = (rawBank) => {
 
 const fallbackStarterBank = sanitizeBank(fallbackExamBankSeed);
 const starterBank = () => JSON.parse(JSON.stringify(fallbackStarterBank));
-
-const scoreLevels = [1, 2, 3, 4];
-const defaultEvaluationItems = [
-  { item: "?????????????????????????? ???????????????????????????????????????? WI ??????????????????", method: "??????", weight: 1 },
-  { item: "???????????????????????????????????????????????", method: "???????", weight: 3 },
-  { item: "????????????????????????????????????", method: "???????", weight: 5 },
-  { item: "??????????????????????????????? ??????????????????????????? ?????????????????? NG", method: "????????", weight: 6 },
-];
-
-const createEvaluationRows = () => defaultEvaluationItems.map((row, index) => ({
-  id: uid(),
-  no: index + 1,
-  item: row.item,
-  method: row.method,
-  weight: row.weight,
-  score: 0,
-}));
-
-const learningStatusMeta = {
-  NOT_STARTED: { label: "?????????", className: "status-neutral" },
-  EXAM_NOT_PASSED: { label: "??????????", className: "status-fail" },
-  WAITING_EVALUATION: { label: "?????????", className: "status-warning" },
-  COMPLETED: { label: "???????", className: "status-pass" },
-};
-
-const getLearningStatusSummary = ({ attempts = 0, passed = 0, passedParts = 0, evaluatedParts = 0 }) => {
-  if (!attempts) return { key: "NOT_STARTED", ...learningStatusMeta.NOT_STARTED };
-  if (!passed) return { key: "EXAM_NOT_PASSED", ...learningStatusMeta.EXAM_NOT_PASSED };
-  if (passedParts > evaluatedParts) return { key: "WAITING_EVALUATION", ...learningStatusMeta.WAITING_EVALUATION };
-  return { key: "COMPLETED", ...learningStatusMeta.COMPLETED };
-};
-
-const createEvaluationDraft = () => ({
-  sectionTitle: "??????? 1 : ????????????? ??? ???????????",
-  modelId: "",
-  partId: "",
-  employeeId: "",
-  employeeCode: "",
-  employeeName: "",
-  evaluator: "",
-  rows: createEvaluationRows(),
-});
 
 const starterNews = () => ([
   {
@@ -731,11 +701,11 @@ export default function App() {
   const [evaluationForm, setEvaluationForm] = useState(() => {
     try {
       const saved = localStorage.getItem(EVALUATION_DRAFT_KEY);
-      if (!saved) return createEvaluationDraft();
+      if (!saved) return createEvaluationDraft(uid);
       const parsed = JSON.parse(saved);
-      const defaultRows = createEvaluationRows();
+      const defaultRows = createEvaluationRows(uid);
       return {
-        ...createEvaluationDraft(),
+        ...createEvaluationDraft(uid),
         ...parsed,
         rows: Array.isArray(parsed?.rows) && parsed.rows.length
           ? defaultRows.map((defaultRow, index) => {
@@ -754,7 +724,7 @@ export default function App() {
           : defaultRows,
       };
     } catch {
-      return createEvaluationDraft();
+      return createEvaluationDraft(uid);
     }
   });
   const [evaluationHistory, setEvaluationHistory] = useState([]);
@@ -1089,14 +1059,8 @@ export default function App() {
     return { attempts, passed, passRate: attempts ? Math.round((passed / attempts) * 100) : 0, avgPct };
   }, [filteredHistory]);
 
-  const evaluationTotal = useMemo(
-    () => evaluationForm.rows.reduce((sum, row) => sum + (Number(row.score || 0) * Number(row.weight || 0)), 0),
-    [evaluationForm.rows],
-  );
-  const evaluationMax = useMemo(
-    () => evaluationForm.rows.reduce((sum, row) => sum + (scoreLevels[scoreLevels.length - 1] * Number(row.weight || 0)), 0),
-    [evaluationForm.rows],
-  );
+  const evaluationTotal = useMemo(() => calculateEvaluationTotal(evaluationForm.rows), [evaluationForm.rows]);
+  const evaluationMax = useMemo(() => calculateEvaluationMax(evaluationForm.rows), [evaluationForm.rows]);
   const activeEmployees = useMemo(
     () => employees.filter((employee) => employee.isActive !== false),
     [employees],
@@ -1113,44 +1077,16 @@ export default function App() {
     () => evaluationPartOptions.find((entry) => entry.id === evaluationForm.partId) || null,
     [evaluationPartOptions, evaluationForm.partId],
   );
-  const latestEvaluationExamResult = useMemo(() => {
-    if (!evaluationForm.employeeCode || !evaluationForm.partId) return null;
-    return resultHistory.find((entry) => entry.candidateCode === evaluationForm.employeeCode && entry.partId === evaluationForm.partId) || null;
-  }, [resultHistory, evaluationForm.employeeCode, evaluationForm.partId]);
-  const evaluationPartFilterOptions = useMemo(() => {
-    const seen = new Map();
-    evaluationHistory.forEach((entry) => {
-      const key = `${entry.modelCode}__${entry.partCode}__${entry.partName}`;
-      if (!seen.has(key)) seen.set(key, { key, label: `${entry.modelCode}/${entry.partCode} - ${entry.partName}` });
-    });
-    return Array.from(seen.values());
-  }, [evaluationHistory]);
-  const evaluationHistoryEvaluatorOptions = useMemo(() => {
-    const seen = new Set();
-    evaluationHistory.forEach((entry) => {
-      if (entry.evaluator) seen.add(entry.evaluator);
-    });
-    return Array.from(seen.values()).sort((a, b) => a.localeCompare(b, "th"));
-  }, [evaluationHistory]);
-  const filteredEvaluationHistory = useMemo(() => {
-    const q = evaluationSearch.trim().toLowerCase();
-    return evaluationHistory.filter((entry) => {
-      if (evaluationPartFilter !== "ALL") {
-        const partKey = `${entry.modelCode}__${entry.partCode}__${entry.partName}`;
-        if (partKey !== evaluationPartFilter) return false;
-      }
-      if (evaluationEvaluatorFilter !== "ALL" && (entry.evaluator || "") !== evaluationEvaluatorFilter) return false;
-      if (!q) return true;
-      return [
-        entry.employeeName,
-        entry.employeeCode,
-        entry.modelCode,
-        entry.partCode,
-        entry.partName,
-        entry.evaluator,
-      ].some((value) => String(value || "").toLowerCase().includes(q));
-    });
-  }, [evaluationHistory, evaluationSearch, evaluationPartFilter, evaluationEvaluatorFilter]);
+  const latestEvaluationExamResult = useMemo(
+    () => getLatestEvaluationExamResult(resultHistory, evaluationForm.employeeCode, evaluationForm.partId),
+    [resultHistory, evaluationForm.employeeCode, evaluationForm.partId],
+  );
+  const evaluationPartFilterOptions = useMemo(() => buildEvaluationPartFilterOptions(evaluationHistory), [evaluationHistory]);
+  const evaluationHistoryEvaluatorOptions = useMemo(() => buildEvaluationEvaluatorOptions(evaluationHistory), [evaluationHistory]);
+  const filteredEvaluationHistory = useMemo(
+    () => filterEvaluationHistory(evaluationHistory, evaluationSearch, evaluationPartFilter, evaluationEvaluatorFilter),
+    [evaluationHistory, evaluationSearch, evaluationPartFilter, evaluationEvaluatorFilter],
+  );
 
   const byModelPart = useMemo(() => {
     const map = new Map();
@@ -2297,72 +2233,36 @@ export default function App() {
   };
 
   const selectEvaluationEmployeeByCode = (employeeCode) => {
-    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === employeeCode);
-    setEvaluationForm((prev) => ({
-      ...prev,
-      employeeId: selectedEmployee?.id || "",
-      employeeCode: selectedEmployee?.employeeCode || "",
-      employeeName: selectedEmployee?.fullName || "",
-    }));
+    setEvaluationForm((prev) => selectEvaluationEmployeeByCodeDraft(activeEmployees, employeeCode, prev));
   };
 
   const selectEvaluationEmployeeByName = (fullName) => {
-    const selectedEmployee = activeEmployees.find((employee) => employee.fullName === fullName);
-    setEvaluationForm((prev) => ({
-      ...prev,
-      employeeId: selectedEmployee?.id || "",
-      employeeCode: selectedEmployee?.employeeCode || "",
-      employeeName: selectedEmployee?.fullName || "",
-    }));
+    setEvaluationForm((prev) => selectEvaluationEmployeeByNameDraft(activeEmployees, fullName, prev));
   };
 
   const selectEvaluationModel = (modelIdValue) => {
-    const selectedModel = bank.models.find((entry) => entry.id === modelIdValue) || null;
-    setEvaluationForm((prev) => ({
-      ...prev,
-      modelId: modelIdValue,
-      partId: selectedModel?.parts?.[0]?.id || "",
-    }));
+    setEvaluationForm((prev) => selectEvaluationModelDraft(bank.models, modelIdValue, prev));
   };
 
   const selectEvaluationPart = (partIdValue) => {
-    setEvaluationForm((prev) => ({
-      ...prev,
-      partId: partIdValue,
-    }));
+    setEvaluationForm((prev) => selectEvaluationPartDraft(partIdValue, prev));
   };
 
   const patchEvaluationRow = (id, patch) => {
     setEvaluationForm((prev) => ({
       ...prev,
-      rows: prev.rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+      rows: patchEvaluationRows(prev.rows, id, patch),
     }));
   };
 
   const resetEvaluation = () => {
-    setEvaluationForm({
-      ...createEvaluationDraft(),
-      modelId: bank.models[0]?.id || "",
-      partId: bank.models[0]?.parts?.[0]?.id || "",
-      employeeCode: session?.role === "ADMIN" ? "" : (session?.employeeCode || ""),
-      employeeName: session?.role === "ADMIN" ? "" : (session?.displayName || ""),
-      employeeId: session?.role === "ADMIN" ? "" : (session?.id || ""),
-      evaluator: session?.role === "ADMIN" ? (session?.displayName || "") : "",
-    });
+    setEvaluationForm(resetEvaluationDraft({ createId: uid, bankModels: bank.models, session }));
     setEvaluationError("");
   };
 
   const exportEvaluationCsv = () => {
     const now = new Date().toISOString().slice(0, 10);
-    const rows = evaluationForm.rows.map((row) => [
-      row.no,
-      row.item,
-      row.method,
-      row.score,
-      row.weight,
-      Number(row.score || 0) * Number(row.weight || 0),
-    ]);
-    rows.push(["", "TOTAL", "", "", "", evaluationTotal]);
+    const rows = buildEvaluationCsvRows(evaluationForm.rows, evaluationTotal);
     downloadCsv(
       `evaluation_form_${evaluationForm.employeeCode || "employee"}_${now}.csv`,
       ["no", "item", "method", "score_a", "weight_b", "score_axb"],
@@ -2382,28 +2282,11 @@ export default function App() {
 
   useEffect(() => {
     if (!bank.models.length) return;
-    setEvaluationForm((prev) => {
-      const nextModelId = prev.modelId || bank.models[0]?.id || "";
-      const selectedModel = bank.models.find((entry) => entry.id === nextModelId) || bank.models[0];
-      const nextPartId = selectedModel?.parts.find((entry) => entry.id === prev.partId)?.id || selectedModel?.parts?.[0]?.id || "";
-      if (nextModelId === prev.modelId && nextPartId === prev.partId) return prev;
-      return {
-        ...prev,
-        modelId: nextModelId,
-        partId: nextPartId,
-      };
-    });
+    setEvaluationForm((prev) => ensureEvaluationSelectionDraft(bank.models, prev));
   }, [bank.models]);
 
   useEffect(() => {
-    if (!activeEmployees.length || !evaluationForm.employeeCode || evaluationForm.employeeId) return;
-    const selectedEmployee = activeEmployees.find((employee) => employee.employeeCode === evaluationForm.employeeCode);
-    if (!selectedEmployee) return;
-    setEvaluationForm((prev) => ({
-      ...prev,
-      employeeId: selectedEmployee.id,
-      employeeName: prev.employeeName || selectedEmployee.fullName,
-    }));
+    setEvaluationForm((prev) => hydrateEvaluationEmployeeDraft(activeEmployees, prev));
   }, [activeEmployees, evaluationForm.employeeCode, evaluationForm.employeeId]);
 
   const saveEvaluation = async () => {
@@ -2413,20 +2296,13 @@ export default function App() {
     try {
       setEvaluationStatus("saving");
       setEvaluationError("");
-      const payload = {
-        employeeId: evaluationForm.employeeId,
-        sectionTitle: evaluationForm.sectionTitle,
-        evaluator: evaluationForm.evaluator,
-        modelId: evaluationModel.id,
-        modelCode: evaluationModel.modelCode,
-        modelName: evaluationModel.modelName,
-        partId: evaluationPart.id,
-        partCode: evaluationPart.partCode,
-        partName: evaluationPart.partName,
+      const payload = buildEvaluationPayload({
+        form: evaluationForm,
+        model: evaluationModel,
+        part: evaluationPart,
         totalScore: evaluationTotal,
         maxScore: evaluationMax,
-        rows: evaluationForm.rows,
-      };
+      });
       const res = await fetch(`${API_BASE}/evaluations`, {
         method: "POST",
         headers: authHeaders(session, { "Content-Type": "application/json" }),
