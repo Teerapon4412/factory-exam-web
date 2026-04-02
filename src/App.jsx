@@ -2738,7 +2738,7 @@ export default function App() {
     } catch (error) {
       console.error(error);
       setSkillMatrixStatus("error");
-      setSkillMatrixError(error.message || "?????? Skill Matrix ?????????");
+      setSkillMatrixError(error.message || "โหลด Skill Matrix ไม่สำเร็จ");
     }
   };
 
@@ -2751,21 +2751,21 @@ export default function App() {
         <div className="login-layout">
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="login-showcase">
             <div className="hero-badges"><Badge>Secure Access</Badge><Badge outline>Admin / User</Badge></div>
-            <h1>???????????????????????????????????</h1>
-            <p>?????????????????????????????? ?????????????????????????????????????????????????????????????????</p>
+            <h1>ระบบสอบออนไลน์สำหรับโรงงาน</h1>
+            <p>เข้าสู่ระบบเพื่อจัดการคลังข้อสอบ ดูผลการสอบ และเปิดหน้าทำข้อสอบสำหรับพนักงานในระบบเดียว</p>
             <div className="login-feature-list">
-              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN ????????????, Dashboard ??? Import/Export ???</span></div>
-              <div className="login-feature-item"><Eye size={18} /><span>USER ????????????? Student Preview ??????????????????????</span></div>
+              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN ใช้จัดการข้อสอบ พนักงาน Dashboard และ Import/Export ได้</span></div>
+              <div className="login-feature-item"><Eye size={18} /><span>USER ใช้เข้าสู่หน้าทำข้อสอบและตรวจผลของตัวเองได้</span></div>
             </div>
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="login-card">
-              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>???????????????????????????????</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกรหัสพนักงานหรือรหัสผู้ดูแลเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>???????????</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="???? 199032 ???? ADMIN1234" /></div>
+                  <div><Label>รหัสพนักงาน</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เช่น 199032 หรือ ADMIN1234" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
-                  <Button type="submit"><LockKeyhole size={16} /> ???????????</Button>
+                  <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
                 </form>
                 
               </CardContent>
@@ -2787,31 +2787,31 @@ export default function App() {
             <div className="hero-copy">
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Welcome</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> ??????????</Button></div>
+                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
               </div>
-              <h1>??????????????</h1>
-              <p>?????????????????? ???????????????????????????????????????????????????????????????</p>
+              <h1>หน้าหลัก</h1>
+              <p>เลือกเมนูที่ต้องการใช้งานเพื่อเข้าสู่หน้าจัดการข้อสอบ ข่าวสาร ผลสอบ และเครื่องมือวิเคราะห์ข้อมูล</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>?????????????</span><strong>{orderedNews.length}</strong></div>
-              <div className="hero-stat"><span>Model ??????</span><strong>{bank.models.length}</strong></div>
-              <div className="hero-stat"><span>Part ???????</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
-              <div className="hero-stat"><span>??????????</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
+              <div className="hero-stat"><span>ข่าวประกาศ</span><strong>{orderedNews.length}</strong></div>
+              <div className="hero-stat"><span>Model ทั้งหมด</span><strong>{bank.models.length}</strong></div>
+              <div className="hero-stat"><span>Part ทั้งหมด</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
+              <div className="hero-stat"><span>สิทธิ์ผู้ใช้</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
             </div>
           </motion.section>
 
           <div className="portal-grid">
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Eye size={20} /><div><h3>????????????</h3><p>{isAdmin ? "????????????????????, ???????, dashboard ??????????????????????????" : "???????? Student Preview ??????????????????????? Part ????????"}</p></div></div>
-                <Button onClick={() => setEntryPoint("exam")}>????????????</Button>
+                <div className="section-heading"><Eye size={20} /><div><h3>หน้าข้อสอบ</h3><p>{isAdmin ? "เข้าสู่หน้าจัดการข้อสอบ ดูตัวอย่างข้อสอบ และเปิดเครื่องมือ builder" : "เข้าสู่หน้าทำข้อสอบ Student Preview สำหรับพนักงานแต่ละ Part"}</p></div></div>
+                <Button onClick={() => setEntryPoint("exam")}>เปิดหน้าข้อสอบ</Button>
               </CardContent>
             </Card>
 
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Megaphone size={20} /><div><h3>???????????</h3><p>??????????????????, ???????????, ??????????????????????????????????</p></div></div>
-                <Button onClick={() => setEntryPoint("news")}>?????????????</Button>
+                <div className="section-heading"><Megaphone size={20} /><div><h3>ข่าวสารภายใน</h3><p>จัดการประกาศ, ข่าวอัปเดต, และข้อความสำคัญที่ต้องสื่อสารให้พนักงานทราบ</p></div></div>
+                <Button onClick={() => setEntryPoint("news")}>เปิดหน้าข่าวสาร</Button>
               </CardContent>
             </Card>
 
@@ -2836,7 +2836,7 @@ export default function App() {
             {isAdmin ? (
               <Card className="portal-card">
                 <CardContent className="portal-card-content">
-                  <div className="section-heading"><ClipboardCheck size={20} /><div><h3>Skill Matrix</h3><p>?????????? Part ?????????? ????????????????????????????? 4 ??????????????????</p></div></div>
+                  <div className="section-heading"><ClipboardCheck size={20} /><div><h3>Skill Matrix</h3><p>ดูภาพรวมคะแนนราย Part ของพนักงาน และสรุปผลเป็นวงกลม 4 ระดับตามช่วงคะแนน</p></div></div>
                   <Button onClick={() => setEntryPoint("skill-matrix")}>Open skill matrix</Button>
                 </CardContent>
               </Card>
@@ -2860,18 +2860,18 @@ export default function App() {
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Skill Matrix</Badge><Badge outline>{activeEmployees.length} employees</Badge></div>
                 <div className="hero-session">
-                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> ????????</Button>
-                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ??????????</Button>
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
                 </div>
               </div>
               <h1>Skill Matrix</h1>
-              <p>?????????????????????????????????????? Part ????????????????? ??????????? skill ????????? 4 ???? ?????? 25%</p>
+              <p>ดึงข้อมูลพนักงานจากฐานข้อมูลเดิมและดึง Part จากคลังข้อสอบจริง พร้อมบันทึก skill เป็นวงกลม 4 ส่วน ส่วนละ 25%</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>???????</span><strong>{activeEmployees.length}</strong></div>
-              <div className="hero-stat"><span>Part ??????</span><strong>{skillMatrixParts.length}</strong></div>
+              <div className="hero-stat"><span>พนักงาน</span><strong>{activeEmployees.length}</strong></div>
+              <div className="hero-stat"><span>Part ในคลัง</span><strong>{skillMatrixParts.length}</strong></div>
               <div className="hero-stat"><span>Skill entries</span><strong>{skillMatrixEntries.length}</strong></div>
-              <div className="hero-stat"><span>?????</span><strong>{skillMatrixStatus === "saving" ? "Saving" : skillMatrixStatus === "loading" ? "Loading" : skillMatrixStatus === "error" ? "Error" : "Ready"}</strong></div>
+              <div className="hero-stat"><span>สถานะ</span><strong>{skillMatrixStatus === "saving" ? "Saving" : skillMatrixStatus === "loading" ? "Loading" : skillMatrixStatus === "error" ? "Error" : "Ready"}</strong></div>
             </div>
           </motion.section>
 
@@ -2881,14 +2881,14 @@ export default function App() {
                 <ClipboardCheck size={18} />
                 <div className="skill-matrix-header-text">
                   <h3>Skill Matrix by employee and part</h3>
-                  <p>???????????????????? 4 ????????????????? 0-25 = 0%, 26-50 = 50%, 51-75 = 75%, 76-100 = 100%</p>
+                  <p>คะแนนรวมจะถูกแบ่งเป็น 4 ส่วนเท่า ๆ กัน และแปลงตามช่วงคะแนน 0-25 = 0%, 26-50 = 50%, 51-75 = 75%, 76-100 = 100%</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               {skillMatrixError ? <div className="alert-error">{skillMatrixError}</div> : null}
               <div className="skill-matrix-legend">
-                <div className="skill-matrix-legend-title">???????????????</div>
+                <div className="skill-matrix-legend-title">เกณฑ์ระดับวงกลม</div>
                 <div className="skill-matrix-legend-items">
                   <span className="skill-matrix-legend-item"><strong>0-25</strong> = 0%</span>
                   <span className="skill-matrix-legend-item"><strong>26-50</strong> = 50%</span>
@@ -2904,7 +2904,7 @@ export default function App() {
                     onChange={(e) => setSkillMatrixModelFilter(e.target.value)}
                     style={S.input}
                   >
-                    <option value="ALL">??????? ({skillMatrixParts.length} Part)</option>
+                    <option value="ALL">ทั้งหมด ({skillMatrixParts.length} Part)</option>
                     {skillMatrixModelOptions.map((entry) => (
                       <option key={entry.modelCode} value={entry.modelCode}>
                         {entry.modelCode} - {entry.modelName} ({entry.partCount} Part)
@@ -2913,15 +2913,15 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <Label>????? Part</Label>
+                  <Label>ค้นหา Part</Label>
                   <Input
                     value={skillMatrixSearch}
                     onChange={(e) => setSkillMatrixSearch(e.target.value)}
-                    placeholder="????????????????? Part"
+                    placeholder="พิมพ์ชื่อหรือรหัส Part"
                   />
                 </div>
                 <div>
-                  <Label>???????????</Label>
+                  <Label>จำนวนต่อหน้า</Label>
                   <select
                     value={skillMatrixPartsPerPage}
                     onChange={(e) => setSkillMatrixPartsPerPage(Number(e.target.value) || 6)}
@@ -2934,15 +2934,15 @@ export default function App() {
                   </select>
                 </div>
                 <div className="skill-matrix-summary-chips">
-                  <span className="skill-matrix-summary-chip">???? {visibleSkillMatrixParts.length} ??? {filteredSkillMatrixParts.length} Part</span>
+                  <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} จาก {filteredSkillMatrixParts.length} Part</span>
                   <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
-                  <span className="skill-matrix-summary-chip">???? {skillMatrixPartPage + 1} / {skillMatrixPartPageCount}</span>
+                  <span className="skill-matrix-summary-chip">หน้า {skillMatrixPartPage + 1} / {skillMatrixPartPageCount}</span>
                   <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.max(0, prev - 1))} disabled={skillMatrixPartPage === 0}>
                     <ArrowLeft size={16} />
-                    ????????
+                    ก่อนหน้า
                   </Button>
                   <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.min(skillMatrixPartPageCount - 1, prev + 1))} disabled={skillMatrixPartPage >= skillMatrixPartPageCount - 1}>
-                    ?????
+                    ถัดไป
                   </Button>
                   <Button variant="outline" onClick={exportSkillMatrixPdf}>
                     <FileSpreadsheet size={16} />
@@ -2954,7 +2954,7 @@ export default function App() {
                   </Button>
                 </div>
               </div>
-              <div className="skill-matrix-scroll-note">??????????????????? Part ???? ? ??????</div>
+              <div className="skill-matrix-scroll-note">เลื่อนแนวนอนเพื่อดู Part อื่น ๆ ทางขวา</div>
               <div
                 className="skill-matrix-top-scroll"
                 ref={skillMatrixTopScrollRef}
