@@ -684,6 +684,10 @@ export default function App() {
   const [bank, setBank] = useState(initialBank);
   const [modelId, setModelId] = useState(initialBank.models[0]?.id || null);
   const [partId, setPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
+  const [builderModelId, setBuilderModelId] = useState(initialBank.models[0]?.id || null);
+  const [builderPartId, setBuilderPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
+  const [builderQuestionId, setBuilderQuestionId] = useState(initialBank.models[0]?.parts[0]?.questions?.[0]?.id || null);
+  const [builderSearch, setBuilderSearch] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidateCode, setCandidateCode] = useState("");
   const [answers, setAnswers] = useState({});
@@ -773,12 +777,6 @@ export default function App() {
     setActiveTab("preview");
     setEntryPoint(isAdmin ? "portal" : "exam");
   }, [session, isAdmin]);
-
-  useEffect(() => {
-    if (activeTab === "builder") {
-      setActiveTab("preview");
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     if (!session || isAdmin) return;
@@ -964,6 +962,30 @@ export default function App() {
   const model = useMemo(() => selectedModel || bank.models[0] || null, [bank.models, selectedModel]);
   const selectedPart = useMemo(() => model?.parts.find((p) => p.id === partId) || null, [model, partId]);
   const part = useMemo(() => selectedPart || model?.parts[0] || null, [model, selectedPart]);
+  const selectedBuilderModel = useMemo(() => bank.models.find((entry) => entry.id === builderModelId) || null, [bank.models, builderModelId]);
+  const builderModel = useMemo(() => selectedBuilderModel || bank.models[0] || null, [bank.models, selectedBuilderModel]);
+  const selectedBuilderPart = useMemo(() => builderModel?.parts.find((entry) => entry.id === builderPartId) || null, [builderModel, builderPartId]);
+  const builderPart = useMemo(() => selectedBuilderPart || builderModel?.parts?.[0] || null, [builderModel, selectedBuilderPart]);
+  const selectedBuilderQuestion = useMemo(() => builderPart?.questions.find((entry) => entry.id === builderQuestionId) || null, [builderPart, builderQuestionId]);
+  const builderQuestion = useMemo(() => selectedBuilderQuestion || builderPart?.questions?.[0] || null, [builderPart, selectedBuilderQuestion]);
+  const filteredBuilderQuestions = useMemo(() => {
+    const keyword = builderSearch.trim().toLowerCase();
+    const source = builderPart?.questions || [];
+    if (!keyword) return source;
+    return source.filter((entry, index) => {
+      const haystack = [
+        `question ${index + 1}`,
+        entry.questionText,
+        entry.choices?.A,
+        entry.choices?.B,
+        entry.choices?.C,
+        entry.choices?.D,
+      ].join(" ").toLowerCase();
+      return haystack.includes(keyword);
+    });
+  }, [builderPart, builderSearch]);
+  const builderQuestionCount = builderPart?.questions?.length || 0;
+  const builderTotalQuestionCount = useMemo(() => bank.models.reduce((sum, entry) => sum + entry.parts.reduce((partSum, item) => partSum + (item.questions?.length || 0), 0), 0), [bank.models]);
   const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
   const syncStatusLabel = effectiveSyncStatus === "saving"
     ? "Saving..."
@@ -978,6 +1000,20 @@ export default function App() {
     setSubmitError("");
     setQuestionShuffleSeed((seed) => seed + 1);
   }, [modelId, partId]);
+  useEffect(() => {
+    if (!bank.models.length) {
+      setBuilderModelId(null);
+      setBuilderPartId(null);
+      setBuilderQuestionId(null);
+      return;
+    }
+    const nextModel = bank.models.find((entry) => entry.id === builderModelId) || bank.models[0];
+    const nextPart = nextModel?.parts.find((entry) => entry.id === builderPartId) || nextModel?.parts?.[0] || null;
+    const nextQuestion = nextPart?.questions.find((entry) => entry.id === builderQuestionId) || nextPart?.questions?.[0] || null;
+    if (nextModel?.id !== builderModelId) setBuilderModelId(nextModel?.id || null);
+    if ((nextPart?.id || null) !== builderPartId) setBuilderPartId(nextPart?.id || null);
+    if ((nextQuestion?.id || null) !== builderQuestionId) setBuilderQuestionId(nextQuestion?.id || null);
+  }, [bank.models, builderModelId, builderPartId, builderQuestionId]);
   const scoreFull = full(part?.questions || []);
   const answered = Object.keys(answers).length;
   const progress = part?.questions.length ? Math.round((answered / part.questions.length) * 100) : 0;
@@ -2005,7 +2041,7 @@ export default function App() {
     setSubmitError("");
   };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
-  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0]?.id || null); setPartId(n.models[0]?.parts?.[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import failed: ${e.message}`); } };
+  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0]?.id || null); setPartId(n.models[0]?.parts?.[0]?.id || null); setBuilderModelId(n.models[0]?.id || null); setBuilderPartId(n.models[0]?.parts?.[0]?.id || null); setBuilderQuestionId(n.models[0]?.parts?.[0]?.questions?.[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import failed: ${e.message}`); } };
   const importJSONFile = async (file) => {
     if (!file) return;
     try {
@@ -2014,6 +2050,9 @@ export default function App() {
       setBank(n);
       setModelId(n.models[0]?.id || null);
       setPartId(n.models[0]?.parts?.[0]?.id || null);
+      setBuilderModelId(n.models[0]?.id || null);
+      setBuilderPartId(n.models[0]?.parts?.[0]?.id || null);
+      setBuilderQuestionId(n.models[0]?.parts?.[0]?.questions?.[0]?.id || null);
       setImportText(JSON.stringify(n, null, 2));
       reset();
     } catch (e) {
@@ -3170,7 +3209,7 @@ export default function App() {
         </motion.section>
 
         {isAdmin ? (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Admin Mode</p><h2>เธฃเธฐเธเธเธเธตเนเธเธดเธ”เธเธฒเธฃเนเธเนเธเธฒเธ Admin Builder เนเธฅเนเธง</h2></div><div className="hero-badges"><Badge outline>Preview / Dashboard / Employees</Badge></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Admin Mode</p><h2>Admin Builder v3 พร้อมสำหรับดูโครงสร้างระบบและเตรียมต่อยอด</h2></div><div className="hero-badges"><Badge outline>Builder / Preview / Dashboard / Employees</Badge></div></CardContent></Card>
         ) : (
           <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>เธเธฑเธเธเธตเธเธนเนเนเธเนเธเธฒเธเธ—เธฑเนเธงเนเธเธ—เธณเธเนเธญเธชเธญเธเนเธ”เนเธญเธขเนเธฒเธเน€เธ”เธตเธขเธง</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
         )}
@@ -3178,8 +3217,181 @@ export default function App() {
         <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue="preview">
           <TabsList>
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
-            {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
+            {isAdmin ? <><TabsTrigger value="builder"><BookOpen size={16} /> Admin Builder</TabsTrigger><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
+          {isAdmin ? (
+            <TabsContent value="builder">
+              <div className="builder-v3-shell">
+                <aside className="builder-v3-sidebar">
+                  <div className="builder-v3-brand">
+                    <Badge>Admin Builder</Badge>
+                    <Badge outline>Workspace v3</Badge>
+                  </div>
+                  <div className="builder-v3-sidebar-block">
+                    <p className="section-kicker">Library</p>
+                    <h3>{bank.title}</h3>
+                    <p>โครงใหม่รอบนี้เน้นให้เลือกดู `Model`, `Part`, และ `Question` ได้ง่ายก่อน โดยยังไม่เปิดโหมดแก้ไขข้อมูลจริง</p>
+                  </div>
+                  <div className="builder-v3-nav-card">
+                    <div className="builder-v3-nav-head">
+                      <span>Models</span>
+                      <strong>{bank.models.length}</strong>
+                    </div>
+                    <div className="builder-v3-nav-list">
+                      {bank.models.map((entry) => (
+                        <button
+                          key={entry.id}
+                          type="button"
+                          className={`builder-v3-nav-item ${entry.id === builderModel?.id ? "is-active" : ""}`.trim()}
+                          onClick={() => {
+                            setBuilderModelId(entry.id);
+                            setBuilderPartId(entry.parts?.[0]?.id || null);
+                            setBuilderQuestionId(entry.parts?.[0]?.questions?.[0]?.id || null);
+                          }}
+                        >
+                          <strong>{entry.modelCode}</strong>
+                          <span>{entry.modelName}</span>
+                          <small>{entry.parts?.length || 0} parts</small>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="builder-v3-sidebar-stats">
+                    <div className="builder-v3-mini-stat"><span>Total Parts</span><strong>{builderModel?.parts?.length || 0}</strong></div>
+                    <div className="builder-v3-mini-stat"><span>Questions</span><strong>{builderTotalQuestionCount}</strong></div>
+                  </div>
+                </aside>
+
+                <div className="builder-v3-main">
+                  <Card className="builder-v3-topbar">
+                    <CardContent className="builder-v3-topbar-content">
+                      <div className="builder-v3-search">
+                        <Search size={16} />
+                        <input
+                          value={builderSearch}
+                          onChange={(e) => setBuilderSearch(e.target.value)}
+                          placeholder="Search questions, choices, or part names"
+                        />
+                      </div>
+                      <div className="builder-v3-topbar-actions">
+                        <Badge outline>{builderModel?.modelCode || "-"}</Badge>
+                        <Badge outline>{builderPart?.partCode || "-"}</Badge>
+                        <Badge outline>Read only</Badge>
+                        <Button variant="outline" disabled><Save size={16} /> Editing opens in next phase</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="builder-v3-overview">
+                    <Card className="builder-v3-overview-card"><CardContent><span>Models</span><strong>{bank.models.length}</strong><small>ทั้งหมดในคลังข้อสอบ</small></CardContent></Card>
+                    <Card className="builder-v3-overview-card"><CardContent><span>Parts</span><strong>{builderModel?.parts?.length || 0}</strong><small>ภายใต้ {builderModel?.modelCode || "-"}</small></CardContent></Card>
+                    <Card className="builder-v3-overview-card"><CardContent><span>Questions</span><strong>{builderQuestionCount}</strong><small>ใน Part ที่เลือก</small></CardContent></Card>
+                    <Card className="builder-v3-overview-card"><CardContent><span>Status</span><strong>{syncStatusLabel}</strong><small>พร้อมต่อยอดโหมดแก้ไข</small></CardContent></Card>
+                  </div>
+
+                  <div className="builder-v3-grid">
+                    <Card className="builder-v3-panel">
+                      <CardHeader>
+                        <div className="section-heading">
+                          <FileSpreadsheet size={18} />
+                          <div>
+                            <h3>Part Navigator</h3>
+                            <p>เลือก `Part` ที่ต้องการดูรายละเอียดจากรายการด้านล่าง</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="builder-v3-list">
+                          {(builderModel?.parts || []).map((entry) => (
+                            <button
+                              key={entry.id}
+                              type="button"
+                              className={`builder-v3-list-item ${entry.id === builderPart?.id ? "is-active" : ""}`.trim()}
+                              onClick={() => {
+                                setBuilderPartId(entry.id);
+                                setBuilderQuestionId(entry.questions?.[0]?.id || null);
+                              }}
+                            >
+                              <div>
+                                <strong>{entry.partCode}</strong>
+                                <span>{entry.partName}</span>
+                              </div>
+                              <small>{entry.questions?.length || 0} questions</small>
+                            </button>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="builder-v3-panel">
+                      <CardHeader>
+                        <div className="section-heading">
+                          <ClipboardCheck size={18} />
+                          <div>
+                            <h3>Question Navigator</h3>
+                            <p>เลือกข้อสอบจากรายการกลางเพื่อดูเนื้อหาและตัวเลือกทางขวา</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="builder-v3-question-list">
+                          {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((entry, index) => (
+                            <button
+                              key={entry.id}
+                              type="button"
+                              className={`builder-v3-question-item ${entry.id === builderQuestion?.id ? "is-active" : ""}`.trim()}
+                              onClick={() => setBuilderQuestionId(entry.id)}
+                            >
+                              <span className="builder-v3-question-no">Q{index + 1}</span>
+                              <strong>{entry.questionText || "Untitled question"}</strong>
+                              <small>{entry.correctAnswer ? `Answer ${entry.correctAnswer}` : "No answer key yet"}</small>
+                            </button>
+                          )) : <div className="empty-state">No questions matched this search.</div>}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="builder-v3-panel">
+                      <CardHeader>
+                        <div className="section-heading">
+                          <Settings2 size={18} />
+                          <div>
+                            <h3>Question Inspector</h3>
+                            <p>แสดงรายละเอียดของคำถามที่เลือก พร้อมข้อมูลประกอบสำหรับรอบพัฒนา next phase</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {builderQuestion ? (
+                          <div className="builder-v3-inspector">
+                            <div className="builder-v3-inspector-head">
+                              <Badge>{builderModel?.modelCode || "-"}</Badge>
+                              <Badge outline>{builderPart?.partCode || "-"}</Badge>
+                              <Badge outline>{builderQuestion.correctAnswer || "-"}</Badge>
+                            </div>
+                            <h3>{builderQuestion.questionText || "Untitled question"}</h3>
+                            {builderQuestion.imageUrl ? <img src={builderQuestion.imageUrl} alt="builder-question" className="question-image" /> : null}
+                            <div className="builder-v3-choice-grid">
+                              {["A", "B", "C", "D"].map((key) => (
+                                <div key={key} className={`builder-v3-choice ${builderQuestion.correctAnswer === key ? "is-correct" : ""}`.trim()}>
+                                  <strong>{key}</strong>
+                                  <span>{builderQuestion.choices?.[key] || "-"}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="builder-v3-note">
+                              <p className="section-kicker">Next Phase</p>
+                              <p>รอบถัดไปเราจะต่อโหมดแก้ไขจริง, save flow ใหม่, และ validation ให้ทำงานบน layout นี้โดยไม่พึ่ง logic เก่าของ builder เดิม</p>
+                            </div>
+                          </div>
+                        ) : <div className="empty-state">เลือก question จากรายการด้านซ้ายเพื่อดูรายละเอียด</div>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          ) : null}
           <TabsContent value="preview">
             <div className="split-grid">
               <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>Candidate details</h3><p>Preview the exam form and track the current attempt in real time.</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { examSelectionTouchedRef.current = true; setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => { examSelectionTouchedRef.current = true; setPartId(e.target.value); }} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>Employee name</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>Employee code</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>Progress</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div>{submitError ? <div className="alert-error">{submitError}</div> : null}{isExamLocked ? <div className="alert-error">This part was already passed on {new Date(passedAttemptForCurrentPart.submittedAt).toLocaleString()} with score {passedAttemptForCurrentPart.score}/{passedAttemptForCurrentPart.fullScore}.</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>Export result CSV</Button><Button variant="outline" onClick={reset} disabled={isExamLocked}>Start over</Button></div></CardContent></Card>
