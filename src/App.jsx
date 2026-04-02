@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useCallback } from "react";
 import { flushSync } from "react-dom";
@@ -2290,8 +2290,8 @@ export default function App() {
   }, [activeEmployees, evaluationForm.employeeCode, evaluationForm.employeeId]);
 
   const saveEvaluation = async () => {
-    if (!evaluationForm.employeeId) return setEvaluationError("?????????????????");
-    if (!evaluationModel || !evaluationPart) return setEvaluationError("?????????? Model / Part");
+    if (!evaluationForm.employeeId) return setEvaluationError("กรุณาเลือกพนักงาน");
+    if (!evaluationModel || !evaluationPart) return setEvaluationError("กรุณาเลือก Model / Part");
 
     try {
       setEvaluationStatus("saving");
@@ -2318,7 +2318,7 @@ export default function App() {
     } catch (error) {
       console.error(error);
       setEvaluationStatus("error");
-      setEvaluationError(error.message || "????????????????????????");
+      setEvaluationError(error.message || "บันทึกการประเมินไม่สำเร็จ");
     }
   };
 
@@ -3276,27 +3276,27 @@ export default function App() {
           </TabsContent>
 
           {isAdmin ? (
-            <TabsContent value="evaluation">
+                        <TabsContent value="evaluation">
               <div className="evaluation-layout">
                 <Card>
                   <CardHeader>
                     <div className="section-heading">
                       <FileSpreadsheet size={18} />
                       <div>
-                        <h3>???????????????????????</h3>
-                        <p>???????????????????????????????????????????????????????????</p>
+                        <h3>แบบฟอร์มการประเมินหน้างาน</h3>
+                        <p>กรอกข้อมูลการประเมิน เลือกพนักงาน และบันทึกผลเพื่อใช้ต่อใน Skill Matrix</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="form-stack">
-                      <Label>?????????????????</Label>
+                      <Label>หัวข้อการประเมิน</Label>
                       <Input value={evaluationForm.sectionTitle} onChange={(e) => patchEvaluationMeta("sectionTitle", e.target.value)} />
                       <div className="three-col">
                         <div>
                           <Label>Model</Label>
                           <select value={evaluationForm.modelId} onChange={(e) => selectEvaluationModel(e.target.value)} style={S.input}>
-                            <option value="">????? Model</option>
+                            <option value="">เลือก Model</option>
                             {bank.models.map((entry) => (
                               <option key={entry.id} value={entry.id}>
                                 {entry.modelCode} - {entry.modelName}
@@ -3307,7 +3307,7 @@ export default function App() {
                         <div>
                           <Label>Part</Label>
                           <select value={evaluationForm.partId} onChange={(e) => selectEvaluationPart(e.target.value)} style={S.input}>
-                            <option value="">????? Part</option>
+                            <option value="">เลือก Part</option>
                             {evaluationPartOptions.map((entry) => (
                               <option key={entry.id} value={entry.id}>
                                 {entry.partCode} - {entry.partName}
@@ -3316,9 +3316,9 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>???????????</Label>
+                          <Label>รหัสพนักงาน</Label>
                           <select value={evaluationForm.employeeCode} onChange={(e) => selectEvaluationEmployeeByCode(e.target.value)} style={S.input}>
-                            <option value="">????????????????</option>
+                            <option value="">เลือกรหัสพนักงาน</option>
                             {activeEmployees.map((employee) => (
                               <option key={employee.id} value={employee.employeeCode}>
                                 {employee.employeeCode}
@@ -3327,9 +3327,9 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>???????????</Label>
+                          <Label>ชื่อพนักงาน</Label>
                           <select value={evaluationForm.employeeName} onChange={(e) => selectEvaluationEmployeeByName(e.target.value)} style={S.input}>
-                            <option value="">????????????????</option>
+                            <option value="">เลือกชื่อพนักงาน</option>
                             {activeEmployees.map((employee) => (
                               <option key={employee.id} value={employee.fullName}>
                                 {employee.fullName}
@@ -3338,9 +3338,9 @@ export default function App() {
                           </select>
                         </div>
                         <div>
-                          <Label>??????????</Label>
+                          <Label>ผู้ประเมิน</Label>
                           <select value={evaluationForm.evaluator} onChange={(e) => patchEvaluationMeta("evaluator", e.target.value)} style={S.input}>
-                            <option value="">???????????????</option>
+                            <option value="">เลือกผู้ประเมิน</option>
                             {evaluationAssignedEvaluators.map((entry) => (
                               <option key={entry} value={entry}>{entry}</option>
                             ))}
@@ -3348,15 +3348,15 @@ export default function App() {
                         </div>
                       </div>
                       <div className="evaluation-summary-strip">
-                        <div className="mini-note">Part ????????: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
-                        <div className="mini-note">??????????????: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "???????????????? Part ???"}</strong></div>
+                        <div className="mini-note">Part ที่เลือก: <strong>{evaluationPart ? `${evaluationPart.partCode} - ${evaluationPart.partName}` : "-"}</strong></div>
+                        <div className="mini-note">ผลสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "ยังไม่มีผลสอบสำหรับ Part นี้"}</strong></div>
                       </div>
                       {evaluationError ? <div className="alert-error">{evaluationError}</div> : null}
                       <div className="button-row">
-                        <Button onClick={saveEvaluation}>???????????????</Button>
-                        <Button variant="outline" onClick={resetEvaluation}>???????????</Button>
+                        <Button onClick={saveEvaluation}>บันทึกการประเมิน</Button>
+                        <Button variant="outline" onClick={resetEvaluation}>ล้างแบบฟอร์ม</Button>
                         <Button variant="outline" onClick={exportEvaluationCsv}>Export CSV</Button>
-                        <Button variant="outline" onClick={() => window.print()}>??????????</Button>
+                        <Button variant="outline" onClick={() => window.print()}>พิมพ์แบบฟอร์ม</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -3367,22 +3367,22 @@ export default function App() {
                     <div className="evaluation-sheet">
                       <div className="evaluation-sheet-title">{evaluationForm.sectionTitle}</div>
                       <div className="evaluation-sheet-meta">
-                        <span>???????????: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
-                        <span>???????????: <strong>{evaluationForm.employeeName || "-"}</strong></span>
+                        <span>รหัสพนักงาน: <strong>{evaluationForm.employeeCode || "-"}</strong></span>
+                        <span>ชื่อพนักงาน: <strong>{evaluationForm.employeeName || "-"}</strong></span>
                         <span>Model/Part: <strong>{evaluationModel && evaluationPart ? `${evaluationModel.modelCode} / ${evaluationPart.partCode}` : "-"}</strong></span>
-                        <span>??????????: <strong>{evaluationForm.evaluator || "-"}</strong></span>
-                        <span>??????????????: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
+                        <span>ผู้ประเมิน: <strong>{evaluationForm.evaluator || "-"}</strong></span>
+                        <span>ผลสอบล่าสุด: <strong>{latestEvaluationExamResult ? `${latestEvaluationExamResult.score}/${latestEvaluationExamResult.fullScore} (${latestEvaluationExamResult.status})` : "-"}</strong></span>
                       </div>
                       <table className="evaluation-table">
                         <thead>
                           <tr>
-                            <th rowSpan="2" className="col-no">???<br />No</th>
-                            <th rowSpan="2" className="col-item">??????<br />Item</th>
-                            <th colSpan={scoreLevels.length}>????????????????<br />Score Level</th>
-                            <th rowSpan="2" className="col-method">???????</th>
-                            <th rowSpan="2" className="col-score">?????<br />Score (A)</th>
-                            <th rowSpan="2" className="col-weight">???????<br />Weight (B)</th>
-                            <th rowSpan="2" className="col-total">???????????<br />(A) x (B)</th>
+                            <th rowSpan="2" className="col-no">ลำดับ<br />No</th>
+                            <th rowSpan="2" className="col-item">หัวข้อประเมิน<br />Item</th>
+                            <th colSpan={scoreLevels.length}>ระดับคะแนน<br />Score Level</th>
+                            <th rowSpan="2" className="col-method">วิธีประเมิน</th>
+                            <th rowSpan="2" className="col-score">คะแนน<br />Score (A)</th>
+                            <th rowSpan="2" className="col-weight">น้ำหนัก<br />Weight (B)</th>
+                            <th rowSpan="2" className="col-total">คะแนนรวม<br />(A) x (B)</th>
                           </tr>
                           <tr>
                             {scoreLevels.map((level) => <th key={level} className="col-level">{level}</th>)}
@@ -3433,11 +3433,11 @@ export default function App() {
                         </tbody>
                         <tfoot>
                           <tr>
-                            <td colSpan={scoreLevels.length + 4}>????????</td>
+                            <td colSpan={scoreLevels.length + 4}>รวมคะแนน</td>
                             <td>{evaluationTotal}</td>
                           </tr>
                           <tr>
-                            <td colSpan={scoreLevels.length + 4}>???????????????</td>
+                            <td colSpan={scoreLevels.length + 4}>คะแนนเต็ม</td>
                             <td>{evaluationMax}</td>
                           </tr>
                         </tfoot>
@@ -3450,33 +3450,33 @@ export default function App() {
                   <CardHeader>
                     <div className="table-header-row">
                       <div>
-                        <h3>????????????????????????</h3>
-                        <p>???????????????? Part ????????????? ?????????????????????</p>
+                        <h3>ประวัติการประเมิน</h3>
+                        <p>ดูรายการประเมินย้อนหลัง ค้นหา และกรองตาม Part หรือผู้ประเมิน</p>
                       </div>
                       <div className="mini-note">
-                        {evaluationStatus === "loading" ? "?????????..." : `??????????? ${filteredEvaluationHistory.length} ??? ${evaluationHistory.length} ??????`}
+                        {evaluationStatus === "loading" ? "กำลังโหลด..." : `แสดง ${filteredEvaluationHistory.length} จาก ${evaluationHistory.length} รายการ`}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="dashboard-filters">
                       <div>
-                        <Label>?????</Label>
-                        <Input value={evaluationSearch} onChange={(e) => setEvaluationSearch(e.target.value)} placeholder="???? / ???? / Model / Part / ??????????" />
+                        <Label>ค้นหา</Label>
+                        <Input value={evaluationSearch} onChange={(e) => setEvaluationSearch(e.target.value)} placeholder="ชื่อ / รหัส / Model / Part / ผู้ประเมิน" />
                       </div>
                       <div>
                         <Label>Part</Label>
                         <select value={evaluationPartFilter} onChange={(e) => setEvaluationPartFilter(e.target.value)} style={S.input}>
-                          <option value="ALL">???????</option>
+                          <option value="ALL">ทั้งหมด</option>
                           {evaluationPartFilterOptions.map((entry) => (
                             <option key={entry.key} value={entry.key}>{entry.label}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <Label>??????????</Label>
+                        <Label>ผู้ประเมิน</Label>
                         <select value={evaluationEvaluatorFilter} onChange={(e) => setEvaluationEvaluatorFilter(e.target.value)} style={S.input}>
-                          <option value="ALL">???????</option>
+                          <option value="ALL">ทั้งหมด</option>
                           {evaluationHistoryEvaluatorOptions.map((entry) => (
                             <option key={entry} value={entry}>{entry}</option>
                           ))}
@@ -3484,18 +3484,18 @@ export default function App() {
                       </div>
                     </div>
                     {filteredEvaluationHistory.length === 0 ? (
-                      <div className="empty-state">???????????????????????</div>
+                      <div className="empty-state">ยังไม่มีข้อมูลการประเมิน</div>
                     ) : (
                       <div className="dashboard-table-wrap">
                         <table className="dashboard-table">
                           <thead>
                             <tr>
-                              <th>????</th>
-                              <th>???????</th>
+                              <th>วันที่เวลา</th>
+                              <th>พนักงาน</th>
                               <th>Model / Part</th>
-                              <th>????????????</th>
-                              <th>??????????????</th>
-                              <th>??????????</th>
+                              <th>คะแนนประเมิน</th>
+                              <th>ผลสอบล่าสุด</th>
+                              <th>ผู้ประเมิน</th>
                             </tr>
                           </thead>
                           <tbody>
