@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useCallback } from "react";
 import { flushSync } from "react-dom";
@@ -69,7 +69,7 @@ const evaluationAssignedEvaluators = [
 
 const FIXED_QUESTION_SCORE = 5;
 const FIXED_PASS_SCORE = 35;
-const DEFAULT_PART_SUBTITLE = "ระบบข้อสอบออนไลน์พนักงาน";
+const DEFAULT_PART_SUBTITLE = "เธฃเธฐเธเธเธเนเธญเธชเธญเธเธญเธญเธเนเธฅเธเนเธเธเธฑเธเธเธฒเธ";
 
 const stripControlCharacters = (value) => Array.from(String(value ?? ""))
   .filter((character) => {
@@ -286,7 +286,7 @@ const cleanMultilineText = (value, fallback = "") => {
 
 const normalizePartSubtitle = (value) => {
   const text = cleanInlineText(value, DEFAULT_PART_SUBTITLE);
-  if (/^เธ[ฃฐ]/.test(text) || text.includes("เนเธญเธชเธญเธ")) {
+  if (/^เน€เธ[เธเธ]/.test(text) || text.includes("เน€เธยเน€เธเธเน€เธเธเน€เธเธเน€เธย")) {
     return DEFAULT_PART_SUBTITLE;
   }
   return text;
@@ -684,9 +684,6 @@ export default function App() {
   const [bank, setBank] = useState(initialBank);
   const [modelId, setModelId] = useState(initialBank.models[0]?.id || null);
   const [partId, setPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
-  const [builderModelId, setBuilderModelId] = useState(initialBank.models[0]?.id || null);
-  const [builderPartId, setBuilderPartId] = useState(initialBank.models[0]?.parts[0]?.id || null);
-  const [builderQId, setBuilderQId] = useState(null);
   const [candidateName, setCandidateName] = useState("");
   const [candidateCode, setCandidateCode] = useState("");
   const [answers, setAnswers] = useState({});
@@ -762,32 +759,11 @@ export default function App() {
   const [evaluationSearch, setEvaluationSearch] = useState("");
   const [evaluationPartFilter, setEvaluationPartFilter] = useState("ALL");
   const [evaluationEvaluatorFilter, setEvaluationEvaluatorFilter] = useState("ALL");
-  const [builderQuestionSearch, setBuilderQuestionSearch] = useState("");
-  const [builderSaveMessage, setBuilderSaveMessage] = useState({ type: "", text: "" });
-  const builderQuestionRefs = useRef({});
-  const builderQuestionChipRefs = useRef({});
-  const suppressBuilderQuestionAutoScrollRef = useRef(false);
-  const builderPendingSelectionRef = useRef(null);
   const [questionShuffleSeed, setQuestionShuffleSeed] = useState(0);
   const lastTabSessionKeyRef = useRef("");
   const examSelectionTouchedRef = useRef(false);
-  const currentBuilderModelIdRef = useRef(null);
-  const currentBuilderPartIdRef = useRef(null);
-  const currentBuilderQIdRef = useRef(null);
-  const builderSyncPauseUntilRef = useRef(0);
-  const builderSaveInFlightRef = useRef(false);
 
   const isAdmin = session?.role === "ADMIN";
-
-  useEffect(() => {
-    currentBuilderModelIdRef.current = builderModelId;
-    currentBuilderPartIdRef.current = builderPartId;
-    currentBuilderQIdRef.current = builderQId;
-  }, [builderModelId, builderPartId, builderQId]);
-
-  const pauseBuilderSync = useCallback((ms = 2500) => {
-    builderSyncPauseUntilRef.current = Date.now() + ms;
-  }, []);
 
   useEffect(() => {
     if (!session) return;
@@ -818,10 +794,6 @@ export default function App() {
       // Ignore storage restrictions in locked-down browsers.
     }
   }, [evaluationForm]);
-
-  useEffect(() => {
-    setBuilderSaveMessage({ type: "", text: "" });
-  }, [bank, builderModelId, builderPartId]);
 
   useEffect(() => {
     if (!session) {
@@ -880,15 +852,6 @@ export default function App() {
       return;
     }
 
-    const activeBuilderModelId = currentBuilderModelIdRef.current;
-    const activeBuilderPartId = currentBuilderPartIdRef.current;
-    const activeBuilderQId = currentBuilderQIdRef.current;
-    const selectedBuilderModel = nextBank.models.find((entry) => entry.id === activeBuilderModelId) || nextBank.models[0];
-    const selectedBuilderPart = selectedBuilderModel?.parts.find((entry) => entry.id === activeBuilderPartId) || selectedBuilderModel?.parts[0];
-    const selectedBuilderQuestion = selectedBuilderPart?.questions.find((entry) => entry.id === activeBuilderQId) || selectedBuilderPart?.questions[0] || null;
-    setBuilderModelId(selectedBuilderModel?.id || null);
-    setBuilderPartId(selectedBuilderPart?.id || null);
-    setBuilderQId(selectedBuilderQuestion?.id || null);
   }, [isAdmin, session?.employeeCode]);
 
   const fetchSharedData = useCallback(async (activeSession, preserveSelection = false) => {
@@ -1001,16 +964,6 @@ export default function App() {
   const model = useMemo(() => selectedModel || bank.models[0] || null, [bank.models, selectedModel]);
   const selectedPart = useMemo(() => model?.parts.find((p) => p.id === partId) || null, [model, partId]);
   const part = useMemo(() => selectedPart || model?.parts[0] || null, [model, selectedPart]);
-  const selectedBuilderModel = useMemo(() => bank.models.find((m) => m.id === builderModelId) || null, [bank.models, builderModelId]);
-  const builderModel = useMemo(() => selectedBuilderModel || bank.models[0] || null, [bank.models, selectedBuilderModel]);
-  const selectedBuilderPart = useMemo(() => builderModel?.parts.find((p) => p.id === builderPartId) || null, [builderModel, builderPartId]);
-  const builderPart = useMemo(() => selectedBuilderPart || builderModel?.parts[0] || null, [builderModel, selectedBuilderPart]);
-  const selectedBuilderQuestion = useMemo(() => builderPart?.questions.find((q) => q.id === builderQId) || null, [builderPart, builderQId]);
-  const builderQuestion = useMemo(() => selectedBuilderQuestion || builderPart?.questions[0] || null, [builderPart, selectedBuilderQuestion]);
-  const builderHasUnsavedChanges = useMemo(
-    () => JSON.stringify(bank) !== lastSyncedBankRef.current,
-    [bank],
-  );
   const effectiveSyncStatus = syncStatus === "loading" && dataReady ? "synced" : syncStatus;
   const syncStatusLabel = effectiveSyncStatus === "saving"
     ? "Saving..."
@@ -1019,121 +972,12 @@ export default function App() {
       : effectiveSyncStatus === "loading"
         ? "Loading..."
         : "Server Synced";
-  const filteredBuilderQuestions = useMemo(() => {
-    const keyword = builderQuestionSearch.trim().toLowerCase();
-    if (!builderPart?.questions?.length) return [];
-    if (!keyword) return builderPart.questions;
-    return builderPart.questions.filter((entry, index) => {
-      const haystack = [
-        `??? ${index + 1}`,
-        entry.questionText,
-        entry.choices?.A,
-        entry.choices?.B,
-        entry.choices?.C,
-        entry.choices?.D,
-      ]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(keyword);
-    });
-  }, [builderPart, builderQuestionSearch]);
-
-  useEffect(() => {
-    if (!isAdmin || entryPoint !== "exam" || activeTab !== "builder" || !builderHasUnsavedChanges) return undefined;
-    const handleBeforeUnload = (event) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [activeTab, builderHasUnsavedChanges, entryPoint, isAdmin]);
-
-  const queueBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
-    builderPendingSelectionRef.current = {
-      modelId: nextModelId || null,
-      partId: nextPartId || null,
-      qId: nextQuestionId || null,
-    };
-  }, []);
-
-  const applyBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
-    currentBuilderModelIdRef.current = nextModelId || null;
-    currentBuilderPartIdRef.current = nextPartId || null;
-    currentBuilderQIdRef.current = nextQuestionId || null;
-    setBuilderModelId(nextModelId || null);
-    setBuilderPartId(nextPartId || null);
-    setBuilderQId(nextQuestionId || null);
-    queueBuilderSelection(nextModelId, nextPartId, nextQuestionId);
-  }, [queueBuilderSelection]);
-
-  const deferBuilderSelection = useCallback((nextModelId, nextPartId, nextQuestionId) => {
-    currentBuilderModelIdRef.current = nextModelId || null;
-    currentBuilderPartIdRef.current = nextPartId || null;
-    currentBuilderQIdRef.current = nextQuestionId || null;
-    queueBuilderSelection(nextModelId, nextPartId, nextQuestionId);
-  }, [queueBuilderSelection]);
-  useEffect(() => {
-    const pendingSelection = builderPendingSelectionRef.current;
-    if (!pendingSelection) return;
-
-    const selectedModel = bank.models.find((entry) => entry.id === pendingSelection.modelId);
-    if (!selectedModel) return;
-
-    const selectedPart = selectedModel.parts.find((entry) => entry.id === pendingSelection.partId) || selectedModel.parts[0] || null;
-    const selectedQuestion = selectedPart?.questions.find((entry) => entry.id === pendingSelection.qId) || selectedPart?.questions[0] || null;
-
-    if (builderModelId !== selectedModel.id) setBuilderModelId(selectedModel.id);
-    if ((selectedPart?.id || null) !== builderPartId) setBuilderPartId(selectedPart?.id || null);
-    if ((selectedQuestion?.id || null) !== builderQId) setBuilderQId(selectedQuestion?.id || null);
-
-    builderPendingSelectionRef.current = null;
-  }, [bank, builderModelId, builderPartId, builderQId]);
-
-  useEffect(() => {
-    if (builderPendingSelectionRef.current) return;
-    if (!selectedBuilderModel && bank.models.length) {
-      setBuilderModelId(bank.models[0].id);
-      return;
-    }
-    if (selectedBuilderModel && builderModel && builderModel.id !== builderModelId) {
-      setBuilderModelId(builderModel.id);
-      setBuilderPartId(builderModel.parts[0]?.id || null);
-    }
-  }, [bank.models, builderModel, builderModelId, selectedBuilderModel]);
-
-  useEffect(() => {
-    if (builderPendingSelectionRef.current) return;
-    if (builderModel && !selectedBuilderPart) setBuilderPartId(builderModel.parts[0]?.id || null);
-  }, [builderModel, builderPartId, selectedBuilderPart]);
-  useEffect(() => {
-    if (builderPendingSelectionRef.current) return;
-    if (builderPart && !selectedBuilderQuestion) setBuilderQId(builderPart.questions[0]?.id || null);
-  }, [builderPart, builderQId, selectedBuilderQuestion]);
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
     setSubmitError("");
     setQuestionShuffleSeed((seed) => seed + 1);
   }, [modelId, partId]);
-  useEffect(() => {
-    if (!builderQId) return;
-    const chipTimer = setTimeout(() => {
-      builderQuestionChipRefs.current[builderQId]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-    }, 40);
-    if (suppressBuilderQuestionAutoScrollRef.current) {
-      suppressBuilderQuestionAutoScrollRef.current = false;
-      return () => clearTimeout(chipTimer);
-    }
-    const timer = setTimeout(() => {
-      builderQuestionRefs.current[builderQId]?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
-    return () => {
-      clearTimeout(chipTimer);
-      clearTimeout(timer);
-    };
-  }, [builderQId]);
-
-  const builderScoreFull = full(builderPart?.questions || []);
   const scoreFull = full(part?.questions || []);
   const answered = Object.keys(answers).length;
   const progress = part?.questions.length ? Math.round((answered / part.questions.length) * 100) : 0;
@@ -2047,58 +1891,11 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const patchModel = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id === builderModelId ? { ...m, [f]: v } : m)) }));
-  const patchPart = (f, v) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, [f]: v } : p)) })) }));
-  const patchQ = (id, patch) => setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id !== builderPartId ? p : { ...p, questions: p.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) })) })) }));
-  const patchChoice = (id, key, value, sourceChoices) => patchQ(id, { choices: { ...(sourceChoices || {}), [key]: value } });
-  const isBankStructurallyValid = useCallback((candidateBank) => {
-    const models = Array.isArray(candidateBank?.models) ? candidateBank.models : [];
-    if (!models.length) return false;
-    return models.every((candidateModel) => {
-      const parts = Array.isArray(candidateModel?.parts) ? candidateModel.parts : [];
-      if (!parts.length) return false;
-      return parts.every((candidatePart) => Array.isArray(candidatePart?.questions) && candidatePart.questions.length > 0);
-    });
-  }, []);
 
-  const addModel = (event) => {
-    event?.preventDefault?.();
-    const n = emptyModel(bank.models.length + 1, false);
-    const nextBank = { ...bank, models: [...bank.models, n] };
-    flushSync(() => {
-      setBank(nextBank);
-    });
-    applyBuilderSelection(n.id, n.parts[0].id, n.parts[0].questions[0].id);
-    setBuilderQuestionSearch("");
-    setBuilderSaveMessage({ type: "success", text: "????? Model ???? ???????????????????? Server" });
-  };
 
-  const removeModel = () => {
-    if (bank.models.length <= 1) return alert("ต้องมีอย่างน้อย 1 Model");
-    const remaining = bank.models.filter((m) => m.id !== builderModel?.id);
-    const nextBank = { ...bank, models: remaining };
-    flushSync(() => {
-      setBank(nextBank);
-    });
-    applyBuilderSelection(remaining[0].id, remaining[0].parts[0].id, remaining[0].parts[0].questions[0]?.id || null);
-    setBuilderSaveMessage({ type: "success", text: "?? Model ???? ???????????????????? Server" });
-  };
 
-  const addPart = (event) => {
-    event?.preventDefault?.();
-    if (builderModel.parts.length >= 20) return alert("1 Model เพิ่มได้สูงสุด 20 Part");
-    const n = emptyPart(builderModel.parts.length + 1, false);
-    const nextBank = {
-      ...bank,
-      models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: [...m.parts, n] } : m)),
-    };
-    flushSync(() => {
-      setBank(nextBank);
-    });
-    applyBuilderSelection(builderModelId, n.id, n.questions[0].id);
-    setBuilderQuestionSearch("");
-    setBuilderSaveMessage({ type: "success", text: "????? Part ???? ???????????????????? Server" });
-  };
+
+
 
   const uploadEmployeePhoto = (file) => {
     if (!file) return;
@@ -2109,69 +1906,6 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const removePart = () => {
-    if (builderModel.parts.length <= 1) return alert("ต้องมีอย่างน้อย 1 Part ต่อ Model");
-    const remaining = builderModel.parts.filter((p) => p.id !== builderPart.id);
-    const nextBank = {
-      ...bank,
-      models: bank.models.map((m) => (m.id === builderModelId ? { ...m, parts: remaining } : m)),
-    };
-    flushSync(() => {
-      setBank(nextBank);
-    });
-    applyBuilderSelection(builderModelId, remaining[0].id, remaining[0].questions[0]?.id || null);
-    setBuilderSaveMessage({ type: "success", text: "?? Part ???? ???????????????????? Server" });
-  };
-  const addQ = (event) => {
-    event?.preventDefault?.();
-    const n = emptyQ(builderPart.questions.length + 1);
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: [...p.questions, n] } : p)) })) }));
-    suppressBuilderQuestionAutoScrollRef.current = true;
-    deferBuilderSelection(builderModelId, builderPartId, n.id);
-    setBuilderQuestionSearch("");
-  };
-
-  const dupQ = (sourceQuestion = builderQuestion) => {
-    if (!sourceQuestion) return;
-    const n = { ...sourceQuestion, id: uid(), questionNo: builderPart.questions.length + 1 };
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder([...p.questions, n]) } : p)) })) }));
-    suppressBuilderQuestionAutoScrollRef.current = true;
-    deferBuilderSelection(builderModelId, builderPartId, n.id);
-    setBuilderQuestionSearch("");
-  };
-
-  const delQ = (questionId = builderQuestion?.id) => {
-    if (!questionId) return;
-    const remaining = reorder(builderPart.questions.filter((q) => q.id !== questionId));
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: remaining } : p)) })) }));
-    deferBuilderSelection(builderModelId, builderPartId, remaining[0]?.id || null);
-  };
-
-  const moveQ = (d, questionId = builderQuestion?.id) => {
-    if (!questionId) return;
-    const i = builderPart.questions.findIndex((q) => q.id === questionId);
-    const ni = i + d;
-    if (ni < 0 || ni >= builderPart.questions.length) return;
-    const arr = [...builderPart.questions];
-    [arr[i], arr[ni]] = [arr[ni], arr[i]];
-    setBank((b) => ({ ...b, models: b.models.map((m) => (m.id !== builderModelId ? m : { ...m, parts: m.parts.map((p) => (p.id === builderPartId ? { ...p, questions: reorder(arr) } : p)) })) }));
-    deferBuilderSelection(builderModelId, builderPartId, questionId);
-  };
-
-  const jumpQuestion = (direction) => {
-    if (!builderPart?.questions?.length || !builderQuestion) return;
-    const currentIndex = builderPart.questions.findIndex((entry) => entry.id === builderQuestion.id);
-    const nextIndex = currentIndex + direction;
-    if (nextIndex < 0 || nextIndex >= builderPart.questions.length) return;
-    setBuilderQId(builderPart.questions[nextIndex].id);
-  };
-
-  const uploadImg = (file, questionId = builderQuestion?.id) => {
-    if (!file) return;
-    const r = new FileReader();
-    r.onload = (e) => patchQ(questionId, { imageUrl: String(e.target?.result || "") });
-    r.readAsDataURL(file);
-  };
 
   const login = async (e) => {
     e.preventDefault();
@@ -2271,62 +2005,21 @@ export default function App() {
     setSubmitError("");
   };
   const exportJSON = () => { const blob = new Blob([JSON.stringify(bank, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "factory_exam_bank.json"; a.click(); URL.revokeObjectURL(url); };
-  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); applyBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import ?????????: ${e.message}`); } };
+  const importJSON = () => { try { const n = normalize(JSON.parse(importText)); setBank(n); setModelId(n.models[0]?.id || null); setPartId(n.models[0]?.parts?.[0]?.id || null); setImportText(""); reset(); } catch (e) { alert(`Import failed: ${e.message}`); } };
   const importJSONFile = async (file) => {
     if (!file) return;
     try {
       const text = await file.text();
       const n = normalize(JSON.parse(text));
       setBank(n);
-      applyBuilderSelection(n.models[0].id, n.models[0].parts[0].id, n.models[0].parts[0].questions[0]?.id || null);
+      setModelId(n.models[0]?.id || null);
+      setPartId(n.models[0]?.parts?.[0]?.id || null);
       setImportText(JSON.stringify(n, null, 2));
       reset();
     } catch (e) {
       alert(`?????????????????: ${e.message}`);
     }
   };
-  const saveLocal = useCallback(async ({ silent = false, bankOverride = null } = {}) => {
-    try {
-      const bankToSave = bankOverride || bank;
-      const nextBankJson = JSON.stringify(bankToSave);
-      if (nextBankJson === lastSyncedBankRef.current) return true;
-      if (!isBankStructurallyValid(bankToSave)) {
-        if (!silent) {
-          setBuilderSaveMessage({ type: "error", text: "???????????? ??????????? Model ???? Part ?????????????????????????? 1 ???" });
-        }
-        return false;
-      }
-      if (!silent) setBuilderSaveMessage({ type: "", text: "" });
-      builderSaveInFlightRef.current = true;
-      pauseBuilderSync();
-      setSyncStatus("saving");
-      const res = await fetch(`${API_BASE}/state`, {
-        method: "PUT",
-        headers: authHeaders(session, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ bank: bankToSave, results: resultHistory }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const savedState = await res.json().catch(() => null);
-      const savedResults = Array.isArray(savedState?.results) ? savedState.results : resultHistory;
-      if (!silent) {
-        setBuilderSaveMessage({ type: "success", text: "???????????????? ?????????????????????? Server ?????????" });
-      }
-      setResultHistory(savedResults);
-      lastSyncedBankRef.current = nextBankJson;
-      setSyncStatus("synced");
-      pauseBuilderSync();
-      return true;
-    } catch (error) {
-      console.error(error);
-      setSyncStatus("offline");
-      if (!silent) {
-        setBuilderSaveMessage({ type: "error", text: error?.message === "HTTP 400" ? "???????????? ?????????????????????????????????" : "???????? Server ????????? ????????????????????????????????" });
-      }
-      return false;
-    } finally {
-      builderSaveInFlightRef.current = false;
-    }
-  }, [bank, isBankStructurallyValid, pauseBuilderSync, resultHistory, session]);
 
   const exportCSV = () => {
     if (!submitted) return alert("????????????????????????????????????");
@@ -2744,7 +2437,7 @@ export default function App() {
     } catch (error) {
       console.error(error);
       setSkillMatrixStatus("error");
-      setSkillMatrixError(error.message || "โหลด Skill Matrix ไม่สำเร็จ");
+      setSkillMatrixError(error.message || "เนเธซเธฅเธ” Skill Matrix เนเธกเนเธชเธณเน€เธฃเนเธ");
     }
   };
 
@@ -2757,21 +2450,21 @@ export default function App() {
         <div className="login-layout">
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="login-showcase">
             <div className="hero-badges"><Badge>Secure Access</Badge><Badge outline>Admin / User</Badge></div>
-            <h1>ระบบสอบออนไลน์สำหรับโรงงาน</h1>
-            <p>เข้าสู่ระบบเพื่อจัดการคลังข้อสอบ ดูผลการสอบ และเปิดหน้าทำข้อสอบสำหรับพนักงานในระบบเดียว</p>
+            <h1>เธฃเธฐเธเธเธชเธญเธเธญเธญเธเนเธฅเธเนเธชเธณเธซเธฃเธฑเธเนเธฃเธเธเธฒเธ</h1>
+            <p>เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธเน€เธเธทเนเธญเธเธฑเธ”เธเธฒเธฃเธเธฅเธฑเธเธเนเธญเธชเธญเธ เธ”เธนเธเธฅเธเธฒเธฃเธชเธญเธ เนเธฅเธฐเน€เธเธดเธ”เธซเธเนเธฒเธ—เธณเธเนเธญเธชเธญเธเธชเธณเธซเธฃเธฑเธเธเธเธฑเธเธเธฒเธเนเธเธฃเธฐเธเธเน€เธ”เธตเธขเธง</p>
             <div className="login-feature-list">
-              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN ใช้จัดการข้อสอบ พนักงาน Dashboard และ Import/Export ได้</span></div>
-              <div className="login-feature-item"><Eye size={18} /><span>USER ใช้เข้าสู่หน้าทำข้อสอบและตรวจผลของตัวเองได้</span></div>
+              <div className="login-feature-item"><ShieldCheck size={18} /><span>ADMIN เนเธเนเธเธฑเธ”เธเธฒเธฃเธเนเธญเธชเธญเธ เธเธเธฑเธเธเธฒเธ Dashboard เนเธฅเธฐ Import/Export เนเธ”เน</span></div>
+              <div className="login-feature-item"><Eye size={18} /><span>USER เนเธเนเน€เธเนเธฒเธชเธนเนเธซเธเนเธฒเธ—เธณเธเนเธญเธชเธญเธเนเธฅเธฐเธ•เธฃเธงเธเธเธฅเธเธญเธเธ•เธฑเธงเน€เธญเธเนเธ”เน</span></div>
             </div>
           </motion.section>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="login-card">
-              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>กรอกรหัสพนักงานหรือรหัสผู้ดูแลเพื่อเข้าสู่ระบบ</p></div></div></CardHeader>
+              <CardHeader><div className="section-heading"><LockKeyhole size={18} /><div><h3>Login</h3><p>เธเธฃเธญเธเธฃเธซเธฑเธชเธเธเธฑเธเธเธฒเธเธซเธฃเธทเธญเธฃเธซเธฑเธชเธเธนเนเธ”เธนเนเธฅเน€เธเธทเนเธญเน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ</p></div></div></CardHeader>
               <CardContent className="login-card-content">
                 <form className="login-form" onSubmit={login}>
-                  <div><Label>รหัสพนักงาน</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เช่น 199032 หรือ ADMIN1234" /></div>
+                  <div><Label>เธฃเธซเธฑเธชเธเธเธฑเธเธเธฒเธ</Label><Input value={loginForm.employeeCode} onChange={(e) => setLoginForm({ employeeCode: e.target.value })} placeholder="เน€เธเนเธ 199032 เธซเธฃเธทเธญ ADMIN1234" /></div>
                   {loginError ? <div className="alert-error">{loginError}</div> : null}
-                  <Button type="submit"><LockKeyhole size={16} /> เข้าสู่ระบบ</Button>
+                  <Button type="submit"><LockKeyhole size={16} /> เน€เธเนเธฒเธชเธนเนเธฃเธฐเธเธ</Button>
                 </form>
                 
               </CardContent>
@@ -2793,31 +2486,31 @@ export default function App() {
             <div className="hero-copy">
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Welcome</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
-                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button></div>
+                <div className="hero-session"><span>{session.displayName} ({session.username})</span><Button variant="outline" onClick={logout}><LogOut size={16} /> เธญเธญเธเธเธฒเธเธฃเธฐเธเธ</Button></div>
               </div>
-              <h1>หน้าหลัก</h1>
-              <p>เลือกเมนูที่ต้องการใช้งานเพื่อเข้าสู่หน้าจัดการข้อสอบ ข่าวสาร ผลสอบ และเครื่องมือวิเคราะห์ข้อมูล</p>
+              <h1>เธซเธเนเธฒเธซเธฅเธฑเธ</h1>
+              <p>เน€เธฅเธทเธญเธเน€เธกเธเธนเธ—เธตเนเธ•เนเธญเธเธเธฒเธฃเนเธเนเธเธฒเธเน€เธเธทเนเธญเน€เธเนเธฒเธชเธนเนเธซเธเนเธฒเธเธฑเธ”เธเธฒเธฃเธเนเธญเธชเธญเธ เธเนเธฒเธงเธชเธฒเธฃ เธเธฅเธชเธญเธ เนเธฅเธฐเน€เธเธฃเธทเนเธญเธเธกเธทเธญเธงเธดเน€เธเธฃเธฒเธฐเธซเนเธเนเธญเธกเธนเธฅ</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>ข่าวประกาศ</span><strong>{orderedNews.length}</strong></div>
-              <div className="hero-stat"><span>Model ทั้งหมด</span><strong>{bank.models.length}</strong></div>
-              <div className="hero-stat"><span>Part ทั้งหมด</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
-              <div className="hero-stat"><span>สิทธิ์ผู้ใช้</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
+              <div className="hero-stat"><span>เธเนเธฒเธงเธเธฃเธฐเธเธฒเธจ</span><strong>{orderedNews.length}</strong></div>
+              <div className="hero-stat"><span>Model เธ—เธฑเนเธเธซเธกเธ”</span><strong>{bank.models.length}</strong></div>
+              <div className="hero-stat"><span>Part เธ—เธฑเนเธเธซเธกเธ”</span><strong>{bank.models.reduce((sum, entry) => sum + entry.parts.length, 0)}</strong></div>
+              <div className="hero-stat"><span>เธชเธดเธ—เธเธดเนเธเธนเนเนเธเน</span><strong>{isAdmin ? "ADMIN" : "USER"}</strong></div>
             </div>
           </motion.section>
 
           <div className="portal-grid">
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Eye size={20} /><div><h3>หน้าข้อสอบ</h3><p>{isAdmin ? "เข้าสู่หน้าจัดการข้อสอบ ดูตัวอย่างข้อสอบ และเปิดเครื่องมือ builder" : "เข้าสู่หน้าทำข้อสอบ Student Preview สำหรับพนักงานแต่ละ Part"}</p></div></div>
-                <Button onClick={() => setEntryPoint("exam")}>เปิดหน้าข้อสอบ</Button>
+                <div className="section-heading"><Eye size={20} /><div><h3>เธซเธเนเธฒเธเนเธญเธชเธญเธ</h3><p>{isAdmin ? "เน€เธเนเธฒเธชเธนเนเธซเธเนเธฒเธเธฑเธ”เธเธฒเธฃเธเนเธญเธชเธญเธ เธ”เธนเธ•เธฑเธงเธญเธขเนเธฒเธเธเนเธญเธชเธญเธ เนเธฅเธฐเน€เธเธดเธ”เน€เธเธฃเธทเนเธญเธเธกเธทเธญ builder" : "เน€เธเนเธฒเธชเธนเนเธซเธเนเธฒเธ—เธณเธเนเธญเธชเธญเธ Student Preview เธชเธณเธซเธฃเธฑเธเธเธเธฑเธเธเธฒเธเนเธ•เนเธฅเธฐ Part"}</p></div></div>
+                <Button onClick={() => setEntryPoint("exam")}>เน€เธเธดเธ”เธซเธเนเธฒเธเนเธญเธชเธญเธ</Button>
               </CardContent>
             </Card>
 
             <Card className="portal-card">
               <CardContent className="portal-card-content">
-                <div className="section-heading"><Megaphone size={20} /><div><h3>ข่าวสารภายใน</h3><p>จัดการประกาศ, ข่าวอัปเดต, และข้อความสำคัญที่ต้องสื่อสารให้พนักงานทราบ</p></div></div>
-                <Button onClick={() => setEntryPoint("news")}>เปิดหน้าข่าวสาร</Button>
+                <div className="section-heading"><Megaphone size={20} /><div><h3>ข่าวสารภายใน</h3><p>จัดการประกาศ ข่าวอัปเดต และข้อความสำคัญที่ต้องสื่อสารให้พนักงานทราบ</p></div></div>
+                <Button onClick={() => setEntryPoint("news")}>เน€เธเธดเธ”เธซเธเนเธฒเธเนเธฒเธงเธชเธฒเธฃ</Button>
               </CardContent>
             </Card>
 
@@ -2866,18 +2559,18 @@ export default function App() {
               <div className="hero-topbar">
                 <div className="hero-badges"><Badge>Skill Matrix</Badge><Badge outline>{activeEmployees.length} employees</Badge></div>
                 <div className="hero-session">
-                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> กลับเมนู</Button>
-                  <Button variant="outline" onClick={logout}><LogOut size={16} /> ออกจากระบบ</Button>
+                  <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> เธเธฅเธฑเธเน€เธกเธเธน</Button>
+                  <Button variant="outline" onClick={logout}><LogOut size={16} /> เธญเธญเธเธเธฒเธเธฃเธฐเธเธ</Button>
                 </div>
               </div>
               <h1>Skill Matrix</h1>
-              <p>ดึงข้อมูลพนักงานจากฐานข้อมูลเดิมและดึง Part จากคลังข้อสอบจริง พร้อมบันทึก skill เป็นวงกลม 4 ส่วน ส่วนละ 25%</p>
+              <p>เธ”เธถเธเธเนเธญเธกเธนเธฅเธเธเธฑเธเธเธฒเธเธเธฒเธเธเธฒเธเธเนเธญเธกเธนเธฅเน€เธ”เธดเธกเนเธฅเธฐเธ”เธถเธ Part เธเธฒเธเธเธฅเธฑเธเธเนเธญเธชเธญเธเธเธฃเธดเธ เธเธฃเนเธญเธกเธเธฑเธเธ—เธถเธ skill เน€เธเนเธเธงเธเธเธฅเธก 4 เธชเนเธงเธ เธชเนเธงเธเธฅเธฐ 25%</p>
             </div>
             <div className="hero-stats">
-              <div className="hero-stat"><span>พนักงาน</span><strong>{activeEmployees.length}</strong></div>
-              <div className="hero-stat"><span>Part ในคลัง</span><strong>{skillMatrixParts.length}</strong></div>
+              <div className="hero-stat"><span>เธเธเธฑเธเธเธฒเธ</span><strong>{activeEmployees.length}</strong></div>
+              <div className="hero-stat"><span>Part เนเธเธเธฅเธฑเธ</span><strong>{skillMatrixParts.length}</strong></div>
               <div className="hero-stat"><span>Skill entries</span><strong>{skillMatrixEntries.length}</strong></div>
-              <div className="hero-stat"><span>สถานะ</span><strong>{skillMatrixStatus === "saving" ? "Saving" : skillMatrixStatus === "loading" ? "Loading" : skillMatrixStatus === "error" ? "Error" : "Ready"}</strong></div>
+              <div className="hero-stat"><span>เธชเธ–เธฒเธเธฐ</span><strong>{skillMatrixStatus === "saving" ? "Saving" : skillMatrixStatus === "loading" ? "Loading" : skillMatrixStatus === "error" ? "Error" : "Ready"}</strong></div>
             </div>
           </motion.section>
 
@@ -2887,14 +2580,14 @@ export default function App() {
                 <ClipboardCheck size={18} />
                 <div className="skill-matrix-header-text">
                   <h3>Skill Matrix by employee and part</h3>
-                  <p>คะแนนรวมจะถูกแบ่งเป็น 4 ส่วนเท่า ๆ กัน และแปลงตามช่วงคะแนน 0-25 = 0%, 26-50 = 50%, 51-75 = 75%, 76-100 = 100%</p>
+                  <p>เธเธฐเนเธเธเธฃเธงเธกเธเธฐเธ–เธนเธเนเธเนเธเน€เธเนเธ 4 เธชเนเธงเธเน€เธ—เนเธฒ เน เธเธฑเธ เนเธฅเธฐเนเธเธฅเธเธ•เธฒเธกเธเนเธงเธเธเธฐเนเธเธ 0-25 = 0%, 26-50 = 50%, 51-75 = 75%, 76-100 = 100%</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               {skillMatrixError ? <div className="alert-error">{skillMatrixError}</div> : null}
               <div className="skill-matrix-legend">
-                <div className="skill-matrix-legend-title">เกณฑ์ระดับวงกลม</div>
+                <div className="skill-matrix-legend-title">เน€เธเธ“เธ‘เนเธฃเธฐเธ”เธฑเธเธงเธเธเธฅเธก</div>
                 <div className="skill-matrix-legend-items">
                   <span className="skill-matrix-legend-item"><strong>0-25</strong> = 0%</span>
                   <span className="skill-matrix-legend-item"><strong>26-50</strong> = 50%</span>
@@ -2910,7 +2603,7 @@ export default function App() {
                     onChange={(e) => setSkillMatrixModelFilter(e.target.value)}
                     style={S.input}
                   >
-                    <option value="ALL">ทั้งหมด ({skillMatrixParts.length} Part)</option>
+                    <option value="ALL">เธ—เธฑเนเธเธซเธกเธ” ({skillMatrixParts.length} Part)</option>
                     {skillMatrixModelOptions.map((entry) => (
                       <option key={entry.modelCode} value={entry.modelCode}>
                         {entry.modelCode} - {entry.modelName} ({entry.partCount} Part)
@@ -2919,15 +2612,15 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <Label>ค้นหา Part</Label>
+                  <Label>เธเนเธเธซเธฒ Part</Label>
                   <Input
                     value={skillMatrixSearch}
                     onChange={(e) => setSkillMatrixSearch(e.target.value)}
-                    placeholder="พิมพ์ชื่อหรือรหัส Part"
+                    placeholder="เธเธดเธกเธเนเธเธทเนเธญเธซเธฃเธทเธญเธฃเธซเธฑเธช Part"
                   />
                 </div>
                 <div>
-                  <Label>จำนวนต่อหน้า</Label>
+                  <Label>เธเธณเธเธงเธเธ•เนเธญเธซเธเนเธฒ</Label>
                   <select
                     value={skillMatrixPartsPerPage}
                     onChange={(e) => setSkillMatrixPartsPerPage(Number(e.target.value) || 6)}
@@ -2940,15 +2633,15 @@ export default function App() {
                   </select>
                 </div>
                 <div className="skill-matrix-summary-chips">
-                  <span className="skill-matrix-summary-chip">แสดง {visibleSkillMatrixParts.length} จาก {filteredSkillMatrixParts.length} Part</span>
+                  <span className="skill-matrix-summary-chip">เนเธชเธ”เธ {visibleSkillMatrixParts.length} เธเธฒเธ {filteredSkillMatrixParts.length} Part</span>
                   <span className="skill-matrix-summary-chip">{activeEmployees.length} employees</span>
-                  <span className="skill-matrix-summary-chip">หน้า {skillMatrixPartPage + 1} / {skillMatrixPartPageCount}</span>
+                  <span className="skill-matrix-summary-chip">เธซเธเนเธฒ {skillMatrixPartPage + 1} / {skillMatrixPartPageCount}</span>
                   <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.max(0, prev - 1))} disabled={skillMatrixPartPage === 0}>
                     <ArrowLeft size={16} />
-                    ก่อนหน้า
+                    เธเนเธญเธเธซเธเนเธฒ
                   </Button>
                   <Button variant="outline" onClick={() => setSkillMatrixPartPage((prev) => Math.min(skillMatrixPartPageCount - 1, prev + 1))} disabled={skillMatrixPartPage >= skillMatrixPartPageCount - 1}>
-                    ถัดไป
+                    เธ–เธฑเธ”เนเธ
                   </Button>
                   <Button variant="outline" onClick={exportSkillMatrixPdf}>
                     <FileSpreadsheet size={16} />
@@ -2960,7 +2653,7 @@ export default function App() {
                   </Button>
                 </div>
               </div>
-              <div className="skill-matrix-scroll-note">เลื่อนแนวนอนเพื่อดู Part อื่น ๆ ทางขวา</div>
+              <div className="skill-matrix-scroll-note">เน€เธฅเธทเนเธญเธเนเธเธงเธเธญเธเน€เธเธทเนเธญเธ”เธน Part เธญเธทเนเธ เน เธ—เธฒเธเธเธงเธฒ</div>
               <div
                 className="skill-matrix-top-scroll"
                 ref={skillMatrixTopScrollRef}
@@ -3301,7 +2994,7 @@ export default function App() {
                                 <div className={`trend-dot trend-dot-${String(entry.status || "").toLowerCase()}`.trim()} />
                                 <div>
                                   <strong>{entry.pct}%</strong>
-                                  <span>{entry.label} � {entry.raw}</span>
+                                  <span>{entry.label} ๏ฟฝ {entry.raw}</span>
                                 </div>
                               </div>
                             ))}
@@ -3477,9 +3170,9 @@ export default function App() {
         </motion.section>
 
         {isAdmin ? (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Admin Mode</p><h2>ระบบนี้ปิดการใช้งาน Admin Builder แล้ว</h2></div><div className="hero-badges"><Badge outline>Preview / Dashboard / Employees</Badge></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Admin Mode</p><h2>เธฃเธฐเธเธเธเธตเนเธเธดเธ”เธเธฒเธฃเนเธเนเธเธฒเธ Admin Builder เนเธฅเนเธง</h2></div><div className="hero-badges"><Badge outline>Preview / Dashboard / Employees</Badge></div></CardContent></Card>
         ) : (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>บัญชีผู้ใช้งานทั่วไปทำข้อสอบได้อย่างเดียว</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>เธเธฑเธเธเธตเธเธนเนเนเธเนเธเธฒเธเธ—เธฑเนเธงเนเธเธ—เธณเธเนเธญเธชเธญเธเนเธ”เนเธญเธขเนเธฒเธเน€เธ”เธตเธขเธง</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
         )}
 
         <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue="preview">
@@ -3487,270 +3180,6 @@ export default function App() {
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
             {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
-
-          {isAdmin ? (
-            <TabsContent value="builder">
-              <div className="builder-v2-layout">
-                <Card className="builder-v2-sidebar">
-                  <CardHeader>
-                    <div className="section-heading">
-                      <BookOpen size={18} />
-                      <div>
-                        <h3>Admin Builder</h3>
-                        <p>แก้ไขคลังข้อสอบแบบร่างในหน้านี้ก่อน แล้วกดบันทึกขึ้น Server เมื่อพร้อม</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="form-stack">
-                      <Label>????????</Label>
-                      <Input value={bank.title} onChange={(e) => setBank((b) => ({ ...b, title: e.target.value }))} />
-
-                      <div className="builder-v2-section-head">
-                        <div>
-                          <div className="mini-note">Models</div>
-                          <strong>{bank.models.length} ??????</strong>
-                        </div>
-                        <Button onClick={addModel}><Plus size={16} /> ????? Model</Button>
-                      </div>
-                      <div className="builder-v2-list">
-                        {bank.models.map((entry) => (
-                          <button
-                            key={entry.id}
-                            type="button"
-                            className={`builder-v2-list-item ${entry.id === builderModelId ? "is-active" : ""}`.trim()}
-                            onClick={() => applyBuilderSelection(entry.id, entry.parts?.[0]?.id || null, entry.parts?.[0]?.questions?.[0]?.id || null)}
-                          >
-                            <strong>{entry.modelCode}</strong>
-                            <span>{entry.modelName}</span>
-                            <small>{entry.parts?.length || 0} Part</small>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="button-row">
-                        <Button variant="destructive" onClick={removeModel}><Trash2 size={16} /> ?? Model ????????</Button>
-                      </div>
-
-                      <Label>Model Code</Label>
-                      <Input value={builderModel?.modelCode || ""} onChange={(e) => patchModel("modelCode", e.target.value)} />
-                      <Label>Model Name</Label>
-                      <Input value={builderModel?.modelName || ""} onChange={(e) => patchModel("modelName", e.target.value)} />
-
-                      <div className="builder-v2-section-head">
-                        <div>
-                          <div className="mini-note">Parts</div>
-                          <strong>{builderModel?.parts?.length || 0} / 20</strong>
-                        </div>
-                        <Button disabled={(builderModel?.parts?.length || 0) >= 20} onClick={addPart}><Plus size={16} /> ????? Part</Button>
-                      </div>
-                      <div className="builder-v2-list">
-                        {(builderModel?.parts || []).map((entry) => (
-                          <button
-                            key={entry.id}
-                            type="button"
-                            className={`builder-v2-list-item ${entry.id === builderPartId ? "is-active" : ""}`.trim()}
-                            onClick={() => applyBuilderSelection(builderModelId, entry.id, entry.questions?.[0]?.id || null)}
-                          >
-                            <strong>{entry.partCode}</strong>
-                            <span>{entry.partName}</span>
-                            <small>{entry.questions?.length || 0} ???</small>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="button-row">
-                        <Button variant="destructive" onClick={removePart}><Trash2 size={16} /> ?? Part ????????</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="builder-v2-main">
-                  <Card>
-                    <CardContent className="builder-v2-toolbar">
-                      <div className="builder-v2-toolbar-copy">
-                        <p className="section-kicker">Builder Workspace</p>
-                        <h2>{builderModel?.modelCode || "-"} / {builderPart?.partCode || "-"}</h2>
-                        <p>{builderPart?.partName || "เลือก Part เพื่อเริ่มแก้ไขข้อสอบ"} | ระบบจะไม่บันทึกอัตโนมัติ</p>
-                      </div>
-                      <div className="builder-v2-toolbar-actions">
-                        <Badge outline>{builderPart?.questions?.length || 0} Questions</Badge>
-                        <Badge outline>{builderScoreFull} ?????????</Badge>
-                        <Badge outline>{builderHasUnsavedChanges ? "????????????" : "??????????"}</Badge>
-                        <Button variant="outline" onClick={addQ}><Plus size={16} /> ???????????</Button>
-                        <Button onClick={saveLocal} disabled={syncStatus === "saving"}>
-                          <Save size={16} /> {syncStatus === "saving" ? "???????????..." : "??????"}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {builderSaveMessage.text ? (
-                    <div className={builderSaveMessage.type === "error" ? "alert-error" : "alert-success"}>
-                      {builderSaveMessage.text}
-                    </div>
-                  ) : null}
-
-                  <div className="builder-v2-content">
-                    <Card className="builder-v2-part-card">
-                      <CardHeader>
-                        <div className="section-heading">
-                          <Settings2 size={18} />
-                          <div>
-                            <h3>Part Settings</h3>
-                            <p>?????????, ????, ???????? ?????????????? Part ????????</p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="form-stack">
-                          <Label>Part Code</Label>
-                          <Input value={builderPart?.partCode || ""} onChange={(e) => patchPart("partCode", e.target.value)} />
-                          <Label>Part Name</Label>
-                          <Input value={builderPart?.partName || ""} onChange={(e) => patchPart("partName", e.target.value)} />
-                          <Label>????????</Label>
-                          <Input value={builderPart?.subtitle || ""} onChange={(e) => patchPart("subtitle", e.target.value)} />
-                          <div className="two-col">
-                            <div>
-                              <Label>Pass Score</Label>
-                              <Input value={`${FIXED_PASS_SCORE}/${builderScoreFull}`} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
-                            </div>
-                            <div>
-                              <Label>Full Score</Label>
-                              <Input type="number" value={builderScoreFull} disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
-                            </div>
-                          </div>
-                          <div className="toggle-row"><span>???????????????</span><Button variant={builderPart?.randomizeQuestions ? "default" : "outline"} onClick={() => patchPart("randomizeQuestions", !builderPart?.randomizeQuestions)}>{builderPart?.randomizeQuestions ? "ON" : "OFF"}</Button></div>
-                          <div className="toggle-row"><span>??????????????????</span><Button variant={builderPart?.showResultImmediately ? "default" : "outline"} onClick={() => patchPart("showResultImmediately", !builderPart?.showResultImmediately)}>{builderPart?.showResultImmediately ? "ON" : "OFF"}</Button></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="builder-v2-question-card">
-                      <CardHeader>
-                        <div className="section-heading">
-                          <ClipboardCheck size={18} />
-                          <div>
-                            <h3>Question Editor</h3>
-                            <p>??????????????????????????????? ????????? state ????????????</p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {!builderPart?.questions?.length ? <div className="empty-state">??????????????</div> : (
-                          <div className="builder-v2-question-layout">
-                            <div className="builder-v2-question-nav">
-                              <div className="builder-question-tools">
-                                <div>
-                                  <Label>???????????</Label>
-                                  <Input
-                                    value={builderQuestionSearch}
-                                    onChange={(e) => setBuilderQuestionSearch(e.target.value)}
-                                    placeholder="????????????????????????????????"
-                                  />
-                                </div>
-                                <div>
-                                  <Label>????????</Label>
-                                  <select value={builderQuestion?.id || ""} onChange={(e) => setBuilderQId(e.target.value)} style={S.input}>
-                                    {(builderPart?.questions || []).map((q, i) => (
-                                      <option key={q.id} value={q.id}>
-                                        ??? {i + 1} - {(q.questionText || "??????????????????").slice(0, 60)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </div>
-                              <div className="question-list-meta">
-                                <span>??????? {builderPart?.questions?.length || 0} ???</span>
-                                <span>???? {filteredBuilderQuestions.length} ???</span>
-                                <span>??????????? {builderQuestion?.questionNo || "-"}</span>
-                              </div>
-                              <div className="question-list">
-                                {filteredBuilderQuestions.length ? filteredBuilderQuestions.map((q) => {
-                                  const actualIndex = builderPart.questions.findIndex((entry) => entry.id === q.id);
-                                  return (
-                                    <button
-                                      key={q.id}
-                                      type="button"
-                                      ref={(node) => { if (node) builderQuestionChipRefs.current[q.id] = node; }}
-                                      onClick={() => setBuilderQId(q.id)}
-                                      className={`question-chip ${q.id === builderQuestion?.id ? "is-active" : ""}`}
-                                    >
-                                      <span className="question-chip-no">??? {actualIndex + 1}</span>
-                                      <strong>{q.questionText || "??????????????????"}</strong>
-                                      <small>{q.score} ?????</small>
-                                    </button>
-                                  );
-                                }) : <div className="empty-state">?????????????????????</div>}
-                              </div>
-                            </div>
-
-                            <div className="builder-v2-question-editor">
-                              <div className="builder-question-panel is-active">
-                                <div className="builder-question-panel-header">
-                                  <div>
-                                    <div className="question-chip-no">??? {builderQuestion?.questionNo || "-"}</div>
-                                    <strong>{builderQuestion?.questionText || "???????"}</strong>
-                                  </div>
-                                  <div className="button-row">
-                                    <Button variant="outline" onClick={() => jumpQuestion(-1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) <= 0}>????</Button>
-                                    <Button variant="outline" onClick={() => jumpQuestion(1)} disabled={builderPart.questions.findIndex((entry) => entry.id === builderQuestion?.id) >= builderPart.questions.length - 1}>??</Button>
-                                    <Button variant="outline" onClick={() => dupQ(builderQuestion)}>??????</Button>
-                                    <Button variant="destructive" onClick={() => delQ(builderQuestion?.id)}><Trash2 size={16} /> ??</Button>
-                                  </div>
-                                </div>
-                                <Label>?????</Label>
-                                <Textarea rows={4} value={builderQuestion?.questionText || ""} onChange={(e) => patchQ(builderQuestion.id, { questionText: e.target.value })} />
-                                <div className="two-col">
-                                  <div>
-                                    <Label>?????</Label>
-                                    <Input type="number" value={FIXED_QUESTION_SCORE} readOnly disabled style={{ background: "rgba(14, 26, 36, 0.06)" }} />
-                                  </div>
-                                  <div>
-                                    <Label>???????????</Label>
-                                    <select value={builderQuestion?.correctAnswer || "A"} onChange={(e) => patchQ(builderQuestion.id, { correctAnswer: e.target.value })} style={S.input}>
-                                      <option value="A">A</option>
-                                      <option value="B">B</option>
-                                      <option value="C">C</option>
-                                      <option value="D">D</option>
-                                    </select>
-                                  </div>
-                                </div>
-                                <Label>???????????</Label>
-                                <Input value={builderQuestion?.imageUrl || ""} onChange={(e) => patchQ(builderQuestion.id, { imageUrl: e.target.value })} />
-                                <label className="upload-button">
-                                  <ImagePlus size={16} /> ????????
-                                  <input type="file" accept="image/*" hidden onChange={(e) => uploadImg(e.target.files?.[0], builderQuestion.id)} />
-                                </label>
-                                {builderQuestion?.imageUrl ? <img src={builderQuestion.imageUrl} alt="question" className="question-image" /> : null}
-                                <div className="choice-grid">
-                                  {["A", "B", "C", "D"].map((key) => (
-                                    <Card key={key} className="choice-card">
-                                      <CardContent>
-                                        <Label>???????? {key}</Label>
-                                        <Textarea
-                                          rows={3}
-                                          value={builderQuestion?.choices?.[key] || ""}
-                                          onChange={(e) => patchChoice(builderQuestion.id, key, e.target.value, builderQuestion.choices)}
-                                        />
-                                        <Button variant="outline" onClick={() => patchQ(builderQuestion.id, { correctAnswer: key })}>???????????????????</Button>
-                                      </CardContent>
-                                    </Card>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          ) : null}
-
           <TabsContent value="preview">
             <div className="split-grid">
               <Card className="sticky-card"><CardHeader><div className="section-heading"><Eye size={18} /><div><h3>Candidate details</h3><p>Preview the exam form and track the current attempt in real time.</p></div></div></CardHeader><CardContent><div className="form-stack"><Label>Model</Label><select value={model.id} onChange={(e) => { examSelectionTouchedRef.current = true; setModelId(e.target.value); const nextModel = bank.models.find((x) => x.id === e.target.value); setPartId(nextModel.parts[0].id); }} style={S.input}>{bank.models.map((m) => <option key={m.id} value={m.id}>{m.modelCode} - {m.modelName}</option>)}</select><Label>Part</Label><select value={part.id} onChange={(e) => { examSelectionTouchedRef.current = true; setPartId(e.target.value); }} style={S.input}>{model.parts.map((p) => <option key={p.id} value={p.id}>{p.partCode} - {p.partName}</option>)}</select><Label>Employee name</Label><Input value={candidateName} onChange={(e) => setCandidateName(e.target.value)} /><Label>Employee code</Label><Input value={candidateCode} onChange={(e) => setCandidateCode(e.target.value)} /><div className="progress-block"><div className="progress-label-row"><span>Progress</span><strong>{answered}/{part.questions.length}</strong></div><Progress value={progress} /></div>{submitError ? <div className="alert-error">{submitError}</div> : null}{isExamLocked ? <div className="alert-error">This part was already passed on {new Date(passedAttemptForCurrentPart.submittedAt).toLocaleString()} with score {passedAttemptForCurrentPart.score}/{passedAttemptForCurrentPart.fullScore}.</div> : null}<Button variant="outline" disabled={!submitted} onClick={exportCSV}>Export result CSV</Button><Button variant="outline" onClick={reset} disabled={isExamLocked}>Start over</Button></div></CardContent></Card>
