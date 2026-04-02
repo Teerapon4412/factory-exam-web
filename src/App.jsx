@@ -794,9 +794,15 @@ export default function App() {
     const nextSessionKey = `${session.token || ""}:${session.role || ""}`;
     if (lastTabSessionKeyRef.current === nextSessionKey) return;
     lastTabSessionKeyRef.current = nextSessionKey;
-    setActiveTab(isAdmin ? "builder" : "preview");
+    setActiveTab("preview");
     setEntryPoint(isAdmin ? "portal" : "exam");
   }, [session, isAdmin]);
+
+  useEffect(() => {
+    if (activeTab === "builder") {
+      setActiveTab("preview");
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (!session || isAdmin) return;
@@ -3456,11 +3462,11 @@ export default function App() {
         <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="hero-panel">
           <div className="hero-copy">
             <div className="hero-topbar">
-              <div className="hero-badges"><Badge>Factory Exam Builder</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
+              <div className="hero-badges"><Badge>Factory Online Exam</Badge><Badge outline>{isAdmin ? "ADMIN ACCESS" : "USER ACCESS"}</Badge></div>
               <div className="hero-session"><span>{session.displayName} ({session.username})</span>{isAdmin ? <Button variant="outline" onClick={() => setEntryPoint("portal")}><ArrowLeft size={16} /> ????????</Button> : null}<Badge outline>{syncStatusLabel}</Badge><Button variant="outline" onClick={logout}><LogOut size={16} /> ??????????</Button></div>
             </div>
             <h1>{bank.title}</h1>
-            <p>????????????????????????????? ?????????????????????? ?????????????????? ???????????????????? Dashboard ?????</p>
+            <p>ใช้สำหรับดูตัวอย่างข้อสอบ ตรวจผลการสอบ จัดการพนักงาน และติดตามข้อมูลภาพรวมจากระบบเดียว</p>
           </div>
           <div className="hero-stats">
             <div className="hero-stat"><span>????? Model</span><strong>{bank.models.length}</strong></div>
@@ -3471,14 +3477,13 @@ export default function App() {
         </motion.section>
 
         {isAdmin ? (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Quick Actions</p><h2>????????????????????????????</h2></div><div className="action-buttons"><Button onClick={addQ}><Plus size={16} /> ???????????????</Button><Button variant="outline" onClick={saveLocal}><Save size={16} /> ?????????????????</Button><Button variant="outline" onClick={exportJSON}><FileJson size={16} /> Export JSON</Button></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Admin Mode</p><h2>ระบบนี้ปิดการใช้งาน Admin Builder แล้ว</h2></div><div className="hero-badges"><Badge outline>Preview / Dashboard / Employees</Badge></div></CardContent></Card>
         ) : (
-          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>?????????????????????????????????????????</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
+          <Card className="action-strip"><CardContent className="action-strip-content"><div><p className="section-kicker">Exam Mode</p><h2>บัญชีผู้ใช้งานทั่วไปทำข้อสอบได้อย่างเดียว</h2></div><div className="hero-badges"><Badge outline>Preview Only</Badge></div></CardContent></Card>
         )}
 
-        <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue={isAdmin ? "builder" : "preview"}>
+        <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue="preview">
           <TabsList>
-            {isAdmin ? <TabsTrigger value="builder"><Settings2 size={16} /> Admin Builder</TabsTrigger> : null}
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
             {isAdmin ? <><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
