@@ -1,3 +1,4 @@
+import ExamProgress from "./ExamProgress.jsx";
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useCallback } from "react";
@@ -1603,8 +1604,8 @@ export default function App() {
   useEffect(() => {
     if (!dataReady || !session?.token || !isAdmin) return;
 
-    const shouldRefreshSharedData = ["portal", "news", "scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
-    const shouldRefreshEmployees = ["scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["employees", "evaluation", "employee-results"].includes(activeTab);
+    const shouldRefreshSharedData = ["portal", "news", "scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["exam-progress", "employee-results", "dashboard", "evaluation", "preview", "importexport"].includes(activeTab);
+    const shouldRefreshEmployees = ["scores", "score-charts", "skill-matrix"].includes(entryPoint) || ["exam-progress", "employees", "evaluation", "employee-results"].includes(activeTab);
     const shouldRefreshEvaluations = ["scores", "score-charts"].includes(entryPoint) || ["evaluation", "employee-results"].includes(activeTab);
     const shouldRefreshSkillMatrix = entryPoint === "skill-matrix";
     if (!shouldRefreshSharedData && !shouldRefreshEmployees && !shouldRefreshEvaluations && !shouldRefreshSkillMatrix) return;
@@ -3093,8 +3094,10 @@ export default function App() {
         <Tabs key={session.role} value={activeTab} onValueChange={setActiveTab} defaultValue="preview">
           <TabsList>
             <TabsTrigger value="preview"><Eye size={16} /> Student Preview</TabsTrigger>
+            <TabsTrigger value="exam-progress"><ClipboardCheck size={16} /> สถานะการสอบ</TabsTrigger>
             {isAdmin ? <><TabsTrigger value="builder"><BookOpen size={16} /> Admin Builder</TabsTrigger><TabsTrigger value="evaluation"><FileSpreadsheet size={16} /> Evaluation</TabsTrigger><TabsTrigger value="employees"><Users size={16} /> Employees</TabsTrigger><TabsTrigger value="employee-results"><Users size={16} /> Employee Results</TabsTrigger><TabsTrigger value="dashboard"><BarChart3 size={16} /> Dashboard</TabsTrigger><TabsTrigger value="importexport"><FileJson size={16} /> Import / Export</TabsTrigger></> : null}
           </TabsList>
+          <TabsContent value="exam-progress"><Card><CardContent><ExamProgress bank={bank} session={session} apiBase={API_BASE} loading={!dataReady} /></CardContent></Card></TabsContent>
           {isAdmin ? (
             <TabsContent value="builder">
               <div className="builder-v3-shell">
@@ -3543,6 +3546,7 @@ export default function App() {
                           <Label>??????</Label>
                           <select value={employeeForm.role} onChange={(e) => setEmployeeForm((prev) => ({ ...prev, role: e.target.value }))} style={S.input}>
                             <option value="USER">USER</option>
+                            <option value="LEADER">LEADER</option>
                             <option value="ADMIN">ADMIN</option>
                           </select>
                         </div>

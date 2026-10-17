@@ -115,6 +115,20 @@ app.get("/api/state", requireAuth, async (_req, res, next) => {
   }
 });
 
+app.get("/api/exam-progress", requireAuth, async (req, res, next) => {
+  try {
+    const state = await loadState();
+    const canViewAll = ["ADMIN", "LEADER"].includes(req.user.role);
+    const people = canViewAll ? await listEmployees() : [req.user];
+    res.json({
+      employees: people.map(({ employeeCode, fullName }) => ({ employeeCode, fullName })),
+      results: state.results.filter((entry) => canViewAll || entry.candidateCode === req.user.employeeCode),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.put("/api/state", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     res.json(await saveState(req.body ?? {}));

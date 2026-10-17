@@ -784,7 +784,7 @@ export async function createEmployee(input) {
     department: String(input.department || "").trim(),
     position: String(input.position || "").trim(),
     photoUrl: String(input.photoUrl || "").trim(),
-    role: input.role === "ADMIN" ? "ADMIN" : "USER",
+    role: ["ADMIN", "LEADER"].includes(input.role) ? input.role : "USER",
     isActive: input.isActive === false ? 0 : 1,
   };
 
@@ -839,7 +839,7 @@ export async function updateEmployee(id, input) {
     department: String(input.department ?? current.department).trim(),
     position: String(input.position ?? current.position).trim(),
     photoUrl: String(input.photoUrl ?? current.photo_url).trim(),
-    role: input.role === "ADMIN" ? "ADMIN" : input.role === "USER" ? "USER" : current.role,
+    role: ["ADMIN", "LEADER", "USER"].includes(input.role) ? input.role : current.role,
     isActive: typeof input.isActive === "boolean" ? (input.isActive ? 1 : 0) : current.is_active,
     passwordHash: current.password_hash,
   };
